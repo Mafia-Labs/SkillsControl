@@ -28,7 +28,7 @@ export const demoReport: ScanReport = {
     }
   ],
   findings: [
-    { id: 'f1', skillId: 'frontend-design', severity: 'warning', title: 'Copies have diverged', detail: 'The global and project copies contain different SKILL.md content.' },
+    { id: 'f1', skillId: 'frontend-design', severity: 'warning', title: 'Copies have diverged', detail: 'The global and project copies contain different skill contents.' },
     { id: 'f2', skillId: 'frontend-design', severity: 'info', title: 'Global and project copies', detail: 'Prefer project scope unless this skill is useful everywhere.' },
     { id: 'f3', skillId: 'security-review', severity: 'warning', title: 'Executable script', detail: 'Review scripts/check.sh before running it with an agent.' }
   ]
