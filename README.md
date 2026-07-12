@@ -76,17 +76,27 @@ La restauración recibe solo el identificador del archivo guardado y recupera el
 
 ## Comprobaciones de salud
 
-El análisis no ejecuta instrucciones ni scripts. Comprueba:
+El análisis no ejecuta instrucciones ni scripts, y ahora funciona como una primera capa de confianza local. Comprueba:
 
 - frontmatter YAML delimitado por `---`;
 - `description` no vacía;
 - coherencia entre carpeta y `name`;
 - `SKILL.md` inferior a 20&nbsp;000 caracteres;
-- scripts ejecutables bajo `scripts/`;
+- SHA-256 determinista de todos los archivos y recursos;
+- scripts ejecutables y scripts invocados desde `SKILL.md`, aunque no tengan bit ejecutable;
+- comandos destructivos, elevación de privilegios, descargas y ejecución remota;
+- referencias a credenciales, exfiltración potencial, ofuscación y ejecución dinámica;
+- binarios, enlaces simbólicos, hooks/MCP y escrituras fuera del proyecto;
 - copias con el mismo nombre pero distinto contenido;
 - solapamientos globales y locales para un mismo agente.
 
-Los avisos orientan; no bloquean la inspección.
+El escáner es determinista, offline y produce evidencias/capacidades, no una garantía de seguridad. Los estados son `Reviewed`, `Low risk`, `Review required`, `Blocked`, `Unknown` y `Stale`. Una versión bloqueada no se puede copiar a otro proyecto. `Trust this exact version` guarda la aceptación local por nombre y hash; si cambia un archivo, esa confianza no se hereda.
+
+La procedencia se conserva cuando existe en el frontmatter (`source_url`, `source_repository`, `source_commit`, `source_skill_path`, `license` e `installed_at`). Si un campo no está disponible, la interfaz lo muestra como no registrado en vez de inferirlo.
+
+La cuarentena mueve una instalación exacta al archivo reversible de Skill Control. La restauración nunca sobrescribe una carpeta existente.
+
+La aplicación usa una CSP Tauri con scripts locales, sin `unsafe-eval`, sin scripts remotos y con conexiones limitadas al canal local de desarrollo. La integración online con skills.sh, el proxy serverless y el sandbox dinámico quedan deliberadamente fuera del primer lanzamiento local-first; deben añadirse como fases separadas con comparación de hash exacto y sin subir skills privadas automáticamente.
 
 ## Seguridad de escritura
 

@@ -59,3 +59,7 @@
 .change-hash-list { display: grid; gap: 6px; margin-top: 13px; padding: 10px; border-left: 2px solid #e0a855; color: #aeb4be; background: #211d16; font-size: 10px; line-height: 1.45; }
 .change-hash-list strong { color: #e8ca8d; font-size: 11px; }
 .change-hash-list code { color: #c4bbff; }
+.meter-fill { width: 0; }
+.meter-fill.meter-10 { width: 10%; }.meter-fill.meter-20 { width: 20%; }.meter-fill.meter-30 { width: 30%; }
+.meter-fill.meter-40 { width: 40%; }.meter-fill.meter-50 { width: 50%; }.meter-fill.meter-60 { width: 60%; }
+.meter-fill.meter-70 { width: 70%; }.meter-fill.meter-80 { width: 80%; }.meter-fill.meter-90 { width: 90%; }.meter-fill.meter-100 { width: 100%; }

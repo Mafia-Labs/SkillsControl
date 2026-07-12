@@ -6,6 +6,7 @@ export function Overview({ report, onViewHealth, onViewMap }: { report: ScanRepo
   const errors = report.findings.filter((finding) => finding.severity === 'error').length
   const warnings = report.findings.filter((finding) => finding.severity === 'warning').length
   const tokenTotal = report.skills.reduce((total, skill) => total + skill.contextTokens, 0)
+  const meterPercent = Math.min(100, Math.max(0, Math.round(tokenTotal / 650) * 10))
   return <>
     <section className="hero">
       <div><p className="eyebrow">System diagnosis</p><h2>Your agent skills, made legible.</h2><p>Inventory global and folder-scoped installations, find risky or divergent copies, and deploy the smallest configuration each project needs.</p></div>
@@ -28,7 +29,7 @@ export function Overview({ report, onViewHealth, onViewMap }: { report: ScanRepo
       <div className="panel footprint"><PanelHeading title="Context footprint" />
         <div className="footprint-total">{formatTokenCount(tokenTotal)}<small>potential activation tokens</small></div>
         <p>Estimate based on scanned <code>SKILL.md</code> files. Project-local installation limits discovery to relevant workspaces, but this is not a billable-token measurement.</p>
-        <div className="meter"><span style={{ width: `${Math.min(100, tokenTotal / 65)}%` }} /></div>
+        <div className="meter"><span className={`meter-fill meter-${meterPercent}`} /></div>
       </div>
     </section>
   </>

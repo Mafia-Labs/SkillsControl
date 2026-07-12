@@ -1628,6 +1628,14 @@ mod tests {
             )
             .expect("archives table should exist");
         assert_eq!(table_exists, 1);
+        let review_table_exists: i32 = database
+            .query_row(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='skill_reviews'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("review table should exist");
+        assert_eq!(review_table_exists, 1);
         drop(database);
         fs::remove_file(path).expect("temporary database should clean up");
     }
