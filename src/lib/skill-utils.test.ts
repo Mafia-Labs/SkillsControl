@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { countDuplicates, countUniqueProjects, healthLabel, projectRoot, severityOrder } from './skill-utils'
+import { countDuplicates, countUniqueProjects, healthLabel, projectName, severityOrder } from './skill-utils'
 import type { ScanReport, Skill } from './types'
 
 const sampleSkill: Skill = {
@@ -7,9 +7,52 @@ const sampleSkill: Skill = {
   executableScripts: [], contextTokens: 100, sourceHash: 'hash'
 }
 
+const emptyReport = (skills: Skill[]): ScanReport => ({
+  skills,
+  findings: [],
+  scannedPaths: [],
+  projects: [],
+  agents: [],
+  scannedAt: ''
+})
+
 describe('skill inventory utilities', () => {
-  it('counts only skills installed in more than one location as duplicates', () => {
-    const report = { skills: [{ ...sampleSkill, installations: [{ id: '1', path: '/a', scope: 'user', agent: 'codex', enabled: true, modified: false }] }, { ...sampleSkill, id: 'b', installations: [{ id: '2', path: '/b', scope: 'user', agent: 'claude', enabled: true, modified: false }, { id: '3', path: '/c', scope: 'project', agent: 'claude', enabled: true, modified: false }] }], findings: [], scannedPaths: [], agents: [], scannedAt: '' } satisfies ScanReport
+  it('counts global and project overlap for the same agent', () => {
+    const report = emptyReport([
+      {
+        ...sampleSkill,
+        installations: [
+          { id: '1', path: '/home/.agents/skills/alpha', scope: 'user', agent: 'codex', enabled: true, modified: false, sourceHash: 'hash' },
+          { id: '2', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: false, sourceHash: 'hash' }
+        ]
+      }
+    ])
+    expect(countDuplicates(report)).toBe(1)
+  })
+
+  it('does not treat identical cross-agent project copies as an overlap', () => {
+    const report = emptyReport([
+      {
+        ...sampleSkill,
+        installations: [
+          { id: '1', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: false, sourceHash: 'hash' },
+          { id: '2', path: '/work/app/.claude/skills/alpha', scope: 'project', agent: 'claude', projectPath: '/work/app', enabled: true, modified: false, sourceHash: 'hash' }
+        ]
+      }
+    ])
+    expect(countDuplicates(report)).toBe(0)
+  })
+
+  it('counts divergent copies as an overlap', () => {
+    const report = emptyReport([
+      {
+        ...sampleSkill,
+        installations: [
+          { id: '1', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: true, sourceHash: 'hash-a' },
+          { id: '2', path: '/work/app/.claude/skills/alpha', scope: 'project', agent: 'claude', projectPath: '/work/app', enabled: true, modified: true, sourceHash: 'hash-b' }
+        ]
+      }
+    ])
     expect(countDuplicates(report)).toBe(1)
   })
 
@@ -23,12 +66,12 @@ describe('skill inventory utilities', () => {
     expect(['info', 'warning', 'error'].sort((a, b) => severityOrder(a as 'info') - severityOrder(b as 'info'))).toEqual(['error', 'warning', 'info'])
   })
 
-  it('counts project roots without inflating paths from the same project', () => {
-    const report = { skills: [{ ...sampleSkill, installations: [{ id: '1', path: '/work/one/.agents/skills/alpha', scope: 'project', agent: 'agents', enabled: true, modified: false }, { id: '2', path: '/work/one/.codex/skills/alpha', scope: 'project', agent: 'codex', enabled: true, modified: false }, { id: '3', path: '/work/two/.claude/skills/alpha', scope: 'project', agent: 'claude', enabled: true, modified: false }] }], findings: [], scannedPaths: [], agents: [], scannedAt: '' } satisfies ScanReport
+  it('uses the projects reported by the scanner', () => {
+    const report = { ...emptyReport([]), projects: [{ path: '/work/one', name: 'one', agents: ['codex'] }, { path: '/work/two', name: 'two', agents: ['claude'] }] } satisfies ScanReport
     expect(countUniqueProjects(report)).toBe(2)
   })
 
-  it('finds project roots from Windows-style installation paths', () => {
-    expect(projectRoot('C:\\work\\one\\.codex\\skills\\alpha')).toBe('C:/work/one')
+  it('formats project names from Windows-style paths', () => {
+    expect(projectName('C:\\work\\one')).toBe('one')
   })
 })

@@ -1,9 +1,8 @@
 import type { Agent, Finding, ScanReport, Skill } from './types'
 
 export const agentLabels: Record<Agent, string> = {
-  agents: 'Agent Skills',
-  codex: 'Codex',
-  claude: 'Claude'
+  codex: 'Codex / Agent Skills',
+  claude: 'Claude Code'
 }
 
 export const getSkillHealth = (skill: Skill, findings: Finding[]) =>
@@ -19,21 +18,23 @@ export const healthLabel = (skill: Skill, findings: Finding[]) => {
 export const healthClass = (skill: Skill, findings: Finding[]) =>
   healthLabel(skill, findings).replace(/\s+/g, '-').toLowerCase()
 
-export const countUniqueProjects = (report: ScanReport) => {
-  const paths = report.skills.flatMap((skill) => skill.installations)
-    .filter((installation) => installation.scope === 'project')
-    .map((installation) => projectRoot(installation.path))
-  return new Set(paths).size
-}
+export const countUniqueProjects = (report: ScanReport) => report.projects.length
 
-export const projectRoot = (path: string) => {
-  const normalized = path.replace(/\\/g, '/')
-  const marker = ['/.agents/', '/.codex/', '/.claude/'].find((candidate) => normalized.includes(candidate))
-  return marker ? normalized.split(marker)[0] : normalized
+export const projectName = (path?: string) => {
+  if (!path) return 'Project'
+  const normalized = path.replace(/\\/g, '/').replace(/\/$/, '')
+  return normalized.split('/').slice(-1)[0] || normalized
 }
 
 export const countDuplicates = (report: ScanReport) =>
-  report.skills.filter((skill) => skill.installations.length > 1).length
+  report.skills.filter((skill) => {
+    const divergent = new Set(skill.installations.map((installation) => installation.sourceHash)).size > 1
+    const override = (['codex', 'claude'] as Agent[]).some((agent) => {
+      const installs = skill.installations.filter((installation) => installation.agent === agent)
+      return installs.some((installation) => installation.scope === 'user') && installs.some((installation) => installation.scope === 'project')
+    })
+    return divergent || override
+  }).length
 
 export const formatTokenCount = (tokens: number) =>
   new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(tokens)
