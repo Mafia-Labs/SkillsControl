@@ -9,6 +9,9 @@ use std::{
 };
 
 const MAX_PROJECT_SCAN_DEPTH: usize = 8;
+// The bundled catalog is reviewed with the source revision that introduced its
+// current definitions. Update this pin whenever a curated definition changes.
+const CURATED_SOURCE_COMMIT: &str = "1d8ed03";
 const AGENT_SKILL_PATHS: [(&str, &str); 2] =
     [("codex", ".agents/skills"), ("claude", ".claude/skills")];
 const PROJECT_MARKERS: [&str; 10] = [
@@ -1536,7 +1539,7 @@ fn install_catalog_skill(
 
     let installed_at = unix_seconds();
     let content = format!(
-        "---\nname: {skill_id}\ndescription: {description}\nversion: 1.0.0\nsource: Skill Control curated library\nsource_url: https://github.com/Mafia-Labs/SkillsControl\nsource_repository: Mafia-Labs/SkillsControl\nsource_skill_path: src-tauri/src/lib.rs#catalog_definition\ninstalled_at: {installed_at}\n---\n\n# {skill_id}\n\n{instructions}\n"
+        "---\nname: {skill_id}\ndescription: {description}\nversion: 1.0.0\nsource: Skill Control curated library\nsource_url: https://github.com/Mafia-Labs/SkillsControl\nsource_owner: Mafia-Labs\nsource_repository: Mafia-Labs/SkillsControl\nsource_commit: {CURATED_SOURCE_COMMIT}\nsource_skill_path: src-tauri/src/lib.rs#catalog_definition\ninstalled_at: {installed_at}\n---\n\n# {skill_id}\n\n{instructions}\n"
     );
     let mut created = Vec::new();
     for destination in &destinations {
