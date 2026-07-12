@@ -27,6 +27,16 @@ export const disableSkill = async (installation: Installation): Promise<ArchiveE
   return invoke<ArchiveEntry>('disable_skill', { installation })
 }
 
+export const quarantineSkill = async (installation: Installation): Promise<ArchiveEntry> => {
+  if (!isTauri()) return disableSkill(installation)
+  return invoke<ArchiveEntry>('quarantine_skill', { installation })
+}
+
+export const trustSkillVersion = async (installation: Installation): Promise<void> => {
+  if (!isTauri()) return
+  return invoke<void>('trust_skill_version', { installation })
+}
+
 export const restoreSkill = async (archive: ArchiveEntry): Promise<void> => {
   if (!isTauri()) return
   return invoke<void>('restore_skill', { archiveId: archive.id })

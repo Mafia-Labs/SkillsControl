@@ -725,6 +725,66 @@ fn analyze_skill(
     LocalSecurityScan { findings, invoked_scripts, capabilities }
 }
 
+fn analyze_existing_skill(skill_path: &Path) -> Result<(String, String, LocalSecurityScan), String> {
+    let content = fs::read_to_string(skill_path.join("SKILL.md"))
+        .map_err(|error| format!("Could not read SKILL.md: {error}"))?;
+    let folder_name = skill_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .ok_or("Could not determine the skill name")?;
+    let (metadata, _) = frontmatter(&content);
+    let skill_id = metadata
+        .get("name")
+        .filter(|value| !value.is_empty())
+        .cloned()
+        .unwrap_or_else(|| folder_name.to_string());
+    let mut inventory = FileInventory::default();
+    files_in(skill_path, skill_path, &mut inventory);
+    let content_hash_sha256 = skill_hash(skill_path, &inventory.files);
+    let suffix = sha256_hex(skill_path.to_string_lossy().as_bytes());
+    let scan = analyze_skill(
+        &skill_id,
+        &content,
+        skill_path,
+        &inventory,
+        &suffix,
+        false,
+    );
+    Ok((skill_id, content_hash_sha256, scan))
+}
+
+fn update_security_status(skill: &mut Skill, findings: &[Finding]) {
+    let exact_review = review_for_hash(&skill.id, &skill.content_hash_sha256);
+    if let Some(reviewed_at) = exact_review {
+        skill.provenance.reviewed_hash = Some(skill.content_hash_sha256.clone());
+        skill.provenance.reviewed_at = Some(reviewed_at);
+    }
+    let has_critical = findings
+        .iter()
+        .any(|finding| finding.skill_id == skill.id && finding.severity == "critical");
+    let has_review_finding = findings.iter().any(|finding| {
+        finding.skill_id == skill.id
+            && (finding.severity == "error" || finding.severity == "warning")
+    });
+    let metadata_review_matches = skill.provenance.reviewed_hash.as_deref()
+        == Some(skill.content_hash_sha256.as_str());
+    let has_previous_review = has_any_review(&skill.id) || skill.provenance.reviewed_hash.is_some();
+
+    skill.security_status = if has_critical {
+        "Blocked".into()
+    } else if has_previous_review && !metadata_review_matches {
+        "Stale".into()
+    } else if has_review_finding {
+        "Review required".into()
+    } else if metadata_review_matches {
+        "Reviewed".into()
+    } else if skill.provenance.source_repository.is_some() {
+        "Low risk".into()
+    } else {
+        "Unknown".into()
+    };
+}
+
 fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
     let Ok(entries) = fs::read_dir(&candidate.path) else {
         return Vec::new();
@@ -918,8 +978,57 @@ fn open_archive_database(path: &Path) -> Result<Connection, String> {
         fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     }
     let connection = Connection::open(path).map_err(|error| error.to_string())?;
-    connection.execute_batch("CREATE TABLE IF NOT EXISTS archives (id TEXT PRIMARY KEY, skill_name TEXT NOT NULL, source_path TEXT NOT NULL, archive_path TEXT NOT NULL, created_at TEXT NOT NULL);").map_err(|error| error.to_string())?;
+    connection.execute_batch(
+        "CREATE TABLE IF NOT EXISTS archives (id TEXT PRIMARY KEY, skill_name TEXT NOT NULL, source_path TEXT NOT NULL, archive_path TEXT NOT NULL, created_at TEXT NOT NULL);
+         CREATE TABLE IF NOT EXISTS skill_reviews (skill_id TEXT NOT NULL, content_hash_sha256 TEXT NOT NULL, reviewed_at TEXT NOT NULL, PRIMARY KEY (skill_id, content_hash_sha256));",
+    ).map_err(|error| error.to_string())?;
     Ok(connection)
+}
+
+fn record_skill_review(skill_id: &str, content_hash_sha256: &str, reviewed_at: &str) -> Result<(), String> {
+    let database = open_archive_database(&archive_database_path()?)?;
+    database
+        .execute(
+            "INSERT OR REPLACE INTO skill_reviews (skill_id, content_hash_sha256, reviewed_at) VALUES (?1, ?2, ?3)",
+            params![skill_id, content_hash_sha256, reviewed_at],
+        )
+        .map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+fn review_for_hash(skill_id: &str, content_hash_sha256: &str) -> Option<String> {
+    let path = archive_database_path().ok()?;
+    if !path.exists() {
+        return None;
+    }
+    let database = open_archive_database(&path).ok()?;
+    database
+        .query_row(
+            "SELECT reviewed_at FROM skill_reviews WHERE skill_id = ?1 AND content_hash_sha256 = ?2",
+            params![skill_id, content_hash_sha256],
+            |row| row.get(0),
+        )
+        .ok()
+}
+
+fn has_any_review(skill_id: &str) -> bool {
+    let Some(path) = archive_database_path().ok() else {
+        return false;
+    };
+    if !path.exists() {
+        return false;
+    }
+    let Ok(database) = open_archive_database(&path) else {
+        return false;
+    };
+    database
+        .query_row(
+            "SELECT count(*) FROM skill_reviews WHERE skill_id = ?1",
+            params![skill_id],
+            |row| row.get::<_, i64>(0),
+        )
+        .map(|count| count > 0)
+        .unwrap_or(false)
 }
 
 fn record_archive(entry: &ArchiveEntry) -> Result<(), String> {
@@ -1240,6 +1349,7 @@ fn scan_skills(projects: Vec<String>) -> ScanReport {
                 });
             }
         }
+        update_security_status(skill, &findings);
     }
 
     let mut skills: Vec<Skill> = combined.into_values().collect();
@@ -1306,6 +1416,26 @@ fn disable_skill(installation: Installation) -> Result<ArchiveEntry, String> {
 }
 
 #[tauri::command]
+fn quarantine_skill(installation: Installation) -> Result<ArchiveEntry, String> {
+    disable_skill(installation)
+}
+
+#[tauri::command]
+fn trust_skill_version(installation: Installation) -> Result<(), String> {
+    let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
+    let source = validate_installation(&installation, &home)?;
+    let (skill_id, content_hash_sha256, scan) = analyze_existing_skill(&source)?;
+    if scan
+        .findings
+        .iter()
+        .any(|finding| finding.severity == "critical")
+    {
+        return Err("A blocked version cannot be trusted. Quarantine it and review the files first.".into());
+    }
+    record_skill_review(&skill_id, &content_hash_sha256, &unix_seconds())
+}
+
+#[tauri::command]
 fn restore_skill(archive_id: String) -> Result<(), String> {
     let archive = archive_by_id(&archive_id)?;
     let source = PathBuf::from(&archive.source_path);
@@ -1345,6 +1475,14 @@ fn copy_skill_to_project(
 ) -> Result<String, String> {
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
     let source = validate_installation(&installation, &home)?;
+    let (_, _, scan) = analyze_existing_skill(&source)?;
+    if scan
+        .findings
+        .iter()
+        .any(|finding| finding.severity == "critical")
+    {
+        return Err("This skill is blocked because its static scan found critical behavior. Review or quarantine it before copying.".into());
+    }
     let skill_name = source
         .file_name()
         .and_then(|name| name.to_str())
@@ -1396,8 +1534,9 @@ fn install_catalog_skill(
         ));
     }
 
+    let installed_at = unix_seconds();
     let content = format!(
-        "---\nname: {skill_id}\ndescription: {description}\nversion: 1.0.0\nsource: Skill Control curated library\n---\n\n# {skill_id}\n\n{instructions}\n"
+        "---\nname: {skill_id}\ndescription: {description}\nversion: 1.0.0\nsource: Skill Control curated library\nsource_url: https://github.com/Mafia-Labs/SkillsControl\nsource_repository: Mafia-Labs/SkillsControl\nsource_skill_path: src-tauri/src/lib.rs#catalog_definition\ninstalled_at: {installed_at}\n---\n\n# {skill_id}\n\n{instructions}\n"
     );
     let mut created = Vec::new();
     for destination in &destinations {
@@ -1408,6 +1547,18 @@ fn install_catalog_skill(
             return Err(format!("Could not install skill: {error}"));
         }
         created.push(destination.clone());
+    }
+
+    for destination in &created {
+        let mut inventory = FileInventory::default();
+        files_in(destination, destination, &mut inventory);
+        let content_hash_sha256 = skill_hash(destination, &inventory.files);
+        if let Err(error) = record_skill_review(&skill_id, &content_hash_sha256, &unix_seconds()) {
+            for created_destination in &created {
+                let _ = fs::remove_dir_all(created_destination);
+            }
+            return Err(format!("Could not record the curated skill review: {error}"));
+        }
     }
 
     Ok(created
@@ -1423,6 +1574,8 @@ pub fn run() {
             scan_skills,
             preview_disable,
             disable_skill,
+            quarantine_skill,
+            trust_skill_version,
             restore_skill,
             list_archives,
             copy_skill_to_project,
@@ -1606,6 +1759,14 @@ mod tests {
 
         assert_ne!(first_hash, second_hash);
         fs::remove_dir_all(skill).expect("skill folder should clean up");
+    }
+
+    #[test]
+    fn emits_standard_sha256_hex() {
+        assert_eq!(
+            super::sha256_hex(b"abc"),
+            "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+        );
     }
 
     #[test]

@@ -7,7 +7,7 @@ import { Sidebar, TopBar, type View } from './components/layout'
 import { Overview } from './components/Overview'
 import { Empty, Banner, Loading } from './components/shared'
 import { SkillMap } from './components/SkillMap'
-import { chooseProject, copySkillToProject, disableSkill, installCatalogSkill, listArchives, previewDisable, restoreSkill, scanSkills } from './lib/desktop'
+import { chooseProject, copySkillToProject, installCatalogSkill, listArchives, previewDisable, quarantineSkill, restoreSkill, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth } from './lib/skill-utils'
 import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanReport, Scope } from './lib/types'
 
@@ -84,12 +84,12 @@ export default function App() {
     if (!modal) return
     try {
       if (modal.kind === 'disable') {
-        const archive = await disableSkill(modal.installation)
+        const archive = await quarantineSkill(modal.installation)
         setRecentArchive(archive)
-        setNotice('Skill disabled and retained in the local archive.')
+        setNotice('Skill quarantined and retained in the local archive.')
       } else if (modal.kind === 'localize') {
         const destination = await copySkillToProject(modal.source, projectPath ?? '')
-        setNotice(`${modal.skill.name} copied to ${destination}. Verify it, then disable the global copy if it is no longer needed.`)
+        setNotice(`${modal.skill.name} copied to ${destination}. Verify it, then quarantine the global copy if it is no longer needed.`)
       } else {
         const installedPaths = await installCatalogSkill(modal.skill.id, scope, target, projectPath)
         const location = scope === 'project' ? projects.find((project) => project.path === projectPath)?.name ?? 'project' : 'global scope'
@@ -100,6 +100,16 @@ export default function App() {
       await refresh()
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'The change could not be applied.')
+    }
+  }
+
+  const trustExactVersion = async (installation: Installation) => {
+    try {
+      await trustSkillVersion(installation)
+      setNotice('This exact content hash is now trusted locally. A changed copy will no longer inherit that trust.')
+      await refresh()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'This version could not be trusted.')
     }
   }
 
@@ -145,7 +155,7 @@ export default function App() {
         {!report && <Empty icon="!" title="No report available" detail="Run another scan to inspect your local skills." />}
       </div>}
     </section>
-    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={requestLocalize} onDisable={requestDisable} />}
+    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={requestLocalize} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} />}
     {modal && <ChangeModal modal={modal} projects={projects} onCancel={() => setModal(null)} onApply={applyModal} />}
   </main>
 }

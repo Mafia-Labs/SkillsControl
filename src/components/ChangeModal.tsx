@@ -55,7 +55,7 @@ export function ChangeModal({ modal, projects, onCancel, onApply }: {
         <div className="change-list"><strong>Changes</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div>
         <div className="warning-box"><strong>Heads up</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div>
       </>}
-      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>Cancel</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath)}>{modal.kind === 'disable' ? 'Disable skill' : localize ? 'Copy to project' : 'Install skill'}</button></div>
+      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>Cancel</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath)}>{modal.kind === 'disable' ? 'Quarantine skill' : localize ? 'Copy to project' : 'Install skill'}</button></div>
     </section>
   </div>
 }
