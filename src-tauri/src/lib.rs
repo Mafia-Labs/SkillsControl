@@ -87,7 +87,11 @@ fn agent_paths(projects: &[String]) -> Vec<CandidatePath> {
             ("codex", ".codex/skills"),
             ("claude", ".claude/skills"),
         ] {
-            candidates.push(CandidatePath { path: home.join(relative), scope: "user".into(), agent: agent.into() });
+            candidates.push(CandidatePath {
+                path: home.join(relative),
+                scope: "user".into(),
+                agent: agent.into(),
+            });
         }
     }
 
@@ -102,7 +106,11 @@ fn agent_paths(projects: &[String]) -> Vec<CandidatePath> {
             ("codex", ".codex/skills"),
             ("claude", ".claude/skills"),
         ] {
-            candidates.push(CandidatePath { path: root.join(relative), scope: "project".into(), agent: agent.into() });
+            candidates.push(CandidatePath {
+                path: root.join(relative),
+                scope: "project".into(),
+                agent: agent.into(),
+            });
         }
     }
     candidates
@@ -110,12 +118,19 @@ fn agent_paths(projects: &[String]) -> Vec<CandidatePath> {
 
 fn frontmatter(content: &str) -> (HashMap<String, String>, bool) {
     let mut lines = content.lines();
-    if lines.next().map(str::trim) != Some("---") { return (HashMap::new(), false); }
+    if lines.next().map(str::trim) != Some("---") {
+        return (HashMap::new(), false);
+    }
     let mut values = HashMap::new();
     for line in lines.by_ref() {
-        if line.trim() == "---" { return (values, true); }
+        if line.trim() == "---" {
+            return (values, true);
+        }
         if let Some((key, value)) = line.split_once(':') {
-            values.insert(key.trim().to_lowercase(), value.trim().trim_matches('"').trim_matches('\'').to_owned());
+            values.insert(
+                key.trim().to_lowercase(),
+                value.trim().trim_matches('"').trim_matches('\'').to_owned(),
+            );
         }
     }
     (HashMap::new(), false)
@@ -123,15 +138,36 @@ fn frontmatter(content: &str) -> (HashMap<String, String>, bool) {
 
 fn files_in(directory: &Path, root: &Path, executable_scripts: &mut Vec<String>) -> Vec<String> {
     let mut files = Vec::new();
-    let Ok(entries) = fs::read_dir(directory) else { return files; };
+    let Ok(entries) = fs::read_dir(directory) else {
+        return files;
+    };
     for entry in entries.flatten() {
         let path = entry.path();
-        if path.is_dir() { files.extend(files_in(&path, root, executable_scripts)); continue; }
-        let relative = path.strip_prefix(root).unwrap_or(&path).to_string_lossy().to_string();
+        if path.is_dir() {
+            files.extend(files_in(&path, root, executable_scripts));
+            continue;
+        }
+        let relative = path
+            .strip_prefix(root)
+            .unwrap_or(&path)
+            .to_string_lossy()
+            .to_string();
         #[cfg(unix)]
-        if relative.starts_with("scripts/") {
+        if path
+            .strip_prefix(root)
+            .ok()
+            .and_then(|relative_path| relative_path.components().next())
+            .map(|component| component.as_os_str() == "scripts")
+            .unwrap_or(false)
+        {
             use std::os::unix::fs::PermissionsExt;
-            if entry.metadata().map(|m| m.permissions().mode() & 0o111 != 0).unwrap_or(false) { executable_scripts.push(relative.clone()); }
+            if entry
+                .metadata()
+                .map(|m| m.permissions().mode() & 0o111 != 0)
+                .unwrap_or(false)
+            {
+                executable_scripts.push(relative.clone());
+            }
         }
         files.push(relative);
     }
@@ -140,7 +176,9 @@ fn files_in(directory: &Path, root: &Path, executable_scripts: &mut Vec<String>)
 }
 
 fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
-    let Ok(entries) = fs::read_dir(&candidate.path) else { return Vec::new(); };
+    let Ok(entries) = fs::read_dir(&candidate.path) else {
+        return Vec::new();
+    };
     entries.flatten().filter_map(|entry| {
         let skill_path = entry.path();
         if !skill_path.is_dir() { return None; }
@@ -177,19 +215,32 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
 }
 
 fn unix_seconds() -> String {
-    SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs().to_string()
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
+        .to_string()
 }
 
 fn unix_millis() -> String {
-    SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis().to_string()
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis()
+        .to_string()
 }
 
 fn archive_database_path() -> Result<PathBuf, String> {
-    Ok(dirs::home_dir().ok_or("Could not determine your home folder")?.join(".skill-control").join("state.db"))
+    Ok(dirs::home_dir()
+        .ok_or("Could not determine your home folder")?
+        .join(".skill-control")
+        .join("state.db"))
 }
 
 fn open_archive_database(path: &Path) -> Result<Connection, String> {
-    if let Some(parent) = path.parent() { fs::create_dir_all(parent).map_err(|error| error.to_string())?; }
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
     let connection = Connection::open(path).map_err(|error| error.to_string())?;
     connection.execute_batch("CREATE TABLE IF NOT EXISTS archives (id TEXT PRIMARY KEY, skill_name TEXT NOT NULL, source_path TEXT NOT NULL, archive_path TEXT NOT NULL, created_at TEXT NOT NULL);").map_err(|error| error.to_string())?;
     Ok(connection)
@@ -203,8 +254,34 @@ fn record_archive(entry: &ArchiveEntry) -> Result<(), String> {
 
 fn remove_archive_record(id: &str) -> Result<(), String> {
     let database = open_archive_database(&archive_database_path()?)?;
-    database.execute("DELETE FROM archives WHERE id = ?1", params![id]).map_err(|error| error.to_string())?;
+    database
+        .execute("DELETE FROM archives WHERE id = ?1", params![id])
+        .map_err(|error| error.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+fn list_archives() -> Result<Vec<ArchiveEntry>, String> {
+    let path = archive_database_path()?;
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let database = open_archive_database(&path)?;
+    let mut statement = database.prepare("SELECT id, skill_name, source_path, archive_path, created_at FROM archives ORDER BY created_at DESC").map_err(|error| error.to_string())?;
+    let entries = statement
+        .query_map([], |row| {
+            Ok(ArchiveEntry {
+                id: row.get(0)?,
+                skill_name: row.get(1)?,
+                source_path: row.get(2)?,
+                archive_path: row.get(3)?,
+                created_at: row.get(4)?,
+            })
+        })
+        .map_err(|error| error.to_string())?;
+    entries
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| error.to_string())
 }
 
 #[tauri::command]
@@ -212,23 +289,47 @@ fn scan_skills(projects: Vec<String>) -> ScanReport {
     let mut combined: HashMap<String, Skill> = HashMap::new();
     let mut findings = Vec::new();
     let candidates = agent_paths(&projects);
-    let scanned_paths = candidates.iter().map(|candidate| candidate.path.to_string_lossy().to_string()).collect();
-    let mut agents: Vec<String> = candidates.iter().filter(|candidate| candidate.path.exists()).map(|candidate| candidate.agent.clone()).collect();
-    agents.sort(); agents.dedup();
+    let scanned_paths = candidates
+        .iter()
+        .map(|candidate| candidate.path.to_string_lossy().to_string())
+        .collect();
+    let mut agents: Vec<String> = candidates
+        .iter()
+        .filter(|candidate| candidate.path.exists())
+        .map(|candidate| candidate.agent.clone())
+        .collect();
+    agents.sort();
+    agents.dedup();
     for candidate in &candidates {
         for (skill, mut skill_findings) in scan_candidate(candidate) {
-            if let Some(existing) = combined.get_mut(&skill.id) { existing.installations.extend(skill.installations); } else { combined.insert(skill.id.clone(), skill); }
+            if let Some(existing) = combined.get_mut(&skill.id) {
+                existing.installations.extend(skill.installations);
+            } else {
+                combined.insert(skill.id.clone(), skill);
+            }
             findings.append(&mut skill_findings);
         }
     }
     for skill in combined.values() {
         if skill.installations.len() > 1 {
-            findings.push(Finding { id: format!("{}-duplicate", skill.id), skill_id: skill.id.clone(), severity: "info".into(), title: "Multiple installations".into(), detail: "A project installation takes priority over a user installation.".into() });
+            findings.push(Finding {
+                id: format!("{}-duplicate", skill.id),
+                skill_id: skill.id.clone(),
+                severity: "info".into(),
+                title: "Multiple installations".into(),
+                detail: "A project installation takes priority over a user installation.".into(),
+            });
         }
     }
     let mut skills: Vec<Skill> = combined.into_values().collect();
     skills.sort_by(|a, b| a.name.cmp(&b.name));
-    ScanReport { skills, findings, scanned_paths, agents, scanned_at: unix_seconds() }
+    ScanReport {
+        skills,
+        findings,
+        scanned_paths,
+        agents,
+        scanned_at: unix_seconds(),
+    }
 }
 
 #[tauri::command]
@@ -239,14 +340,34 @@ fn preview_disable(installation: Installation) -> ChangePreview {
 #[tauri::command]
 fn disable_skill(installation: Installation) -> Result<ArchiveEntry, String> {
     let source = PathBuf::from(&installation.path);
-    if !source.exists() { return Err("The skill no longer exists at this path. Scan again before applying this change.".into()); }
+    if !source.exists() {
+        return Err(
+            "The skill no longer exists at this path. Scan again before applying this change."
+                .into(),
+        );
+    }
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
-    let skill_name = source.file_name().and_then(|name| name.to_str()).unwrap_or("skill").to_string();
+    let skill_name = source
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("skill")
+        .to_string();
     let id = format!("{}-{}", skill_name, unix_millis());
     let archive = home.join(".skill-control").join("disabled").join(&id);
-    fs::create_dir_all(archive.parent().ok_or("Could not create the archive folder")?).map_err(|error| error.to_string())?;
+    fs::create_dir_all(
+        archive
+            .parent()
+            .ok_or("Could not create the archive folder")?,
+    )
+    .map_err(|error| error.to_string())?;
     fs::rename(&source, &archive).map_err(|error| format!("Could not archive skill: {error}"))?;
-    let entry = ArchiveEntry { id, skill_name, source_path: source.to_string_lossy().to_string(), archive_path: archive.to_string_lossy().to_string(), created_at: unix_seconds() };
+    let entry = ArchiveEntry {
+        id,
+        skill_name,
+        source_path: source.to_string_lossy().to_string(),
+        archive_path: archive.to_string_lossy().to_string(),
+        created_at: unix_seconds(),
+    };
     if let Err(error) = record_archive(&entry) {
         let _ = fs::rename(&archive, &source);
         return Err(format!("Could not record the archive: {error}"));
@@ -258,9 +379,18 @@ fn disable_skill(installation: Installation) -> Result<ArchiveEntry, String> {
 fn restore_skill(archive: ArchiveEntry) -> Result<(), String> {
     let source = PathBuf::from(&archive.source_path);
     let archived = PathBuf::from(&archive.archive_path);
-    if source.exists() { return Err("A skill already exists at the original location. Move it before restoring this archive.".into()); }
-    if !archived.exists() { return Err("The archived copy no longer exists. It cannot be restored.".into()); }
-    fs::create_dir_all(source.parent().ok_or("Could not determine the original skill folder")?).map_err(|error| error.to_string())?;
+    if source.exists() {
+        return Err("A skill already exists at the original location. Move it before restoring this archive.".into());
+    }
+    if !archived.exists() {
+        return Err("The archived copy no longer exists. It cannot be restored.".into());
+    }
+    fs::create_dir_all(
+        source
+            .parent()
+            .ok_or("Could not determine the original skill folder")?,
+    )
+    .map_err(|error| error.to_string())?;
     fs::rename(&archived, &source).map_err(|error| format!("Could not restore skill: {error}"))?;
     if let Err(error) = remove_archive_record(&archive.id) {
         let _ = fs::rename(&source, &archived);
@@ -270,22 +400,36 @@ fn restore_skill(archive: ArchiveEntry) -> Result<(), String> {
 }
 
 #[tauri::command]
-fn install_catalog_skill(skill_id: String, target: String, project_path: Option<String>) -> Result<(), String> {
+fn install_catalog_skill(
+    skill_id: String,
+    target: String,
+    project_path: Option<String>,
+) -> Result<(), String> {
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
     let target_root = match target.as_str() {
-        "project" => PathBuf::from(project_path.ok_or("Choose a project before installing to project scope.")?).join(".agents/skills"),
+        "project" => PathBuf::from(
+            project_path.ok_or("Choose a project before installing to project scope.")?,
+        )
+        .join(".agents/skills"),
         "codex" => home.join(".codex/skills"),
         "claude" => home.join(".claude/skills"),
         _ => home.join(".agents/skills"),
     };
     let destination = target_root.join(&skill_id);
-    if destination.exists() { return Err("This skill already exists at the chosen target. Use the map to inspect it first.".into()); }
+    if destination.exists() {
+        return Err(
+            "This skill already exists at the chosen target. Use the map to inspect it first."
+                .into(),
+        );
+    }
     let catalog: HashMap<&str, (&str, &str)> = HashMap::from([
         ("repo-hygiene", ("Keep repositories small, predictable and easy for agents to navigate.", "Review file structure, name modules clearly, remove generated artifacts from version control, and prefer focused changes.")),
         ("web-performance", ("Diagnose rendering, assets and loading bottlenecks before users feel them.", "Measure first. Address unnecessary network requests, render work, asset weight, and avoid speculative rewrites.")),
         ("api-contracts", ("Design compatible API changes and document important constraints.", "Make contracts explicit, preserve backwards compatibility where practical, and add contract tests for changes.")),
     ]);
-    let (description, instructions) = catalog.get(skill_id.as_str()).ok_or("Unknown catalog skill")?;
+    let (description, instructions) = catalog
+        .get(skill_id.as_str())
+        .ok_or("Unknown catalog skill")?;
     fs::create_dir_all(&destination).map_err(|error| error.to_string())?;
     fs::write(destination.join("SKILL.md"), format!("---\nname: {skill_id}\ndescription: {description}\nversion: 1.0.0\nsource: Skill Control curated library\n---\n\n# {skill_id}\n\n{instructions}\n")).map_err(|error| error.to_string())
 }
@@ -294,7 +438,14 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![scan_skills, preview_disable, disable_skill, restore_skill, install_catalog_skill])
+        .invoke_handler(tauri::generate_handler![
+            scan_skills,
+            preview_disable,
+            disable_skill,
+            restore_skill,
+            list_archives,
+            install_catalog_skill
+        ])
         .run(tauri::generate_context!())
         .expect("error while running Skill Control")
 }
@@ -306,7 +457,8 @@ mod tests {
 
     #[test]
     fn parses_quoted_frontmatter_values() {
-        let (values, complete) = frontmatter("---\nname: sample\ndescription: 'Useful skill'\n---\nBody");
+        let (values, complete) =
+            frontmatter("---\nname: sample\ndescription: 'Useful skill'\n---\nBody");
         assert!(complete);
         assert_eq!(values.get("name"), Some(&"sample".to_string()));
         assert_eq!(values.get("description"), Some(&"Useful skill".to_string()));
@@ -322,7 +474,13 @@ mod tests {
     fn initializes_an_archive_database() {
         let path = env::temp_dir().join(format!("skill-control-{}.db", super::unix_millis()));
         let database = open_archive_database(&path).expect("database should initialize");
-        let table_exists: i32 = database.query_row("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='archives'", [], |row| row.get(0)).expect("archives table should exist");
+        let table_exists: i32 = database
+            .query_row(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='archives'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("archives table should exist");
         assert_eq!(table_exists, 1);
         drop(database);
         fs::remove_file(path).expect("temporary database should clean up");

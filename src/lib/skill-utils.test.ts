@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { countDuplicates, countUniqueProjects, healthLabel, severityOrder } from './skill-utils'
+import { countDuplicates, countUniqueProjects, healthLabel, projectRoot, severityOrder } from './skill-utils'
 import type { ScanReport, Skill } from './types'
 
 const sampleSkill: Skill = {
@@ -26,5 +26,9 @@ describe('skill inventory utilities', () => {
   it('counts project roots without inflating paths from the same project', () => {
     const report = { skills: [{ ...sampleSkill, installations: [{ id: '1', path: '/work/one/.agents/skills/alpha', scope: 'project', agent: 'agents', enabled: true, modified: false }, { id: '2', path: '/work/one/.codex/skills/alpha', scope: 'project', agent: 'codex', enabled: true, modified: false }, { id: '3', path: '/work/two/.claude/skills/alpha', scope: 'project', agent: 'claude', enabled: true, modified: false }] }], findings: [], scannedPaths: [], agents: [], scannedAt: '' } satisfies ScanReport
     expect(countUniqueProjects(report)).toBe(2)
+  })
+
+  it('finds project roots from Windows-style installation paths', () => {
+    expect(projectRoot('C:\\work\\one\\.codex\\skills\\alpha')).toBe('C:/work/one')
   })
 })

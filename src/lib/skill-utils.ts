@@ -16,11 +16,20 @@ export const healthLabel = (skill: Skill, findings: Finding[]) => {
   return 'Healthy'
 }
 
+export const healthClass = (skill: Skill, findings: Finding[]) =>
+  healthLabel(skill, findings).replace(/\s+/g, '-').toLowerCase()
+
 export const countUniqueProjects = (report: ScanReport) => {
   const paths = report.skills.flatMap((skill) => skill.installations)
     .filter((installation) => installation.scope === 'project')
-    .map((installation) => installation.path.split('/.')[0])
+    .map((installation) => projectRoot(installation.path))
   return new Set(paths).size
+}
+
+export const projectRoot = (path: string) => {
+  const normalized = path.replace(/\\/g, '/')
+  const marker = ['/.agents/', '/.codex/', '/.claude/'].find((candidate) => normalized.includes(candidate))
+  return marker ? normalized.split(marker)[0] : normalized
 }
 
 export const countDuplicates = (report: ScanReport) =>

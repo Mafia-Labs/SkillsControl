@@ -32,6 +32,11 @@ export const restoreSkill = async (archive: ArchiveEntry): Promise<void> => {
   return invoke<void>('restore_skill', { archive })
 }
 
+export const listArchives = async (): Promise<ArchiveEntry[]> => {
+  if (!isTauri()) return []
+  return invoke<ArchiveEntry[]>('list_archives')
+}
+
 export const installCatalogSkill = async (skillId: string, target: string, projectPath?: string): Promise<void> => {
   if (!isTauri()) return
   return invoke<void>('install_catalog_skill', { skillId, target, projectPath })
