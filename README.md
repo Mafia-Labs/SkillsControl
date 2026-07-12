@@ -2,58 +2,99 @@
 
 > Un centro de control local para entender, revisar y mantener las *skills* que usan tus agentes.
 
-**Skill Control** reúne en una sola aplicación de escritorio las skills instaladas para Agent Skills, Codex y Claude. En vez de navegar carpetas ocultas y editar archivos a mano, puedes ver dónde está activa cada skill, detectar problemas estructurales y aplicar cambios reversibles.
+**Skill Control** reúne en una aplicación de escritorio las skills instaladas para Codex/Agent Skills y Claude Code. En vez de navegar carpetas ocultas y editar archivos a mano, muestra dónde está activa cada copia, detecta problemas estructurales y aplica cambios reversibles.
 
 <p align="center">
-  <code>Inventario local</code> · <code>Diagnóstico</code> · <code>Instalación curada</code> · <code>Archivo reversible</code>
+  <code>Inventario local</code> · <code>Diagnóstico</code> · <code>Instalación por proyecto</code> · <code>Archivo reversible</code>
 </p>
+
+## Decisión de producto
+
+El alcance recomendado es **proyecto o carpeta**, no global.
+
+Una skill global aparece en trabajos donde quizá no aporta nada. Una skill local vive junto al código, puede versionarse con el repositorio y queda disponible solo para los agentes que trabajan en ese ámbito. El modo global sigue existiendo para capacidades realmente universales.
 
 ## Qué resuelve
 
-Cuando una misma skill existe en varios agentes o proyectos, es fácil perder el contexto: qué copia se está usando, cuál tiene prioridad y si su definición es segura de activar. Skill Control lo hace visible de un vistazo.
-
 | Necesidad | Cómo ayuda Skill Control |
 | --- | --- |
-| Saber qué hay instalado | Escanea las carpetas de skills de Agent Skills, Codex y Claude, tanto globales como de proyecto. |
-| Entender prioridades | Muestra una matriz por agente y ámbito; las instalaciones de proyecto tienen prioridad sobre las globales. |
-| Encontrar problemas antes de activar | Señala metadatos incompletos, descripciones ausentes, scripts ejecutables, duplicados y definiciones demasiado grandes. |
-| Desactivar sin perder nada | Mueve una skill a un archivo local y permite restaurarla en su ubicación original. |
-| Añadir una base cuidada | Instala una pequeña colección de skills curadas en el agente o proyecto elegido. |
+| Saber qué hay instalado | Escanea las ubicaciones globales y locales reconocidas por Codex y Claude Code. |
+| Descubrir proyectos automáticamente | Al añadir una carpeta de trabajo, encuentra repositorios, paquetes y carpetas con skills locales hasta ocho niveles de profundidad. |
+| Instalar para todo el proyecto | Crea la skill en `.agents/skills`, `.claude/skills` o en ambas ubicaciones en una sola operación. |
+| Convertir una skill global en local | Copia la carpeta completa al proyecto para el mismo agente; después puedes verificarla y archivar la global. |
+| Evitar contexto innecesario | Selecciona proyecto por defecto; el alcance global requiere una decisión explícita. |
+| Ver copias distintas | Compara hashes de todos los archivos de cada instalación y avisa cuando dos copias con el mismo nombre han divergido. |
+| Desinstalar con seguridad | Archiva únicamente la instalación seleccionada y permite restaurarla en su ruta original. |
+| Detectar riesgos básicos | Señala metadatos incompletos, descripciones ausentes, scripts ejecutables y definiciones demasiado grandes. |
 
-## Funciones
+## Rutas compatibles
 
-- **Vista general:** número de skills, agentes detectados, proyectos, duplicados y una estimación de huella de contexto.
-- **Skill Map:** matriz de alcance para comparar instalaciones globales y de proyecto por cada agente.
-- **Health check:** comprobaciones estructurales realizadas localmente, sin ejecutar las skills.
-- **Inspector:** archivos, scripts ejecutables, instalaciones y hallazgos de cada skill.
-- **Archivo de seguridad:** al desactivar una skill se conserva en `~/.skill-control/disabled/` y queda registrada para restaurarla después.
-- **Biblioteca curada:** incluye `repo-hygiene`, `web-performance` y `api-contracts`.
-- **Proyectos adicionales:** añade carpetas desde la interfaz para incluir sus skills en el inventario.
-
-## Rutas que analiza
-
-Skill Control busca carpetas de skills en los ámbitos global y de proyecto:
-
-| Agente | Global | Proyecto |
+| Agente | Global | Proyecto o carpeta |
 | --- | --- | --- |
-| Agent Skills | `~/.agents/skills` | `<proyecto>/.agents/skills` |
-| Codex | `~/.codex/skills` | `<proyecto>/.codex/skills` |
-| Claude | `~/.claude/skills` | `<proyecto>/.claude/skills` |
+| Codex / Agent Skills | `~/.agents/skills` | `<carpeta>/.agents/skills` |
+| Claude Code | `~/.claude/skills` | `<carpeta>/.claude/skills` |
 
-Una skill se reconoce como una carpeta que contiene un archivo `SKILL.md`. Si hay copias con el mismo nombre, la aplicación las agrupa y avisa de la duplicidad.
+Codex busca `.agents/skills` desde el directorio de trabajo hasta la raíz del repositorio. Claude Code usa `.claude/skills` en el proyecto y también puede descubrir ámbitos anidados. Por eso Skill Control trata una carpeta local como una unidad real de configuración, no solo la raíz superior de un repositorio.
+
+Una skill se reconoce como una carpeta que contiene `SKILL.md`. El recorrido general del workspace no sigue enlaces para evitar ciclos y salidas accidentales del árbol elegido; las copias que contienen enlaces simbólicos no se migran automáticamente.
+
+## Descubrimiento de workspace
+
+Al añadir una carpeta, el escáner:
+
+1. La conserva como destino local aunque todavía no tenga archivos de proyecto.
+2. Detecta repositorios y paquetes mediante `.git`, `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, `pom.xml` y otros marcadores comunes.
+3. Encuentra ámbitos anidados que ya contengan `.agents/skills` o `.claude/skills`.
+4. Ignora dependencias y artefactos como `node_modules`, `target`, `dist`, `build`, `.next`, `.venv`, `vendor` y `coverage`.
+5. Asocia cada instalación con su carpeta de proyecto para que la interfaz no tenga que inferirla desde una cadena de texto.
+
+## Instalación local
+
+En **Discover** se eligen tres cosas por separado:
+
+1. **Ámbito:** proyecto/carpeta o global.
+2. **Cobertura:** todos los agentes compatibles, Codex/Agent Skills o Claude Code.
+3. **Destino local:** el proyecto o paquete detectado.
+
+Cuando se eligen todos los agentes, la instalación es transaccional: primero comprueba todos los destinos, después crea las copias y revierte las ya creadas si falla una de ellas. Nunca sobrescribe una carpeta existente.
+
+## De global a proyecto
+
+Desde el inspector, **Install in project** copia una instalación existente —incluidos scripts, referencias y recursos— al proyecto seleccionado para el mismo agente. La copia es atómica y la fuente no se elimina. El flujo recomendado es:
+
+1. copiar la skill al proyecto;
+2. comprobar que el agente la detecta y funciona;
+3. desactivar la copia global solo cuando ya no sea necesaria.
+
+Los enlaces simbólicos internos no se copian automáticamente, porque podrían apuntar fuera de la skill y convertir una operación aparentemente local en una lectura arbitraria.
+
+## Desactivación y restauración
+
+**Disable** actúa sobre una instalación exacta, no sobre todas las copias con el mismo nombre. El backend valida que el destino sea realmente una skill bajo `.agents/skills` o `.claude/skills`, la mueve a `~/.skill-control/disabled/<id>` y registra la operación en SQLite.
+
+La restauración recibe solo el identificador del archivo guardado y recupera el resto de los datos desde la base local. Esto evita confiar en rutas arbitrarias enviadas por la interfaz.
 
 ## Comprobaciones de salud
 
-El análisis actual es deliberadamente sencillo y explicable. No intenta ejecutar instrucciones ni evaluar código; verifica que cada `SKILL.md` tenga una forma razonable:
+El análisis no ejecuta instrucciones ni scripts. Comprueba:
 
-- frontmatter YAML delimitado correctamente por `---`;
-- campo `description` no vacío;
-- coherencia entre el nombre de la carpeta y el campo `name`;
-- tamaño de `SKILL.md` inferior a 20&nbsp;000 caracteres, para evitar una activación innecesariamente pesada;
-- scripts ejecutables bajo `scripts/`, para que puedan revisarse antes de usarlos;
-- instalaciones múltiples de una misma skill.
+- frontmatter YAML delimitado por `---`;
+- `description` no vacía;
+- coherencia entre carpeta y `name`;
+- `SKILL.md` inferior a 20&nbsp;000 caracteres;
+- scripts ejecutables bajo `scripts/`;
+- copias con el mismo nombre pero distinto contenido;
+- solapamientos globales y locales para un mismo agente.
 
-Los avisos son orientación, no bloqueos: una skill con un aviso sigue siendo visible e inspeccionable.
+Los avisos orientan; no bloquean la inspección.
+
+## Seguridad de escritura
+
+- Los identificadores de catálogo solo aceptan minúsculas, números, guiones y guiones bajos; se rechaza cualquier intento de *path traversal*.
+- Antes de desactivar, se verifica que la instalación coincide con el agente y ámbito declarados.
+- Las instalaciones se escriben en una carpeta temporal y se renombran al final.
+- Una instalación múltiple se revierte completa si uno de los destinos falla.
+- Restaurar nunca sobrescribe una skill existente.
 
 ## Instalación y desarrollo
 
@@ -61,24 +102,22 @@ Los avisos son orientación, no bloqueos: una skill con un aviso sigue siendo vi
 
 - [Node.js](https://nodejs.org/) y [pnpm](https://pnpm.io/).
 - Toolchain de [Rust](https://www.rust-lang.org/tools/install), necesario para Tauri.
-- Las dependencias de sistema de [Tauri 2](https://v2.tauri.app/start/prerequisites/) para tu sistema operativo.
+- Dependencias de sistema de [Tauri 2](https://v2.tauri.app/start/prerequisites/).
 
-### Arrancar la aplicación de escritorio
+### Desarrollo
 
 ```bash
 pnpm install
 pnpm exec tauri dev
 ```
 
-### Ejecutar solo el frontend
+Solo frontend, con datos de demostración:
 
 ```bash
 pnpm dev
 ```
 
-En modo navegador no se accede al sistema de archivos: la interfaz carga datos de demostración para poder revisar el diseño sin permisos nativos.
-
-### Validar y empaquetar
+Validación y empaquetado:
 
 ```bash
 pnpm test
@@ -86,68 +125,33 @@ pnpm build
 pnpm exec tauri build
 ```
 
-La configuración actual genera el bundle de aplicación para macOS (`app`). El código se basa en Tauri 2, por lo que puede adaptarse a otros targets configurando el empaquetado y sus requisitos de sistema.
-
-## Uso rápido
-
-1. Abre la aplicación: el primer escaneo inspecciona las rutas globales y el proyecto actual.
-2. Usa **Add project** para añadir otros repositorios que quieras controlar.
-3. En **Skill Map**, selecciona una fila para consultar archivos, ubicaciones y advertencias.
-4. Abre **Health** para priorizar los errores y avisos detectados.
-5. Para retirar una instalación, selecciónala y elige **Disable**. Antes verás una previsualización del cambio.
-6. Restaura cualquier elemento desde **Disabled skills** cuando lo necesites.
-
-## Privacidad y cambios en disco
-
-La aplicación funciona en local. El escaneo lee `SKILL.md` y enumera archivos de las carpetas de skills; no sube su contenido ni ejecuta sus scripts.
-
-Los únicos cambios que puede realizar desde la interfaz son:
-
-- crear una skill de la biblioteca curada en la ubicación elegida;
-- mover una skill desactivada a `~/.skill-control/disabled/<id>`;
-- registrar ese movimiento en `~/.skill-control/state.db`;
-- restaurar posteriormente esa copia a su ruta original.
-
-Al restaurar, la operación se detiene si ya existe una carpeta en el destino original. Así se evita sobrescribir una skill de forma accidental.
-
 ## Arquitectura
 
 ```text
 src/                       React + TypeScript + Vite
-├── components/            Vistas: Overview, Map, Discover, Health e Inspector
-├── lib/desktop.ts         Puente entre la interfaz y los comandos nativos
-└── lib/skill-utils.ts     Cálculos y presentación del estado de salud
+├── components/            Overview, Map, Discover, Health e Inspector
+├── lib/desktop.ts         Puente tipado con comandos Tauri
+├── lib/types.ts           Modelo de agentes, proyectos e instalaciones
+└── lib/skill-utils.ts     Salud, solapamientos y presentación
 
-src-tauri/                 Backend nativo de Tauri (Rust)
-├── src/lib.rs             Escaneo, validación, archivo y restauración
-└── tauri.conf.json        Ventana y configuración de empaquetado
+src-tauri/
+└── src/lib.rs             Descubrimiento, validación, instalación atómica,
+                           archivo reversible y restauración
 ```
 
-La interfaz invoca comandos de Tauri para escanear, instalar, desactivar, restaurar y listar el archivo. El backend Rust mantiene la lógica que toca el sistema de archivos; la UI no manipula rutas directamente.
+## Uso rápido
 
-## Stack
+1. Abre la aplicación para inspeccionar las ubicaciones globales.
+2. Pulsa **Add folder** y selecciona explícitamente un repositorio o una carpeta que contenga varios proyectos. Una app abierta desde el Dock o el explorador no tiene un directorio de proyecto fiable.
+3. Revisa los ámbitos detectados en **Skill Map**.
+4. Usa **Install in project** para localizar una skill ya instalada, o **Discover** para instalar una skill curada.
+5. En **Discover**, conserva **Project or folder** y **All compatible agents** salvo que exista un motivo claro para ampliar o reducir el alcance.
+6. Desactiva una copia concreta desde el inspector y restáurala desde **Disabled skills**.
 
-- [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/)
-- [Vite 5](https://vite.dev/)
-- [Tauri 2](https://v2.tauri.app/) + Rust
-- [SQLite](https://www.sqlite.org/) embebido mediante `rusqlite`, para el historial de archivado
-- [Vitest](https://vitest.dev/)
+## Estado
 
-## Scripts disponibles
-
-| Comando | Acción |
-| --- | --- |
-| `pnpm dev` | Inicia el frontend de Vite. |
-| `pnpm build` | Comprueba TypeScript y genera el frontend en `dist/`. |
-| `pnpm test` | Ejecuta los tests de Vitest una vez. |
-| `pnpm test:watch` | Ejecuta Vitest en modo observación. |
-| `pnpm exec tauri dev` | Abre la app de escritorio en desarrollo. |
-| `pnpm exec tauri build` | Genera un paquete nativo distribuible. |
-
-## Estado del proyecto
-
-Skill Control está en una fase inicial (`0.1.0`). La biblioteca curada es intencionadamente pequeña y el diagnóstico se centra en la estructura de las skills. Antes de confiar en una skill de terceros, revisa siempre sus instrucciones y sus scripts.
+Skill Control está en fase inicial (`0.1.0`). La biblioteca curada es pequeña y el diagnóstico sigue siendo estructural. Revisa siempre las instrucciones y scripts de una skill de terceros antes de confiar en ella.
 
 ---
 
-Hecho para que tus agentes tengan menos sorpresas y tus carpetas ocultas, menos misterio.
+Hecho para que cada proyecto cargue las skills que necesita, no todas las que existen.
