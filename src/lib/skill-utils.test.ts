@@ -4,7 +4,8 @@ import type { ScanReport, Skill } from './types'
 
 const sampleSkill: Skill = {
   id: 'a', name: 'alpha', description: 'Alpha skill', installations: [], files: [],
-  executableScripts: [], contextTokens: 100, sourceHash: 'hash'
+  executableScripts: [], invokedScripts: [], capabilities: [], securityStatus: 'Unknown',
+  provenance: { contentHashSha256: 'hash', installedAt: 'unknown' }, contextTokens: 100, contentHashSha256: 'hash'
 }
 
 const emptyReport = (skills: Skill[]): ScanReport => ({
@@ -22,8 +23,8 @@ describe('skill inventory utilities', () => {
       {
         ...sampleSkill,
         installations: [
-          { id: '1', path: '/home/.agents/skills/alpha', scope: 'user', agent: 'codex', enabled: true, modified: false, sourceHash: 'hash' },
-          { id: '2', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: false, sourceHash: 'hash' }
+          { id: '1', path: '/home/.agents/skills/alpha', scope: 'user', agent: 'codex', enabled: true, modified: false, contentHashSha256: 'hash' },
+          { id: '2', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: false, contentHashSha256: 'hash' }
         ]
       }
     ])
@@ -35,8 +36,8 @@ describe('skill inventory utilities', () => {
       {
         ...sampleSkill,
         installations: [
-          { id: '1', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: false, sourceHash: 'hash' },
-          { id: '2', path: '/work/app/.claude/skills/alpha', scope: 'project', agent: 'claude', projectPath: '/work/app', enabled: true, modified: false, sourceHash: 'hash' }
+          { id: '1', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: false, contentHashSha256: 'hash' },
+          { id: '2', path: '/work/app/.claude/skills/alpha', scope: 'project', agent: 'claude', projectPath: '/work/app', enabled: true, modified: false, contentHashSha256: 'hash' }
         ]
       }
     ])
@@ -48,8 +49,8 @@ describe('skill inventory utilities', () => {
       {
         ...sampleSkill,
         installations: [
-          { id: '1', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: true, sourceHash: 'hash-a' },
-          { id: '2', path: '/work/app/.claude/skills/alpha', scope: 'project', agent: 'claude', projectPath: '/work/app', enabled: true, modified: true, sourceHash: 'hash-b' }
+          { id: '1', path: '/work/app/.agents/skills/alpha', scope: 'project', agent: 'codex', projectPath: '/work/app', enabled: true, modified: true, contentHashSha256: 'hash-a' },
+          { id: '2', path: '/work/app/.claude/skills/alpha', scope: 'project', agent: 'claude', projectPath: '/work/app', enabled: true, modified: true, contentHashSha256: 'hash-b' }
         ]
       }
     ])

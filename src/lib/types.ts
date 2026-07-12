@@ -1,7 +1,22 @@
 export type Scope = 'user' | 'project'
 export type Agent = 'codex' | 'claude'
 export type InstallTarget = Agent | 'all'
-export type Severity = 'info' | 'warning' | 'error'
+export type Severity = 'info' | 'warning' | 'error' | 'critical'
+export type SecurityStatus = 'Reviewed' | 'Low risk' | 'Review required' | 'Blocked' | 'Unknown' | 'Stale'
+export type Capability = 'Read project files' | 'Execute shell commands' | 'Access network' | 'Access credentials' | 'Write outside project' | 'Hooks or MCP' | 'Binary content' | 'External content'
+
+export type SkillProvenance = {
+  sourceUrl?: string
+  sourceOwner?: string
+  sourceRepository?: string
+  sourceCommit?: string
+  sourceSkillPath?: string
+  contentHashSha256: string
+  installedAt: string
+  reviewedHash?: string
+  reviewedAt?: string
+  license?: string
+}
 
 export type Installation = {
   id: string
@@ -11,7 +26,7 @@ export type Installation = {
   projectPath?: string
   enabled: boolean
   modified: boolean
-  sourceHash: string
+  contentHashSha256: string
 }
 
 export type Finding = {
@@ -28,11 +43,15 @@ export type Skill = {
   description: string
   version?: string
   source?: string
+  provenance: SkillProvenance
   installations: Installation[]
   files: string[]
   executableScripts: string[]
+  invokedScripts: string[]
+  capabilities: Capability[]
+  securityStatus: SecurityStatus
   contextTokens: number
-  sourceHash: string
+  contentHashSha256: string
 }
 
 export type ProjectSummary = {

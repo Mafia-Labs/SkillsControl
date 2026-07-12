@@ -1,9 +1,9 @@
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::{
-    collections::{hash_map::DefaultHasher, HashMap, HashSet},
+    collections::{HashMap, HashSet},
     fs,
-    hash::{Hash, Hasher},
     path::{Path, PathBuf},
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -52,7 +52,22 @@ struct Installation {
     project_path: Option<String>,
     enabled: bool,
     modified: bool,
-    source_hash: String,
+    content_hash_sha256: String,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SkillProvenance {
+    source_url: Option<String>,
+    source_owner: Option<String>,
+    source_repository: Option<String>,
+    source_commit: Option<String>,
+    source_skill_path: Option<String>,
+    content_hash_sha256: String,
+    installed_at: String,
+    reviewed_hash: Option<String>,
+    reviewed_at: Option<String>,
+    license: Option<String>,
 }
 
 #[derive(Clone, Serialize)]
@@ -63,11 +78,15 @@ struct Skill {
     description: String,
     version: Option<String>,
     source: Option<String>,
+    provenance: SkillProvenance,
     installations: Vec<Installation>,
     files: Vec<String>,
     executable_scripts: Vec<String>,
+    invoked_scripts: Vec<String>,
+    capabilities: Vec<String>,
+    security_status: String,
     context_tokens: usize,
-    source_hash: String,
+    content_hash_sha256: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -373,16 +392,24 @@ fn files_in(directory: &Path, root: &Path, executable_scripts: &mut Vec<String>)
     files
 }
 
+fn sha256_hex(bytes: &[u8]) -> String {
+    let digest = Sha256::digest(bytes);
+    digest.iter().map(|byte| format!("{byte:02x}")).collect()
+}
+
 fn skill_hash(root: &Path, files: &[String]) -> String {
-    let mut hash = DefaultHasher::new();
-    for relative in files {
-        relative.hash(&mut hash);
-        match fs::read(root.join(relative)) {
-            Ok(content) => content.hash(&mut hash),
-            Err(_) => "<unreadable>".hash(&mut hash),
-        }
+    let mut canonical_files = files.to_vec();
+    canonical_files.sort();
+    let mut hash = Sha256::new();
+    for relative in canonical_files {
+        let content = fs::read(root.join(&relative)).unwrap_or_else(|_| b"<unreadable>".to_vec());
+        hash.update(relative.as_bytes());
+        hash.update([0]);
+        hash.update((content.len() as u64).to_le_bytes());
+        hash.update(content);
     }
-    format!("{:x}", hash.finish())
+    let digest = hash.finalize();
+    digest.iter().map(|byte| format!("{byte:02x}")).collect()
 }
 
 fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
@@ -418,11 +445,7 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
             let source_hash = skill_hash(&skill_path, &files);
             let installation_path = skill_path.to_string_lossy().to_string();
             let installation_id = format!("{}:{}", candidate.agent, installation_path);
-            let finding_suffix = {
-                let mut installation_hash = DefaultHasher::new();
-                installation_id.hash(&mut installation_hash);
-                format!("{:x}", installation_hash.finish())
-            };
+            let finding_suffix = sha256_hex(installation_id.as_bytes());
             let mut findings = Vec::new();
             if !complete_frontmatter {
                 findings.push(Finding {
@@ -486,7 +509,7 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                     .map(|path| path.to_string_lossy().to_string()),
                 enabled: true,
                 modified: false,
-                source_hash: source_hash.clone(),
+                content_hash_sha256: source_hash.clone(),
             };
             Some((
                 Skill {
@@ -495,12 +518,30 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                     description: metadata.get("description").cloned().unwrap_or_default(),
                     version: metadata.get("version").cloned(),
                     source: metadata.get("source").cloned(),
+                    provenance: SkillProvenance {
+                        source_url: metadata.get("source_url").cloned(),
+                        source_owner: metadata.get("source_owner").cloned(),
+                        source_repository: metadata.get("source_repository").cloned(),
+                        source_commit: metadata.get("source_commit").cloned(),
+                        source_skill_path: metadata.get("source_skill_path").cloned(),
+                        content_hash_sha256: source_hash.clone(),
+                        installed_at: metadata
+                            .get("installed_at")
+                            .cloned()
+                            .unwrap_or_else(|| "unknown".into()),
+                        reviewed_hash: metadata.get("reviewed_hash").cloned(),
+                        reviewed_at: metadata.get("reviewed_at").cloned(),
+                        license: metadata.get("license").cloned(),
+                    },
                     installations: vec![installation],
                     files,
                     executable_scripts,
+                    invoked_scripts: Vec::new(),
+                    capabilities: vec!["Read project files".into()],
+                    security_status: "Unknown".into(),
                     context_tokens: (content.split_whitespace().count() as f32 * 1.3).ceil()
                         as usize,
-                    source_hash,
+                    content_hash_sha256: source_hash,
                 },
                 findings,
             ))
@@ -828,7 +869,7 @@ fn scan_skills(projects: Vec<String>) -> ScanReport {
         let unique_hashes: HashSet<String> = skill
             .installations
             .iter()
-            .map(|installation| installation.source_hash.clone())
+            .map(|installation| installation.content_hash_sha256.clone())
             .collect();
         if unique_hashes.len() > 1 {
             for installation in &mut skill.installations {

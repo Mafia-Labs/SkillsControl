@@ -15,6 +15,9 @@ export const healthLabel = (skill: Skill, findings: Finding[]) => {
   return 'Healthy'
 }
 
+export const securityStatusClass = (status: Skill['securityStatus']) =>
+  status.replace(/\s+/g, '-').toLowerCase()
+
 export const healthClass = (skill: Skill, findings: Finding[]) =>
   healthLabel(skill, findings).replace(/\s+/g, '-').toLowerCase()
 
@@ -28,7 +31,7 @@ export const projectName = (path?: string) => {
 
 export const countDuplicates = (report: ScanReport) =>
   report.skills.filter((skill) => {
-    const divergent = new Set(skill.installations.map((installation) => installation.sourceHash)).size > 1
+    const divergent = new Set(skill.installations.map((installation) => installation.contentHashSha256)).size > 1
     const override = (['codex', 'claude'] as Agent[]).some((agent) => {
       const installs = skill.installations.filter((installation) => installation.agent === agent)
       return installs.some((installation) => installation.scope === 'user') && installs.some((installation) => installation.scope === 'project')
@@ -39,4 +42,6 @@ export const countDuplicates = (report: ScanReport) =>
 export const formatTokenCount = (tokens: number) =>
   new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(tokens)
 
-export const severityOrder = (severity: Finding['severity']) => ({ error: 0, warning: 1, info: 2 })[severity]
+const severityPriority: Record<Finding['severity'], number> = { critical: 0, error: 1, warning: 2, info: 3 }
+
+export const severityOrder = (severity: Finding['severity']) => severityPriority[severity]

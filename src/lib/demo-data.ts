@@ -7,24 +7,24 @@ export const demoReport: ScanReport = {
   agents: ['codex', 'claude'],
   skills: [
     {
-      id: 'frontend-design', name: 'frontend-design', description: 'Build polished, accessible interfaces with a coherent visual system.', version: '2.4.0', source: 'Alex Picks', contextTokens: 2430, sourceHash: 'a82f3d9', files: ['SKILL.md', 'references/accessibility.md'], executableScripts: [],
+      id: 'frontend-design', name: 'frontend-design', description: 'Build polished, accessible interfaces with a coherent visual system.', version: '2.4.0', source: 'Alex Picks', provenance: { sourceRepository: 'Mafia-Labs/SkillsControl', contentHashSha256: 'a82f3d9', installedAt: 'demo', reviewedHash: 'a82f3d9', reviewedAt: 'demo' }, capabilities: ['Read project files'], securityStatus: 'Reviewed', contextTokens: 2430, contentHashSha256: 'a82f3d9', files: ['SKILL.md', 'references/accessibility.md'], executableScripts: [], invokedScripts: [],
       installations: [
-        { id: 'fd-codex-user', path: '~/.agents/skills/frontend-design', scope: 'user', agent: 'codex', enabled: true, modified: true, sourceHash: 'a82f3d9' },
-        { id: 'fd-codex-project', path: '/workspace/demo/.agents/skills/frontend-design', scope: 'project', agent: 'codex', projectPath: '/workspace/demo', enabled: true, modified: true, sourceHash: 'project-a82f' },
-        { id: 'fd-claude-project', path: '/workspace/demo/.claude/skills/frontend-design', scope: 'project', agent: 'claude', projectPath: '/workspace/demo', enabled: true, modified: true, sourceHash: 'project-a82f' }
+        { id: 'fd-codex-user', path: '~/.agents/skills/frontend-design', scope: 'user', agent: 'codex', enabled: true, modified: true, contentHashSha256: 'a82f3d9' },
+        { id: 'fd-codex-project', path: '/workspace/demo/.agents/skills/frontend-design', scope: 'project', agent: 'codex', projectPath: '/workspace/demo', enabled: true, modified: true, contentHashSha256: 'project-a82f' },
+        { id: 'fd-claude-project', path: '/workspace/demo/.claude/skills/frontend-design', scope: 'project', agent: 'claude', projectPath: '/workspace/demo', enabled: true, modified: true, contentHashSha256: 'project-a82f' }
       ]
     },
     {
-      id: 'security-review', name: 'security-review', description: 'Review changes for common application security risks.', version: '1.8.1', source: 'Community', contextTokens: 1680, sourceHash: 'bcf0123', files: ['SKILL.md', 'scripts/check.sh'], executableScripts: ['scripts/check.sh'],
-      installations: [{ id: 'sr-project', path: '/workspace/demo/.claude/skills/security-review', scope: 'project', agent: 'claude', projectPath: '/workspace/demo', enabled: true, modified: false, sourceHash: 'bcf0123' }]
+      id: 'security-review', name: 'security-review', description: 'Review changes for common application security risks.', version: '1.8.1', source: 'Community', provenance: { sourceRepository: 'community/example', contentHashSha256: 'bcf0123', installedAt: 'demo' }, capabilities: ['Read project files', 'Execute shell commands'], securityStatus: 'Review required', contextTokens: 1680, contentHashSha256: 'bcf0123', files: ['SKILL.md', 'scripts/check.sh'], executableScripts: ['scripts/check.sh'], invokedScripts: ['scripts/check.sh'],
+      installations: [{ id: 'sr-project', path: '/workspace/demo/.claude/skills/security-review', scope: 'project', agent: 'claude', projectPath: '/workspace/demo', enabled: true, modified: false, contentHashSha256: 'bcf0123' }]
     },
     {
-      id: 'release-helper', name: 'release-helper', description: 'Prepare reliable release notes and version checks.', version: '0.9.0', source: 'Community', contextTokens: 920, sourceHash: '4c3e1b8', files: ['SKILL.md'], executableScripts: [],
-      installations: [{ id: 'rh-codex', path: '~/.agents/skills/release-helper', scope: 'user', agent: 'codex', enabled: true, modified: false, sourceHash: '4c3e1b8' }]
+      id: 'release-helper', name: 'release-helper', description: 'Prepare reliable release notes and version checks.', version: '0.9.0', source: 'Community', provenance: { contentHashSha256: '4c3e1b8', installedAt: 'demo' }, capabilities: ['Read project files'], securityStatus: 'Unknown', contextTokens: 920, contentHashSha256: '4c3e1b8', files: ['SKILL.md'], executableScripts: [], invokedScripts: [],
+      installations: [{ id: 'rh-codex', path: '~/.agents/skills/release-helper', scope: 'user', agent: 'codex', enabled: true, modified: false, contentHashSha256: '4c3e1b8' }]
     },
     {
-      id: 'copywriting', name: 'copywriting', description: 'Write concise product copy and message variants.', version: '1.3.0', source: 'Alex Picks', contextTokens: 1180, sourceHash: '91efca7', files: ['SKILL.md'], executableScripts: [],
-      installations: [{ id: 'cw-claude', path: '~/.claude/skills/copywriting', scope: 'user', agent: 'claude', enabled: true, modified: false, sourceHash: '91efca7' }]
+      id: 'copywriting', name: 'copywriting', description: 'Write concise product copy and message variants.', version: '1.3.0', source: 'Alex Picks', provenance: { contentHashSha256: '91efca7', installedAt: 'demo' }, capabilities: ['Read project files'], securityStatus: 'Unknown', contextTokens: 1180, contentHashSha256: '91efca7', files: ['SKILL.md'], executableScripts: [], invokedScripts: [],
+      installations: [{ id: 'cw-claude', path: '~/.claude/skills/copywriting', scope: 'user', agent: 'claude', enabled: true, modified: false, contentHashSha256: '91efca7' }]
     }
   ],
   findings: [
