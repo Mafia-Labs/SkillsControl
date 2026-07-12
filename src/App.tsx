@@ -64,7 +64,7 @@ export default function App() {
     }
   }
 
-  const applyModal = async (target?: string) => {
+  const applyModal = async (target?: string, projectPath?: string) => {
     if (!modal) return
     try {
       if (modal.kind === 'disable') {
@@ -72,7 +72,7 @@ export default function App() {
         setRecentArchive(archive)
         setNotice('Skill disabled and retained in the local archive.')
       } else {
-        await installCatalogSkill(modal.skill.id, target ?? 'agents', projects[0])
+        await installCatalogSkill(modal.skill.id, target ?? 'agents', projectPath)
         setNotice(`${modal.skill.name} installed and validated.`)
       }
       setModal(null)
@@ -125,6 +125,6 @@ export default function App() {
       </div>}
     </section>
     {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} onDisable={requestDisable} />}
-    {modal && <ChangeModal modal={modal} projectPath={projects[0]} onCancel={() => setModal(null)} onApply={applyModal} />}
+    {modal && <ChangeModal modal={modal} projects={projects} onCancel={() => setModal(null)} onApply={applyModal} />}
   </main>
 }
