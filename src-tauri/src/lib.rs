@@ -9,10 +9,8 @@ use std::{
 };
 
 const MAX_PROJECT_SCAN_DEPTH: usize = 8;
-const AGENT_SKILL_PATHS: [(&str, &str); 2] = [
-    ("codex", ".agents/skills"),
-    ("claude", ".claude/skills"),
-];
+const AGENT_SKILL_PATHS: [(&str, &str); 2] =
+    [("codex", ".agents/skills"), ("claude", ".claude/skills")];
 const PROJECT_MARKERS: [&str; 10] = [
     ".git",
     "package.json",
@@ -150,7 +148,9 @@ fn agent_relative_path(agent: &str) -> Option<&'static str> {
 }
 
 fn has_project_marker(path: &Path) -> bool {
-    PROJECT_MARKERS.iter().any(|marker| path.join(marker).exists())
+    PROJECT_MARKERS
+        .iter()
+        .any(|marker| path.join(marker).exists())
 }
 
 fn has_skill_root(path: &Path) -> bool {
@@ -618,9 +618,12 @@ fn target_agents(target: &str) -> Result<Vec<&'static str>, String> {
 fn validate_skill_id(skill_id: &str) -> Result<(), String> {
     let valid = !skill_id.is_empty()
         && skill_id.len() <= 80
-        && skill_id
-            .chars()
-            .all(|character| character.is_ascii_lowercase() || character.is_ascii_digit() || character == '-' || character == '_');
+        && skill_id.chars().all(|character| {
+            character.is_ascii_lowercase()
+                || character.is_ascii_digit()
+                || character == '-'
+                || character == '_'
+        });
     if valid {
         Ok(())
     } else {
@@ -628,10 +631,7 @@ fn validate_skill_id(skill_id: &str) -> Result<(), String> {
     }
 }
 
-fn expected_skill_root(
-    installation: &Installation,
-    home: &Path,
-) -> Result<PathBuf, String> {
+fn expected_skill_root(installation: &Installation, home: &Path) -> Result<PathBuf, String> {
     skill_root(
         home,
         &installation.scope,
@@ -1178,17 +1178,24 @@ mod tests {
         let home = Path::new("/tmp/home");
         let project = temporary_directory("project-target");
         fs::create_dir_all(&project).expect("project folder should be created");
-        let target = skill_root(home, "project", "codex", Some(project.to_string_lossy().as_ref()))
-            .expect("project target should resolve");
-        assert_eq!(target, super::normalize_path(&project).join(".agents/skills"));
+        let target = skill_root(
+            home,
+            "project",
+            "codex",
+            Some(project.to_string_lossy().as_ref()),
+        )
+        .expect("project target should resolve");
+        assert_eq!(
+            target,
+            super::normalize_path(&project).join(".agents/skills")
+        );
         fs::remove_dir_all(project).expect("project folder should clean up");
     }
 
     #[test]
     fn builds_official_codex_user_target() {
         let home = Path::new("/tmp/home");
-        let target = skill_root(home, "user", "codex", None)
-            .expect("user target should resolve");
+        let target = skill_root(home, "user", "codex", None).expect("user target should resolve");
         assert_eq!(target, Path::new("/tmp/home/.agents/skills"));
     }
 
@@ -1207,16 +1214,17 @@ mod tests {
     fn hashes_resources_as_part_of_an_installation() {
         let skill = temporary_directory("hash");
         fs::create_dir_all(skill.join("references")).expect("resource folder should be created");
-        fs::write(skill.join("SKILL.md"), concat!("---", "\nname: hash\n---\n"))
-            .expect("skill definition should be created");
-        fs::write(skill.join("references/context.md"), "one")
-            .expect("resource should be created");
+        fs::write(
+            skill.join("SKILL.md"),
+            concat!("---", "\nname: hash\n---\n"),
+        )
+        .expect("skill definition should be created");
+        fs::write(skill.join("references/context.md"), "one").expect("resource should be created");
 
         let mut executable_scripts = Vec::new();
         let files = super::files_in(&skill, &skill, &mut executable_scripts);
         let first_hash = super::skill_hash(&skill, &files);
-        fs::write(skill.join("references/context.md"), "two")
-            .expect("resource should be updated");
+        fs::write(skill.join("references/context.md"), "two").expect("resource should be updated");
         let files = super::files_in(&skill, &skill, &mut executable_scripts);
         let second_hash = super::skill_hash(&skill, &files);
 
