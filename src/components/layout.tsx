@@ -1,3 +1,5 @@
+import type { ChangeEvent } from 'react'
+
 export type View = 'overview' | 'map' | 'discover' | 'health'
 
 const navigation: Array<{ id: View, label: string, icon: string }> = [
@@ -29,12 +31,12 @@ export function TopBar({ view, search, onSearch, onScan, onAddProject, projectCo
   isScanning: boolean
 }) {
   const title = navigation.find((item) => item.id === view)?.label ?? 'Skill Control'
-  const workspace = projectCount ? `Local workspace · ${projectCount} project${projectCount === 1 ? '' : 's'}` : 'Local workspace'
+  const workspace = projectCount ? `Local workspace · ${projectCount} scope${projectCount === 1 ? '' : 's'} detected` : 'Local workspace'
   return <header className="topbar">
     <div><p className="eyebrow">{workspace}</p><h1>{title}</h1></div>
     <div className="top-actions">
-      <label className="search"><span>⌕</span><input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search skills" aria-label="Search skills" /></label>
-      <button className="secondary-button project-button" onClick={onAddProject}>Add project</button>
+      <label className="search"><span>⌕</span><input value={search} onChange={(event: ChangeEvent<HTMLInputElement>) => onSearch(event.target.value)} placeholder="Search skills" aria-label="Search skills" /></label>
+      <button className="secondary-button project-button" onClick={onAddProject}>Add folder</button>
       <button className="secondary-button" onClick={onScan} disabled={isScanning}>{isScanning ? 'Scanning…' : 'Scan again'}</button>
     </div>
   </header>

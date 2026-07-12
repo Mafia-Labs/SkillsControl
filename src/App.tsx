@@ -7,16 +7,22 @@ import { Sidebar, TopBar, type View } from './components/layout'
 import { Overview } from './components/Overview'
 import { Empty, Banner, Loading } from './components/shared'
 import { SkillMap } from './components/SkillMap'
-import { chooseProject, disableSkill, installCatalogSkill, listArchives, previewDisable, restoreSkill, scanSkills } from './lib/desktop'
+import { chooseProject, copySkillToProject, disableSkill, installCatalogSkill, listArchives, previewDisable, restoreSkill, scanSkills } from './lib/desktop'
 import { getSkillHealth } from './lib/skill-utils'
-import type { ArchiveEntry, Installation, ScanReport } from './lib/types'
+import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanReport, Scope } from './lib/types'
 
-const loadProjects = (): string[] => {
+const loadWorkspaceRoots = (): string[] => {
   try {
     const value: unknown = JSON.parse(localStorage.getItem('skill-control-projects') ?? '[]')
     return Array.isArray(value) && value.every((item) => typeof item === 'string') ? value : []
   } catch { return [] }
 }
+
+const fallbackProject = (path: string): ProjectSummary => ({
+  path,
+  name: path.replace(/\\/g, '/').replace(/\/$/, '').split('/').slice(-1)[0] || path,
+  agents: []
+})
 
 export default function App() {
   const [view, setView] = useState<View>('overview')
@@ -27,7 +33,7 @@ export default function App() {
   const [modal, setModal] = useState<ModalState | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [projects, setProjects] = useState(loadProjects)
+  const [workspaceRoots, setWorkspaceRoots] = useState(loadWorkspaceRoots)
   const [archives, setArchives] = useState<ArchiveEntry[]>([])
   const [recentArchive, setRecentArchive] = useState<ArchiveEntry | null>(null)
 
@@ -36,11 +42,11 @@ export default function App() {
     setSelectedId((current) => current && next.skills.some((skill) => skill.id === current) ? current : next.skills[0]?.id ?? null)
   }
 
-  const refresh = async (projectPaths = projects) => {
+  const refresh = async (roots = workspaceRoots) => {
     setIsScanning(true)
     setError(null)
     try {
-      const [nextReport, nextArchives] = await Promise.all([scanSkills(projectPaths), listArchives()])
+      const [nextReport, nextArchives] = await Promise.all([scanSkills(roots), listArchives()])
       applyReport(nextReport)
       setArchives(nextArchives)
     } catch (reason) {
@@ -51,10 +57,11 @@ export default function App() {
   }
 
   useEffect(() => { void refresh() }, [])
-  useEffect(() => { localStorage.setItem('skill-control-projects', JSON.stringify(projects)) }, [projects])
+  useEffect(() => { localStorage.setItem('skill-control-projects', JSON.stringify(workspaceRoots)) }, [workspaceRoots])
 
   const filteredSkills = useMemo(() => (report?.skills ?? []).filter((skill) => `${skill.name} ${skill.description}`.toLowerCase().includes(search.toLowerCase())), [report, search])
   const selected = report?.skills.find((skill) => skill.id === selectedId) ?? null
+  const projects = report?.projects.length ? report.projects : workspaceRoots.map(fallbackProject)
 
   const requestDisable = async (installation: Installation) => {
     try {
@@ -64,16 +71,30 @@ export default function App() {
     }
   }
 
-  const applyModal = async (target?: string, projectPath?: string) => {
+  const requestLocalize = (installation: Installation) => {
+    if (!selected) return
+    if (!projects.length) {
+      setError('Add a project or workspace folder before creating a local copy.')
+      return
+    }
+    setModal({ kind: 'localize', skill: selected, source: installation })
+  }
+
+  const applyModal = async (scope: Scope = 'user', target: InstallTarget = 'all', projectPath?: string) => {
     if (!modal) return
     try {
       if (modal.kind === 'disable') {
         const archive = await disableSkill(modal.installation)
         setRecentArchive(archive)
         setNotice('Skill disabled and retained in the local archive.')
+      } else if (modal.kind === 'localize') {
+        const destination = await copySkillToProject(modal.source, projectPath ?? '')
+        setNotice(`${modal.skill.name} copied to ${destination}. Verify it, then disable the global copy if it is no longer needed.`)
       } else {
-        await installCatalogSkill(modal.skill.id, target ?? 'agents', projectPath)
-        setNotice(`${modal.skill.name} installed and validated.`)
+        const installedPaths = await installCatalogSkill(modal.skill.id, scope, target, projectPath)
+        const location = scope === 'project' ? projects.find((project) => project.path === projectPath)?.name ?? 'project' : 'global scope'
+        const coverage = target === 'all' ? 'all compatible agents' : target
+        setNotice(`${modal.skill.name} installed for ${coverage} in ${location}${installedPaths.length > 1 ? ` (${installedPaths.length} copies)` : ''}.`)
       }
       setModal(null)
       await refresh()
@@ -82,20 +103,20 @@ export default function App() {
     }
   }
 
-  const addProject = async () => {
+  const addWorkspaceRoot = async () => {
     try {
       const project = await chooseProject()
       if (!project) return
-      if (projects.includes(project)) {
-        setNotice('That project is already part of this workspace.')
+      if (workspaceRoots.includes(project)) {
+        setNotice('That folder is already part of this workspace.')
         return
       }
-      const nextProjects = [...projects, project]
-      setProjects(nextProjects)
-      await refresh(nextProjects)
-      setNotice(`Added ${project.split('/').slice(-1)[0]} to this workspace.`)
+      const nextRoots = [...workspaceRoots, project]
+      setWorkspaceRoots(nextRoots)
+      await refresh(nextRoots)
+      setNotice(`Added ${project.replace(/\\/g, '/').split('/').slice(-1)[0]} and scanned nested project scopes.`)
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Could not add the selected project.')
+      setError(reason instanceof Error ? reason.message : 'Could not add the selected folder.')
     }
   }
 
@@ -113,7 +134,7 @@ export default function App() {
   return <main className="app-shell">
     <Sidebar view={view} onChange={setView} />
     <section className="workspace">
-      <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} onAddProject={() => void addProject()} projectCount={projects.length} isScanning={isScanning} />
+      <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} onAddProject={() => void addWorkspaceRoot()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
       {error && <Banner tone="error" message={error} onDismiss={() => setError(null)} />}
       {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: 'Undo', onClick: () => void restoreArchive(recentArchive) } : undefined} onDismiss={() => setNotice(null)} />}
       {isScanning && !report ? <Loading /> : <div className="page-content">
@@ -124,7 +145,7 @@ export default function App() {
         {!report && <Empty icon="!" title="No report available" detail="Run another scan to inspect your local skills." />}
       </div>}
     </section>
-    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} onDisable={requestDisable} />}
+    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={requestLocalize} onDisable={requestDisable} />}
     {modal && <ChangeModal modal={modal} projects={projects} onCancel={() => setModal(null)} onApply={applyModal} />}
   </main>
 }
