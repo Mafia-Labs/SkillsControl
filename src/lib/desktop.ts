@@ -1,5 +1,5 @@
 import { demoReport } from './demo-data'
-import type { ChangePreview, Installation, ScanReport } from './types'
+import type { ArchiveEntry, ChangePreview, Installation, ScanReport } from './types'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
 
@@ -8,9 +8,9 @@ const invoke = async <T>(command: string, args?: Record<string, unknown>): Promi
   return tauriInvoke<T>(command, args)
 }
 
-export const scanSkills = async (): Promise<ScanReport> => {
+export const scanSkills = async (projects: string[]): Promise<ScanReport> => {
   if (!isTauri()) return demoReport
-  return invoke<ScanReport>('scan_skills', { projects: [] })
+  return invoke<ScanReport>('scan_skills', { projects })
 }
 
 export const previewDisable = async (installation: Installation): Promise<ChangePreview> => {
@@ -22,12 +22,24 @@ export const previewDisable = async (installation: Installation): Promise<Change
   return invoke<ChangePreview>('preview_disable', { installation })
 }
 
-export const disableSkill = async (installation: Installation): Promise<void> => {
-  if (!isTauri()) return
-  return invoke<void>('disable_skill', { installation })
+export const disableSkill = async (installation: Installation): Promise<ArchiveEntry> => {
+  if (!isTauri()) return { id: 'demo-archive', skillName: installation.path.split('/').slice(-1)[0] ?? 'skill', sourcePath: installation.path, archivePath: '~/.skill-control/disabled/demo', createdAt: new Date().toISOString() }
+  return invoke<ArchiveEntry>('disable_skill', { installation })
 }
 
-export const installCatalogSkill = async (skillId: string, target: string): Promise<void> => {
+export const restoreSkill = async (archive: ArchiveEntry): Promise<void> => {
   if (!isTauri()) return
-  return invoke<void>('install_catalog_skill', { skillId, target })
+  return invoke<void>('restore_skill', { archive })
+}
+
+export const installCatalogSkill = async (skillId: string, target: string, projectPath?: string): Promise<void> => {
+  if (!isTauri()) return
+  return invoke<void>('install_catalog_skill', { skillId, target, projectPath })
+}
+
+export const chooseProject = async (): Promise<string | null> => {
+  if (!isTauri()) return null
+  const { open } = await import('@tauri-apps/plugin-dialog')
+  const selection = await open({ directory: true, multiple: false, title: 'Add a project to scan' })
+  return typeof selection === 'string' ? selection : null
 }

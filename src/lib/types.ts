@@ -46,6 +46,14 @@ export type ChangePreview = {
   warnings: string[]
 }
 
+export type ArchiveEntry = {
+  id: string
+  skillName: string
+  sourcePath: string
+  archivePath: string
+  createdAt: string
+}
+
 export type CatalogSkill = {
   id: string
   name: string

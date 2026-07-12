@@ -1,3 +1,4 @@
+use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{hash_map::DefaultHasher, HashMap},
@@ -59,6 +60,16 @@ struct ChangePreview {
     title: String,
     changes: Vec<String>,
     warnings: Vec<String>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ArchiveEntry {
+    id: String,
+    skill_name: String,
+    source_path: String,
+    archive_path: String,
+    created_at: String,
 }
 
 #[derive(Clone)]
@@ -169,6 +180,33 @@ fn unix_seconds() -> String {
     SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs().to_string()
 }
 
+fn unix_millis() -> String {
+    SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_millis().to_string()
+}
+
+fn archive_database_path() -> Result<PathBuf, String> {
+    Ok(dirs::home_dir().ok_or("Could not determine your home folder")?.join(".skill-control").join("state.db"))
+}
+
+fn open_archive_database(path: &Path) -> Result<Connection, String> {
+    if let Some(parent) = path.parent() { fs::create_dir_all(parent).map_err(|error| error.to_string())?; }
+    let connection = Connection::open(path).map_err(|error| error.to_string())?;
+    connection.execute_batch("CREATE TABLE IF NOT EXISTS archives (id TEXT PRIMARY KEY, skill_name TEXT NOT NULL, source_path TEXT NOT NULL, archive_path TEXT NOT NULL, created_at TEXT NOT NULL);").map_err(|error| error.to_string())?;
+    Ok(connection)
+}
+
+fn record_archive(entry: &ArchiveEntry) -> Result<(), String> {
+    let database = open_archive_database(&archive_database_path()?)?;
+    database.execute("INSERT INTO archives (id, skill_name, source_path, archive_path, created_at) VALUES (?1, ?2, ?3, ?4, ?5)", params![entry.id, entry.skill_name, entry.source_path, entry.archive_path, entry.created_at]).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+fn remove_archive_record(id: &str) -> Result<(), String> {
+    let database = open_archive_database(&archive_database_path()?)?;
+    database.execute("DELETE FROM archives WHERE id = ?1", params![id]).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
 #[tauri::command]
 fn scan_skills(projects: Vec<String>) -> ScanReport {
     let mut combined: HashMap<String, Skill> = HashMap::new();
@@ -199,20 +237,43 @@ fn preview_disable(installation: Installation) -> ChangePreview {
 }
 
 #[tauri::command]
-fn disable_skill(installation: Installation) -> Result<(), String> {
+fn disable_skill(installation: Installation) -> Result<ArchiveEntry, String> {
     let source = PathBuf::from(&installation.path);
     if !source.exists() { return Err("The skill no longer exists at this path. Scan again before applying this change.".into()); }
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
-    let archive = home.join(".skill-control").join("disabled").join(format!("{}-{}", source.file_name().and_then(|name| name.to_str()).unwrap_or("skill"), unix_seconds()));
+    let skill_name = source.file_name().and_then(|name| name.to_str()).unwrap_or("skill").to_string();
+    let id = format!("{}-{}", skill_name, unix_millis());
+    let archive = home.join(".skill-control").join("disabled").join(&id);
     fs::create_dir_all(archive.parent().ok_or("Could not create the archive folder")?).map_err(|error| error.to_string())?;
-    fs::rename(&source, &archive).map_err(|error| format!("Could not archive skill: {error}"))
+    fs::rename(&source, &archive).map_err(|error| format!("Could not archive skill: {error}"))?;
+    let entry = ArchiveEntry { id, skill_name, source_path: source.to_string_lossy().to_string(), archive_path: archive.to_string_lossy().to_string(), created_at: unix_seconds() };
+    if let Err(error) = record_archive(&entry) {
+        let _ = fs::rename(&archive, &source);
+        return Err(format!("Could not record the archive: {error}"));
+    }
+    Ok(entry)
 }
 
 #[tauri::command]
-fn install_catalog_skill(skill_id: String, target: String) -> Result<(), String> {
+fn restore_skill(archive: ArchiveEntry) -> Result<(), String> {
+    let source = PathBuf::from(&archive.source_path);
+    let archived = PathBuf::from(&archive.archive_path);
+    if source.exists() { return Err("A skill already exists at the original location. Move it before restoring this archive.".into()); }
+    if !archived.exists() { return Err("The archived copy no longer exists. It cannot be restored.".into()); }
+    fs::create_dir_all(source.parent().ok_or("Could not determine the original skill folder")?).map_err(|error| error.to_string())?;
+    fs::rename(&archived, &source).map_err(|error| format!("Could not restore skill: {error}"))?;
+    if let Err(error) = remove_archive_record(&archive.id) {
+        let _ = fs::rename(&source, &archived);
+        return Err(format!("Could not update archive history: {error}"));
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn install_catalog_skill(skill_id: String, target: String, project_path: Option<String>) -> Result<(), String> {
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
     let target_root = match target.as_str() {
-        "project" => std::env::current_dir().map_err(|error| error.to_string())?.join(".agents/skills"),
+        "project" => PathBuf::from(project_path.ok_or("Choose a project before installing to project scope.")?).join(".agents/skills"),
         "codex" => home.join(".codex/skills"),
         "claude" => home.join(".claude/skills"),
         _ => home.join(".agents/skills"),
@@ -232,14 +293,16 @@ fn install_catalog_skill(skill_id: String, target: String) -> Result<(), String>
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![scan_skills, preview_disable, disable_skill, install_catalog_skill])
+        .plugin(tauri_plugin_dialog::init())
+        .invoke_handler(tauri::generate_handler![scan_skills, preview_disable, disable_skill, restore_skill, install_catalog_skill])
         .run(tauri::generate_context!())
         .expect("error while running Skill Control")
 }
 
 #[cfg(test)]
 mod tests {
-    use super::frontmatter;
+    use super::{frontmatter, open_archive_database};
+    use std::{env, fs};
 
     #[test]
     fn parses_quoted_frontmatter_values() {
@@ -253,5 +316,15 @@ mod tests {
     fn rejects_unterminated_frontmatter() {
         let (_, complete) = frontmatter("---\nname: sample\nBody");
         assert!(!complete);
+    }
+
+    #[test]
+    fn initializes_an_archive_database() {
+        let path = env::temp_dir().join(format!("skill-control-{}.db", super::unix_millis()));
+        let database = open_archive_database(&path).expect("database should initialize");
+        let table_exists: i32 = database.query_row("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='archives'", [], |row| row.get(0)).expect("archives table should exist");
+        assert_eq!(table_exists, 1);
+        drop(database);
+        fs::remove_file(path).expect("temporary database should clean up");
     }
 }

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { catalog } from './lib/demo-data'
-import { disableSkill, installCatalogSkill, previewDisable, scanSkills } from './lib/desktop'
+import { chooseProject, disableSkill, installCatalogSkill, previewDisable, restoreSkill, scanSkills } from './lib/desktop'
 import { agentLabels, countDuplicates, countUniqueProjects, formatTokenCount, getSkillHealth, healthLabel, severityOrder } from './lib/skill-utils'
-import type { Agent, CatalogSkill, ChangePreview, Finding, Installation, ScanReport, Skill } from './lib/types'
+import type { Agent, ArchiveEntry, CatalogSkill, ChangePreview, Finding, Installation, ScanReport, Skill } from './lib/types'
 
 type View = 'overview' | 'map' | 'discover' | 'health'
 type ModalState = { kind: 'disable', installation: Installation, preview: ChangePreview } | { kind: 'install', skill: CatalogSkill } | null
@@ -23,19 +23,25 @@ export default function App() {
   const [modal, setModal] = useState<ModalState>(null)
   const [notice, setNotice] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [projects, setProjects] = useState<string[]>(() => JSON.parse(localStorage.getItem('skill-control-projects') ?? '[]') as string[])
+  const [recentArchive, setRecentArchive] = useState<ArchiveEntry | null>(null)
 
-  const refresh = async () => {
+  const applyReport = (next: ScanReport) => {
+    setReport(next)
+    setSelectedId((current) => current && next.skills.some((skill) => skill.id === current) ? current : next.skills[0]?.id ?? null)
+  }
+
+  const refresh = async (projectPaths = projects) => {
     setIsScanning(true); setError(null)
     try {
-      const next = await scanSkills()
-      setReport(next)
-      setSelectedId((current) => current && next.skills.some((skill) => skill.id === current) ? current : next.skills[0]?.id ?? null)
+      applyReport(await scanSkills(projectPaths))
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'The scan could not complete.')
     } finally { setIsScanning(false) }
   }
 
   useEffect(() => { void refresh() }, [])
+  useEffect(() => { localStorage.setItem('skill-control-projects', JSON.stringify(projects)) }, [projects])
 
   const filteredSkills = useMemo(() => (report?.skills ?? []).filter((skill) => `${skill.name} ${skill.description}`.toLowerCase().includes(search.toLowerCase())), [report, search])
   const selected = report?.skills.find((skill) => skill.id === selectedId) ?? null
@@ -48,27 +54,47 @@ export default function App() {
   const applyModal = async (target?: string) => {
     if (!modal) return
     try {
-      if (modal.kind === 'disable') { await disableSkill(modal.installation); setNotice('Skill disabled and retained in the local archive.') }
-      else { await installCatalogSkill(modal.skill.id, target ?? 'agents'); setNotice(`${modal.skill.name} installed and validated.`) }
+      if (modal.kind === 'disable') { setRecentArchive(await disableSkill(modal.installation)); setNotice('Skill disabled and retained in the local archive.') }
+      else { await installCatalogSkill(modal.skill.id, target ?? 'agents', projects[0]); setNotice(`${modal.skill.name} installed and validated.`) }
       setModal(null); await refresh()
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'The change could not be applied.') }
+  }
+
+  const addProject = async () => {
+    try {
+      const project = await chooseProject()
+      if (!project) return
+      if (projects.includes(project)) { setNotice('That project is already part of this workspace.'); return }
+      const next = [...projects, project]
+      setProjects(next)
+      setIsScanning(true); setError(null)
+      applyReport(await scanSkills(next))
+      setNotice(`Added ${project.split('/').slice(-1)[0]} to this workspace.`)
+    } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not add the selected project.') }
+    finally { setIsScanning(false) }
+  }
+
+  const undoDisable = async () => {
+    if (!recentArchive) return
+    try { await restoreSkill(recentArchive); setRecentArchive(null); setNotice('Skill restored to its original location.'); await refresh() }
+    catch (reason) { setError(reason instanceof Error ? reason.message : 'The skill could not be restored.') }
   }
 
   return <main className="app-shell">
     <Sidebar view={view} onChange={setView} />
     <section className="workspace">
-      <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} isScanning={isScanning} />
+      <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} onAddProject={() => void addProject()} projectCount={projects.length} isScanning={isScanning} />
       {error && <Banner tone="error" message={error} onDismiss={() => setError(null)} />}
-      {notice && <Banner tone="success" message={notice} onDismiss={() => setNotice(null)} />}
+      {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: 'Undo', onClick: () => void undoDisable() } : undefined} onDismiss={() => setNotice(null)} />}
       {isScanning && !report ? <Loading /> : <div className="page-content">
         {view === 'overview' && report && <Overview report={report} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} />}
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} selectedId={selectedId} onSelect={setSelectedId} />}
-        {view === 'discover' && <Discover onInstall={(skill) => setModal({ kind: 'install', skill })} />}
-        {view === 'health' && report && <Health report={report} onSelect={(id) => { setSelectedId(id); setView('map') }} />}
+        {view === 'discover' && <Discover query={search} onInstall={(skill) => setModal({ kind: 'install', skill })} />}
+        {view === 'health' && report && <Health query={search} report={report} onSelect={(id) => { setSelectedId(id); setView('map') }} />}
       </div>}
     </section>
     {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} onDisable={requestDisable} />}
-    {modal && <ChangeModal modal={modal} onCancel={() => setModal(null)} onApply={applyModal} />}
+    {modal && <ChangeModal modal={modal} projectPath={projects[0]} onCancel={() => setModal(null)} onApply={applyModal} />}
   </main>
 }
 
@@ -80,9 +106,9 @@ function Sidebar({ view, onChange }: { view: View, onChange: (view: View) => voi
   </aside>
 }
 
-function TopBar({ view, search, onSearch, onScan, isScanning }: { view: View, search: string, onSearch: (value: string) => void, onScan: () => void, isScanning: boolean }) {
+function TopBar({ view, search, onSearch, onScan, onAddProject, projectCount, isScanning }: { view: View, search: string, onSearch: (value: string) => void, onScan: () => void, onAddProject: () => void, projectCount: number, isScanning: boolean }) {
   const title = nav.find((item) => item.id === view)?.label ?? 'Skill Control'
-  return <header className="topbar"><div><p className="eyebrow">Local workspace</p><h1>{title}</h1></div><div className="top-actions"><label className="search"><span>⌕</span><input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search skills" aria-label="Search skills" /></label><button className="secondary-button" onClick={onScan} disabled={isScanning}>{isScanning ? 'Scanning…' : 'Scan again'}</button></div></header>
+  return <header className="topbar"><div><p className="eyebrow">Local workspace{projectCount ? ` · ${projectCount} project${projectCount === 1 ? '' : 's'}` : ''}</p><h1>{title}</h1></div><div className="top-actions"><label className="search"><span>⌕</span><input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search skills" aria-label="Search skills" /></label><button className="secondary-button project-button" onClick={onAddProject}>Add project</button><button className="secondary-button" onClick={onScan} disabled={isScanning}>{isScanning ? 'Scanning…' : 'Scan again'}</button></div></header>
 }
 
 function Overview({ report, onViewHealth, onViewMap }: { report: ScanReport, onViewHealth: () => void, onViewMap: () => void }) {
@@ -112,11 +138,11 @@ function Inspector({ skill, findings, onDisable }: { skill: Skill, findings: Fin
 
 function InspectorSection({ title, children }: { title: string, children: ReactNode }) { return <section className="inspector-section"><h3>{title}</h3>{children}</section> }
 
-function Discover({ onInstall }: { onInstall: (skill: CatalogSkill) => void }) { return <section className="discover"><div className="discover-heading"><p className="eyebrow">Curated library</p><h2>Small, reviewed skill packs.</h2><p>Every entry has a known source, an explicit purpose, and a limited context footprint. No open marketplace noise.</p></div><div className="catalog-grid">{catalog.map((skill) => <article className="catalog-card" key={skill.id}><div className="catalog-meta"><span>{skill.category}</span><span className="reviewed">✓ {skill.risk}</span></div><h3>{skill.name}</h3><p>{skill.description}</p><div className="catalog-footer"><span>{formatTokenCount(skill.contextTokens)} tokens</span><button className="primary-button compact" onClick={() => onInstall(skill)}>Install <span>→</span></button></div></article>)}</div><aside className="curation-note"><span>✦</span><div><strong>How the library stays trustworthy</strong><p>Each skill is reviewed for structure, scope, scripts and documented compatibility before it appears here.</p></div></aside></section> }
+function Discover({ query, onInstall }: { query: string, onInstall: (skill: CatalogSkill) => void }) { const skills = catalog.filter((skill) => `${skill.name} ${skill.description} ${skill.category}`.toLowerCase().includes(query.toLowerCase())); return <section className="discover"><div className="discover-heading"><p className="eyebrow">Curated library</p><h2>Small, reviewed skill packs.</h2><p>Every entry has a known source, an explicit purpose, and a limited context footprint. No open marketplace noise.</p></div><div className="catalog-grid">{skills.length ? skills.map((skill) => <article className="catalog-card" key={skill.id}><div className="catalog-meta"><span>{skill.category}</span><span className="reviewed">✓ {skill.risk}</span></div><h3>{skill.name}</h3><p>{skill.description}</p><div className="catalog-footer"><span>{formatTokenCount(skill.contextTokens)} tokens</span><button className="primary-button compact" onClick={() => onInstall(skill)}>Install <span>→</span></button></div></article>) : <Empty icon="⌕" title="No curated skills match" detail="Try a different term or clear the search." />}</div><aside className="curation-note"><span>✦</span><div><strong>How the library stays trustworthy</strong><p>Each skill is reviewed for structure, scope, scripts and documented compatibility before it appears here.</p></div></aside></section> }
 
-function Health({ report, onSelect }: { report: ScanReport, onSelect: (id: string) => void }) { const findings = [...report.findings].sort((a, b) => severityOrder(a.severity) - severityOrder(b.severity)); return <section className="health-page"><div className="health-heading"><div><p className="eyebrow">Health check</p><h2>Fix what can affect your agents.</h2><p>These checks are structural and local. They never execute a skill or upload its contents.</p></div><span className="check-status">✓ Scan complete</span></div><div className="health-summary"><span><i className="severity error" />{findings.filter((finding) => finding.severity === 'error').length} urgent</span><span><i className="severity warning" />{findings.filter((finding) => finding.severity === 'warning').length} review</span><span><i className="severity info" />{findings.filter((finding) => finding.severity === 'info').length} informational</span></div><div className="findings-table">{findings.length ? findings.map((finding) => <button key={finding.id} className="finding-row" onClick={() => onSelect(finding.skillId)}><span className={`severity ${finding.severity}`} /><div><strong>{finding.title}</strong><small>{finding.detail}</small></div><code>{report.skills.find((skill) => skill.id === finding.skillId)?.name ?? finding.skillId}</code><b>→</b></button>) : <Empty icon="✓" title="No health findings" detail="The scanned skills meet the current structural checks." />}</div></section> }
+function Health({ query, report, onSelect }: { query: string, report: ScanReport, onSelect: (id: string) => void }) { const findings = [...report.findings].filter((finding) => `${finding.title} ${finding.detail} ${report.skills.find((skill) => skill.id === finding.skillId)?.name ?? ''}`.toLowerCase().includes(query.toLowerCase())).sort((a, b) => severityOrder(a.severity) - severityOrder(b.severity)); return <section className="health-page"><div className="health-heading"><div><p className="eyebrow">Health check</p><h2>Fix what can affect your agents.</h2><p>These checks are structural and local. They never execute a skill or upload its contents.</p></div><span className="check-status">✓ Scan complete</span></div><div className="health-summary"><span><i className="severity error" />{findings.filter((finding) => finding.severity === 'error').length} urgent</span><span><i className="severity warning" />{findings.filter((finding) => finding.severity === 'warning').length} review</span><span><i className="severity info" />{findings.filter((finding) => finding.severity === 'info').length} informational</span></div><div className="findings-table">{findings.length ? findings.map((finding) => <button key={finding.id} className="finding-row" onClick={() => onSelect(finding.skillId)}><span className={`severity ${finding.severity}`} /><div><strong>{finding.title}</strong><small>{finding.detail}</small></div><code>{report.skills.find((skill) => skill.id === finding.skillId)?.name ?? finding.skillId}</code><b>→</b></button>) : <Empty icon="✓" title="No health findings" detail="The scanned skills meet the current structural checks." />}</div></section> }
 
-function ChangeModal({ modal, onCancel, onApply }: { modal: Exclude<ModalState, null>, onCancel: () => void, onApply: (target?: string) => void }) { const [target, setTarget] = useState('agents'); const install = modal.kind === 'install'; return <div className="modal-backdrop" role="presentation"><section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title"><div className="modal-icon">{install ? '↓' : '⊘'}</div><p className="eyebrow">Review change</p><h2 id="change-title">{install ? `Install ${modal.skill.name}` : modal.preview.title}</h2>{install ? <><p>Choose the scope where this curated skill should be available.</p><label className="select-label">Install location<select value={target} onChange={(event) => setTarget(event.target.value)}><option value="agents">Global · Agent Skills</option><option value="codex">Global · Codex</option><option value="claude">Global · Claude</option><option value="project">Current project · .agents/skills</option></select></label><div className="change-list"><strong>Skill Control will</strong><span>• Create a new folder and validated <code>SKILL.md</code></span><span>• Never overwrite an existing installation</span></div></> : <><div className="change-list"><strong>Changes</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div><div className="warning-box"><strong>Heads up</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div></>}<div className="modal-actions"><button className="secondary-button" onClick={onCancel}>Cancel</button><button className={install ? 'primary-button' : 'danger-button'} onClick={() => void onApply(target)}>{install ? 'Install skill' : 'Disable skill'}</button></div></section></div> }
-function Banner({ tone, message, onDismiss }: { tone: 'error' | 'success', message: string, onDismiss: () => void }) { return <div className={`banner ${tone}`} role="status"><span>{tone === 'success' ? '✓' : '!'}</span>{message}<button onClick={onDismiss} aria-label="Dismiss message">×</button></div> }
+function ChangeModal({ modal, projectPath, onCancel, onApply }: { modal: Exclude<ModalState, null>, projectPath?: string, onCancel: () => void, onApply: (target?: string) => void }) { const [target, setTarget] = useState('agents'); const install = modal.kind === 'install'; const projectLabel = projectPath?.split('/').slice(-1)[0]; return <div className="modal-backdrop" role="presentation"><section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title"><div className="modal-icon">{install ? '↓' : '⊘'}</div><p className="eyebrow">Review change</p><h2 id="change-title">{install ? `Install ${modal.skill.name}` : modal.preview.title}</h2>{install ? <><p>Choose the scope where this curated skill should be available.</p><label className="select-label">Install location<select value={target} onChange={(event) => setTarget(event.target.value)}><option value="agents">Global · Agent Skills</option><option value="codex">Global · Codex</option><option value="claude">Global · Claude</option>{projectPath && <option value="project">Project · {projectLabel} · .agents/skills</option>}</select></label><div className="change-list"><strong>Skill Control will</strong><span>• Create a new folder and validated <code>SKILL.md</code></span><span>• Never overwrite an existing installation</span></div></> : <><div className="change-list"><strong>Changes</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div><div className="warning-box"><strong>Heads up</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div></>}<div className="modal-actions"><button className="secondary-button" onClick={onCancel}>Cancel</button><button className={install ? 'primary-button' : 'danger-button'} onClick={() => void onApply(target)}>{install ? 'Install skill' : 'Disable skill'}</button></div></section></div> }
+function Banner({ tone, message, action, onDismiss }: { tone: 'error' | 'success', message: string, action?: { label: string, onClick: () => void }, onDismiss: () => void }) { return <div className={`banner ${tone}`} role="status"><span>{tone === 'success' ? '✓' : '!'}</span>{message}{action && <button className="banner-action" onClick={action.onClick}>{action.label}</button>}<button onClick={onDismiss} aria-label="Dismiss message">×</button></div> }
 function Empty({ icon, title, detail }: { icon: string, title: string, detail: string }) { return <div className="empty"><span>{icon}</span><strong>{title}</strong><p>{detail}</p></div> }
 function Loading() { return <div className="loading"><span className="loader" />Reading local skill folders…</div> }
