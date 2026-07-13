@@ -1,15 +1,16 @@
 import { useState } from 'react'
 import { agentLabels, formatTokenCount, projectName, securityStatusClass } from '../lib/skill-utils'
-import type { Finding, Installation, Skill } from '../lib/types'
+import type { ExternalReputation, Finding, Installation, Skill } from '../lib/types'
 import { InspectorSection } from './shared'
 
-export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable, onTrust }: {
+export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable, onTrust, onCheckReputation }: {
   skill: Skill
   findings: Finding[]
   canLocalize: boolean
   onLocalize: (installation: Installation) => void
   onDisable: (installation: Installation) => void
   onTrust: (installation: Installation) => void
+  onCheckReputation: () => void
 }) {
   const [showFiles, setShowFiles] = useState(false)
   const [showChanges, setShowChanges] = useState(false)
@@ -35,7 +36,7 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
       <div className="capability-heading"><strong>Capabilities</strong><small>Declared from local content</small></div>
       <ul className="capability-list">{skill.capabilities.map((capability) => <li key={capability}><span className={capability === 'Access credentials' || capability === 'Write outside project' ? 'capability-warning' : 'capability-ok'}>{capability === 'Access credentials' || capability === 'Write outside project' ? '⚠' : '✓'}</span>{capability}</li>)}</ul>
       {!skill.capabilities.includes('Access credentials') && <p className="capability-note">✓ No credential access declared</p>}
-      <div className="external-audit-note"><strong>External audits</strong><span>Not checked · optional online reputation is not configured.</span></div>
+      <ExternalReputationPanel reputation={skill.externalReputation} canCheck={Boolean(skill.provenance.sourceRepository)} onCheck={onCheckReputation} />
       <div className="security-actions">
         <button className="secondary-button compact" onClick={() => setShowFiles((current) => !current)}>{showFiles ? 'Hide files' : 'Review files'}</button>
         {hashes.length > 1 && <button className="secondary-button compact" onClick={() => setShowChanges((current) => !current)}>{showChanges ? 'Hide changes' : 'View changes'}</button>}
@@ -50,4 +51,17 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
     {showFiles && <InspectorSection title="Files"><ul className="file-list">{skill.files.map((file) => <li key={file}><span>⌁</span>{file}{skill.executableScripts.includes(file) && <b>executable</b>}{skill.invokedScripts.includes(file) && <b>invoked</b>}</li>)}</ul></InspectorSection>}
     <InspectorSection title="Local findings">{findings.length ? <ul className="finding-list">{findings.map((finding) => <li key={finding.id}><span className={`severity ${finding.severity}`} /><div><strong>{finding.title}</strong><small>{finding.detail}</small></div></li>)}</ul> : <p className="healthy-copy">✓ No local findings for this exact copy.</p>}</InspectorSection>
   </aside>
+}
+
+function ExternalReputationPanel({ reputation, canCheck, onCheck }: { reputation?: ExternalReputation, canCheck: boolean, onCheck: () => void }) {
+  return <div className="external-audit-note">
+    <strong>External reputation</strong>
+    {!reputation ? <span>Not checked · only the source identifier and local SHA-256 are sent.</span> : <>
+      <span className={`reputation-verdict reputation-${reputation.verdict.toLowerCase().replace(/\s+/g, '-')}`}>{reputation.verdict}</span>
+      <span>{reputation.hashMatches ? 'Audit hash matches this installed copy.' : reputation.auditedHash ? 'Audit found another content hash; this copy is not covered.' : 'No audited content hash was returned.'}</span>
+      {reputation.audits.length > 0 && <div className="external-audit-list">{reputation.audits.map((audit) => <div className="external-audit-row" key={audit.provider}><span>{audit.provider}</span><b className={`audit-${audit.status.toLowerCase()}`}>{audit.status}{audit.riskLevel ? ` · ${audit.riskLevel}` : ''}</b></div>)}</div>}
+      <code className="reputation-url">{reputation.skillUrl} · checked {reputation.checkedAt}</code>
+    </>}
+    <button className="secondary-button compact" disabled={!canCheck} title={canCheck ? 'Compare this exact local SHA-256 with skills.sh audits' : 'Add source repository provenance before checking online'} onClick={onCheck}>Check online reputation</button>
+  </div>
 }

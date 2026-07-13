@@ -38,6 +38,28 @@ export type Finding = {
   detail: string
 }
 
+export type ExternalAudit = {
+  provider: string
+  status: string
+  summary?: string
+  auditedAt?: string
+  riskLevel?: string
+}
+
+export type ExternalReputation = {
+  source: string
+  skillName: string
+  skillUrl: string
+  localHash: string
+  auditedHash?: string
+  hashMatches: boolean
+  installs?: number
+  stars?: number
+  audits: ExternalAudit[]
+  verdict: string
+  checkedAt: string
+}
+
 export type Skill = {
   id: string
   name: string
@@ -45,6 +67,7 @@ export type Skill = {
   version?: string
   source?: string
   provenance: SkillProvenance
+  externalReputation?: ExternalReputation
   installations: Installation[]
   files: string[]
   executableScripts: string[]

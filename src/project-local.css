@@ -54,6 +54,17 @@
 .capability-note { margin: 11px 0 0; color: #83cda7; font-size: 11px; }
 .external-audit-note { display: grid; gap: 3px; margin-top: 15px; padding: 10px; border: 1px solid #282d36; border-radius: 6px; color: #aeb4be; background: #15171c; font-size: 11px; }
 .external-audit-note span { color: #7d8592; font-size: 10px; }
+.external-audit-note button { justify-self: start; margin-top: 7px; }
+.reputation-verdict { font-weight: 700; }
+.reputation-favorable, .reputation-favorable-with-precautions { color: #8ed4af !important; }
+.reputation-review-recommended, .reputation-version-not-covered { color: #e7c377 !important; }
+.reputation-high-risk { color: #ff9aa2 !important; }
+.external-audit-list { display: grid; gap: 4px; margin-top: 5px; }
+.external-audit-row { display: flex; justify-content: space-between; gap: 8px; }
+.external-audit-row span { color: #aeb4be; }
+.external-audit-row b { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+.audit-pass { color: #8ed4af; }.audit-warn { color: #e7c377; }.audit-fail { color: #ff9aa2; }.audit-unknown { color: #aeb4be; }
+.reputation-url { overflow: hidden; color: #7d8592; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .security-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 17px; }
 .security-actions button:disabled { cursor: not-allowed; opacity: .5; }
 .change-hash-list { display: grid; gap: 6px; margin-top: 13px; padding: 10px; border-left: 2px solid #e0a855; color: #aeb4be; background: #211d16; font-size: 10px; line-height: 1.45; }

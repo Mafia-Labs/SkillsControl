@@ -7,9 +7,9 @@ import { Sidebar, TopBar, type View } from './components/layout'
 import { Overview } from './components/Overview'
 import { Empty, Banner, Loading } from './components/shared'
 import { SkillMap } from './components/SkillMap'
-import { chooseProjects, copySkillToProject, installCatalogSkill, listArchives, previewDisable, quarantineSkill, restoreSkill, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, copySkillToProject, installCatalogSkill, listArchives, previewDisable, quarantineSkill, restoreSkill, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth } from './lib/skill-utils'
-import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanReport, Scope } from './lib/types'
+import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanReport, Scope, SecurityStatus } from './lib/types'
 
 const loadWorkspaceRoots = (): string[] => {
   try {
@@ -113,6 +113,25 @@ export default function App() {
     }
   }
 
+  const checkReputation = async () => {
+    if (!selected) return
+    try {
+      const reputation = await checkOnlineReputation(selected)
+      const externalStatus: SecurityStatus = reputation.verdict === 'High risk'
+        ? 'Blocked'
+        : reputation.auditedHash && !reputation.hashMatches
+          ? 'Stale'
+          : selected.securityStatus
+      setReport((current) => current ? {
+        ...current,
+        skills: current.skills.map((skill) => skill.id === selected.id ? { ...skill, externalReputation: reputation, securityStatus: externalStatus } : skill)
+      } : current)
+      setNotice(`Online reputation checked for ${selected.name}. The result only covers the matching local SHA-256.`)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Could not check online reputation.')
+    }
+  }
+
   const addWorkspaceRoots = async () => {
     try {
       const selectedProjects = await chooseProjects()
@@ -156,7 +175,7 @@ export default function App() {
         {!report && <Empty icon="!" title="No report available" detail="Run another scan to inspect your local skills." />}
       </div>}
     </section>
-    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={requestLocalize} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} />}
+    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={requestLocalize} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
     {modal && <ChangeModal modal={modal} projects={projects} onCancel={() => setModal(null)} onApply={applyModal} />}
   </main>
 }

@@ -84,6 +84,7 @@ struct Skill {
     version: Option<String>,
     source: Option<String>,
     provenance: SkillProvenance,
+    external_reputation: Option<ExternalReputation>,
     installations: Vec<Installation>,
     files: Vec<String>,
     executable_scripts: Vec<String>,
@@ -92,6 +93,32 @@ struct Skill {
     security_status: String,
     context_tokens: usize,
     content_hash_sha256: String,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ExternalAudit {
+    provider: String,
+    status: String,
+    summary: Option<String>,
+    audited_at: Option<String>,
+    risk_level: Option<String>,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ExternalReputation {
+    source: String,
+    skill_name: String,
+    skill_url: String,
+    local_hash: String,
+    audited_hash: Option<String>,
+    hash_matches: bool,
+    installs: Option<u64>,
+    stars: Option<u64>,
+    audits: Vec<ExternalAudit>,
+    verdict: String,
+    checked_at: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -1045,9 +1072,21 @@ fn update_security_status(skill: &mut Skill, findings: &[Finding]) {
     let metadata_review_matches =
         skill.provenance.reviewed_hash.as_deref() == Some(skill.content_hash_sha256.as_str());
     let has_previous_review = has_any_review(&skill.id) || skill.provenance.reviewed_hash.is_some();
+    let external_blocked = skill
+        .external_reputation
+        .as_ref()
+        .map(|reputation| reputation.hash_matches && reputation.verdict == "High risk")
+        .unwrap_or(false);
+    let external_stale = skill
+        .external_reputation
+        .as_ref()
+        .map(|reputation| reputation.audited_hash.is_some() && !reputation.hash_matches)
+        .unwrap_or(false);
 
-    skill.security_status = if has_critical {
+    skill.security_status = if has_critical || external_blocked {
         "Blocked".into()
+    } else if external_stale {
+        "Stale".into()
     } else if has_previous_review && !metadata_review_matches {
         "Stale".into()
     } else if has_review_finding {
@@ -1201,6 +1240,12 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                 .get("license")
                 .cloned()
                 .or(lock_metadata.license.clone());
+            let external_reputation = source_repository.as_deref().and_then(|repository| {
+                cached_external_reputation(
+                    &format!("{repository}/{id}"),
+                    &source_hash,
+                )
+            });
             let installation = Installation {
                 id: installation_id,
                 path: installation_path,
@@ -1234,6 +1279,7 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                         reviewed_at: metadata.get("reviewed_at").cloned(),
                         license,
                     },
+                    external_reputation,
                     installations: vec![installation],
                     files,
                     executable_scripts,
@@ -1289,9 +1335,43 @@ fn open_archive_database(path: &Path) -> Result<Connection, String> {
     let connection = Connection::open(path).map_err(|error| error.to_string())?;
     connection.execute_batch(
         "CREATE TABLE IF NOT EXISTS archives (id TEXT PRIMARY KEY, skill_name TEXT NOT NULL, source_path TEXT NOT NULL, archive_path TEXT NOT NULL, created_at TEXT NOT NULL);
-         CREATE TABLE IF NOT EXISTS skill_reviews (skill_id TEXT NOT NULL, content_hash_sha256 TEXT NOT NULL, reviewed_at TEXT NOT NULL, PRIMARY KEY (skill_id, content_hash_sha256));",
+         CREATE TABLE IF NOT EXISTS skill_reviews (skill_id TEXT NOT NULL, content_hash_sha256 TEXT NOT NULL, reviewed_at TEXT NOT NULL, PRIMARY KEY (skill_id, content_hash_sha256));
+         CREATE TABLE IF NOT EXISTS external_reputation (skill_id TEXT NOT NULL, local_hash TEXT NOT NULL, payload TEXT NOT NULL, checked_at TEXT NOT NULL, PRIMARY KEY (skill_id, local_hash));",
     ).map_err(|error| error.to_string())?;
     Ok(connection)
+}
+
+fn cached_external_reputation(skill_id: &str, local_hash: &str) -> Option<ExternalReputation> {
+    let path = archive_database_path().ok()?;
+    if !path.exists() {
+        return None;
+    }
+    let database = open_archive_database(&path).ok()?;
+    let payload = database
+        .query_row(
+            "SELECT payload FROM external_reputation WHERE skill_id = ?1 AND local_hash = ?2",
+            params![skill_id, local_hash],
+            |row| row.get::<_, String>(0),
+        )
+        .ok()?;
+    serde_json::from_str(&payload).ok()
+}
+
+fn record_external_reputation(reputation: &ExternalReputation) -> Result<(), String> {
+    let database = open_archive_database(&archive_database_path()?)?;
+    let payload = serde_json::to_string(reputation).map_err(|error| error.to_string())?;
+    database
+        .execute(
+            "INSERT OR REPLACE INTO external_reputation (skill_id, local_hash, payload, checked_at) VALUES (?1, ?2, ?3, ?4)",
+            params![
+                format!("{}/{}", reputation.source, reputation.skill_name),
+                reputation.local_hash,
+                payload,
+                reputation.checked_at,
+            ],
+        )
+        .map_err(|error| error.to_string())?;
+    Ok(())
 }
 
 fn record_skill_review(
@@ -1884,6 +1964,215 @@ fn install_catalog_skill(
         .collect())
 }
 
+fn github_source(source_repository: &str) -> Result<String, String> {
+    let normalized = source_repository
+        .trim()
+        .trim_end_matches(".git")
+        .trim_end_matches('/')
+        .trim_start_matches("https://github.com/")
+        .trim_start_matches("http://github.com/");
+    let parts: Vec<&str> = normalized.split('/').collect();
+    if parts.len() != 2
+        || parts.iter().any(|part| {
+            part.is_empty()
+                || !part.chars().all(|character| {
+                    character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '.')
+                })
+        })
+    {
+        return Err(
+            "Online reputation currently supports GitHub owner/repository sources only.".into(),
+        );
+    }
+    Ok(format!("{}/{}", parts[0], parts[1]))
+}
+
+fn json_number(value: &Value, keys: &[&str]) -> Option<u64> {
+    keys.iter()
+        .find_map(|key| value.get(*key).and_then(Value::as_u64))
+}
+
+fn parse_external_audits(value: Option<&Value>) -> Vec<ExternalAudit> {
+    value
+        .and_then(|value| value.get("audits"))
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+        .filter_map(|audit| {
+            Some(ExternalAudit {
+                provider: json_string(audit, &["provider"]).unwrap_or_else(|| "Unknown".into()),
+                status: json_string(audit, &["status"]).unwrap_or_else(|| "unknown".into()),
+                summary: json_string(audit, &["summary"]),
+                audited_at: json_string(audit, &["auditedAt", "audited_at"]),
+                risk_level: json_string(audit, &["riskLevel", "risk_level"]),
+            })
+        })
+        .collect()
+}
+
+fn external_verdict(hash_matches: bool, audits: &[ExternalAudit]) -> String {
+    if !hash_matches {
+        return "Version not covered".into();
+    }
+    let has_fail = audits
+        .iter()
+        .any(|audit| audit.status.eq_ignore_ascii_case("fail"));
+    let pass_count = audits
+        .iter()
+        .filter(|audit| audit.status.eq_ignore_ascii_case("pass"))
+        .count();
+    let has_warn = audits
+        .iter()
+        .any(|audit| audit.status.eq_ignore_ascii_case("warn"));
+    if has_fail {
+        "High risk".into()
+    } else if pass_count >= 2 && !has_warn {
+        "Favorable".into()
+    } else if pass_count > 0 && has_warn {
+        "Favorable with precautions".into()
+    } else if has_warn {
+        "Review recommended".into()
+    } else {
+        "Unknown".into()
+    }
+}
+
+fn build_external_reputation(
+    source: &str,
+    skill_name: &str,
+    local_hash: &str,
+    detail: Option<&Value>,
+    audit: Option<&Value>,
+) -> ExternalReputation {
+    let audited_hash = detail
+        .and_then(|value| json_string(value, &["hash"]))
+        .or_else(|| audit.and_then(|value| json_string(value, &["hash"])));
+    let hash_matches = audited_hash
+        .as_deref()
+        .map(|hash| hash.eq_ignore_ascii_case(local_hash))
+        .unwrap_or(false);
+    let audits = parse_external_audits(audit);
+    ExternalReputation {
+        source: source.into(),
+        skill_name: skill_name.into(),
+        skill_url: format!("https://skills.sh/{source}/{skill_name}"),
+        local_hash: local_hash.into(),
+        audited_hash,
+        hash_matches,
+        installs: detail.and_then(|value| json_number(value, &["installs", "installCount"])),
+        stars: detail.and_then(|value| json_number(value, &["stars", "githubStars"])),
+        verdict: external_verdict(hash_matches, &audits),
+        audits,
+        checked_at: unix_seconds(),
+    }
+}
+
+async fn fetch_reputation_json(
+    client: &reqwest::Client,
+    url: &str,
+) -> Result<Option<Value>, String> {
+    let response = client
+        .get(url)
+        .send()
+        .await
+        .map_err(|error| format!("Online reputation request failed: {error}"))?;
+    if response.status() == reqwest::StatusCode::NOT_FOUND {
+        return Ok(None);
+    }
+    if !response.status().is_success() {
+        return Err(format!(
+            "Online reputation returned HTTP {}.",
+            response.status()
+        ));
+    }
+    response
+        .json::<Value>()
+        .await
+        .map(Some)
+        .map_err(|error| format!("Online reputation returned invalid JSON: {error}"))
+}
+
+async fn fetch_external_reputation(
+    source: &str,
+    skill_name: &str,
+    local_hash: &str,
+) -> Result<ExternalReputation, String> {
+    let client = reqwest::Client::builder()
+        .user_agent("Skill Control reputation check")
+        .build()
+        .map_err(|error| format!("Could not prepare online reputation client: {error}"))?;
+    let skill_id = format!("{source}/{skill_name}");
+    let configured_proxy = std::env::var("SKILL_CONTROL_REPUTATION_PROXY_URL")
+        .ok()
+        .or_else(|| option_env!("SKILL_CONTROL_REPUTATION_PROXY_URL").map(ToOwned::to_owned));
+    if let Some(proxy_url) = configured_proxy {
+        let proxy_url = proxy_url.trim();
+        if !(proxy_url.starts_with("https://")
+            || proxy_url.starts_with("http://localhost")
+            || proxy_url.starts_with("http://127.0.0.1"))
+        {
+            return Err(
+                "SKILL_CONTROL_REPUTATION_PROXY_URL must use HTTPS or localhost HTTP.".into(),
+            );
+        }
+        let response = client
+            .post(proxy_url)
+            .json(&serde_json::json!({ "skillId": skill_id, "localHash": local_hash }))
+            .send()
+            .await
+            .map_err(|error| format!("Online reputation proxy request failed: {error}"))?;
+        if !response.status().is_success() {
+            return Err(format!(
+                "Online reputation proxy returned HTTP {}.",
+                response.status()
+            ));
+        }
+        return response
+            .json::<ExternalReputation>()
+            .await
+            .map_err(|error| format!("Online reputation proxy returned invalid JSON: {error}"));
+    }
+
+    let detail_url = format!("https://skills.sh/api/v1/skills/{source}/{skill_name}");
+    let audit_url = format!("https://skills.sh/api/v1/skills/audit/{source}/{skill_name}");
+    let detail = fetch_reputation_json(&client, &detail_url).await?;
+    let audit = fetch_reputation_json(&client, &audit_url).await?;
+    if detail.is_none() && audit.is_none() {
+        return Err("skills.sh has no public record for this source and skill.".into());
+    }
+    Ok(build_external_reputation(
+        source,
+        skill_name,
+        local_hash,
+        detail.as_ref(),
+        audit.as_ref(),
+    ))
+}
+
+#[tauri::command]
+async fn check_online_reputation(
+    source_repository: String,
+    skill_name: String,
+    local_hash: String,
+) -> Result<ExternalReputation, String> {
+    validate_skill_id(&skill_name)?;
+    if local_hash.len() != 64
+        || !local_hash
+            .chars()
+            .all(|character| character.is_ascii_hexdigit())
+    {
+        return Err("The local content hash is not a SHA-256 value.".into());
+    }
+    let source = github_source(&source_repository)?;
+    let cache_key = format!("{source}/{skill_name}");
+    if let Some(cached) = cached_external_reputation(&cache_key, &local_hash) {
+        return Ok(cached);
+    }
+    let reputation = fetch_external_reputation(&source, &skill_name, &local_hash).await?;
+    record_external_reputation(&reputation)?;
+    Ok(reputation)
+}
+
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
@@ -1896,7 +2185,8 @@ pub fn run() {
             restore_skill,
             list_archives,
             copy_skill_to_project,
-            install_catalog_skill
+            install_catalog_skill,
+            check_online_reputation
         ])
         .run(tauri::generate_context!())
         .expect("error while running Skill Control")
@@ -1905,8 +2195,8 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::{
-        agent_paths, frontmatter, open_archive_database, skill_root, target_agents,
-        validate_skill_id,
+        agent_paths, build_external_reputation, external_verdict, frontmatter, github_source,
+        open_archive_database, skill_root, target_agents, validate_skill_id, ExternalAudit,
     };
     use std::{env, fs, path::Path};
 
@@ -2237,5 +2527,80 @@ mod tests {
             .any(|finding| finding.severity == "critical"));
 
         fs::remove_dir_all(skill).expect("skill folder should clean up");
+    }
+
+    #[test]
+    fn aggregates_external_audits_without_hiding_provider_disagreement() {
+        let audits = vec![
+            ExternalAudit {
+                provider: "Gen Agent Trust Hub".into(),
+                status: "pass".into(),
+                summary: None,
+                audited_at: None,
+                risk_level: None,
+            },
+            ExternalAudit {
+                provider: "Socket".into(),
+                status: "pass".into(),
+                summary: None,
+                audited_at: None,
+                risk_level: None,
+            },
+            ExternalAudit {
+                provider: "Snyk".into(),
+                status: "warn".into(),
+                summary: Some("External content risk".into()),
+                audited_at: None,
+                risk_level: Some("MEDIUM".into()),
+            },
+        ];
+        assert_eq!(
+            external_verdict(true, &audits),
+            "Favorable with precautions"
+        );
+        assert_eq!(external_verdict(false, &audits), "Version not covered");
+        assert_eq!(
+            external_verdict(
+                true,
+                &[ExternalAudit {
+                    provider: "Provider".into(),
+                    status: "fail".into(),
+                    summary: None,
+                    audited_at: None,
+                    risk_level: Some("HIGH".into()),
+                }],
+            ),
+            "High risk"
+        );
+    }
+
+    #[test]
+    fn external_reputation_requires_an_exact_hash_match() {
+        let detail = serde_json::json!({
+            "hash": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "installs": 2400000,
+            "stars": 25000
+        });
+        let audit = serde_json::json!({
+            "audits": [{"provider":"Socket","status":"pass"}]
+        });
+        let reputation = build_external_reputation(
+            "vercel-labs/skills",
+            "find-skills",
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            Some(&detail),
+            Some(&audit),
+        );
+        assert!(!reputation.hash_matches);
+        assert_eq!(reputation.verdict, "Version not covered");
+        assert_eq!(reputation.installs, Some(2_400_000));
+    }
+
+    #[test]
+    fn rejects_non_github_reputation_sources() {
+        assert!(github_source("vercel-labs/skills").is_ok());
+        assert!(github_source("https://github.com/vercel-labs/skills.git").is_ok());
+        assert!(github_source("https://example.com/owner/repo").is_err());
+        assert!(github_source("owner/../repo").is_err());
     }
 }

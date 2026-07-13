@@ -1,5 +1,5 @@
 import { demoReport } from './demo-data'
-import type { ArchiveEntry, ChangePreview, Installation, InstallTarget, ScanReport, Scope } from './types'
+import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, ScanReport, Scope, Skill } from './types'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
 
@@ -55,6 +55,17 @@ export const copySkillToProject = async (installation: Installation, projectPath
 export const installCatalogSkill = async (skillId: string, scope: Scope, target: InstallTarget, projectPath?: string): Promise<string[]> => {
   if (!isTauri()) return []
   return invoke<string[]>('install_catalog_skill', { skillId, scope, target, projectPath })
+}
+
+export const checkOnlineReputation = async (skill: Skill): Promise<ExternalReputation> => {
+  if (!isTauri()) throw new Error('Online reputation checks are available in the desktop build.')
+  const sourceRepository = skill.provenance.sourceRepository
+  if (!sourceRepository) throw new Error('This skill has no repository provenance to check online.')
+  return invoke<ExternalReputation>('check_online_reputation', {
+    sourceRepository,
+    skillName: skill.name,
+    localHash: skill.contentHashSha256,
+  })
 }
 
 export const chooseProjects = async (): Promise<string[]> => {
