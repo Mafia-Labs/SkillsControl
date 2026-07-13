@@ -19,7 +19,7 @@ Una skill global aparece en trabajos donde quizá no aporta nada. Una skill loca
 | Necesidad | Cómo ayuda Skill Control |
 | --- | --- |
 | Saber qué hay instalado | Escanea las ubicaciones globales y locales reconocidas por Codex y Claude Code. |
-| Descubrir proyectos automáticamente | Al añadir una carpeta de trabajo, encuentra repositorios, paquetes y carpetas con skills locales hasta ocho niveles de profundidad. |
+| Descubrir proyectos automáticamente | Al añadir una o varias carpetas de trabajo, encuentra repositorios, paquetes y carpetas con skills locales hasta 32 niveles de profundidad. |
 | Instalar para todo el proyecto | Crea la skill en `.agents/skills`, `.claude/skills` o en ambas ubicaciones en una sola operación. |
 | Convertir una skill global en local | Copia la carpeta completa al proyecto para el mismo agente; después puedes verificarla y archivar la global. |
 | Evitar contexto innecesario | Selecciona proyecto por defecto; el alcance global requiere una decisión explícita. |
@@ -40,13 +40,14 @@ Una skill se reconoce como una carpeta que contiene `SKILL.md`. El recorrido gen
 
 ## Descubrimiento de workspace
 
-Al añadir una carpeta, el escáner:
+Al añadir una o varias carpetas, el escáner:
 
 1. La conserva como destino local aunque todavía no tenga archivos de proyecto.
 2. Detecta repositorios y paquetes mediante `.git`, `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, `pom.xml` y otros marcadores comunes.
 3. Encuentra ámbitos anidados que ya contengan `.agents/skills` o `.claude/skills`.
 4. Ignora dependencias y artefactos como `node_modules`, `target`, `dist`, `build`, `.next`, `.venv`, `vendor` y `coverage`.
 5. Asocia cada instalación con su carpeta de proyecto para que la interfaz no tenga que inferirla desde una cadena de texto.
+6. Lee `~/.agents/.skill-lock.json`, `skills-lock.json` y variantes locales para recuperar origen, ruta y referencia sin inventar un commit que no esté registrado.
 
 ## Instalación local
 
@@ -90,13 +91,30 @@ El análisis no ejecuta instrucciones ni scripts, y ahora funciona como una prim
 - copias con el mismo nombre pero distinto contenido;
 - solapamientos globales y locales para un mismo agente.
 
-El escáner es determinista, offline y produce evidencias/capacidades, no una garantía de seguridad. Los estados son `Reviewed`, `Low risk`, `Review required`, `Blocked`, `Unknown` y `Stale`. Una versión bloqueada no se puede copiar a otro proyecto. `Trust this exact version` guarda la aceptación local por nombre y hash; si cambia un archivo, esa confianza no se hereda.
+El escáner es determinista, offline y produce evidencias/capacidades, no una garantía de seguridad. Solo usa `SKILL.md` y los scripts que este invoque expresamente para analizar comportamiento; la documentación auxiliar se conserva como contexto. Los estados son `Reviewed`, `Low risk`, `Review required`, `Blocked`, `Unknown` y `Stale`. Una versión bloqueada no se puede copiar a otro proyecto. `Trust this exact version` guarda la aceptación ligada al hash SHA-256 exacto; si cambia un archivo, esa confianza no se hereda.
 
-La procedencia se conserva cuando existe en el frontmatter (`source_url`, `source_repository`, `source_commit`, `source_skill_path`, `license` e `installed_at`). Si un campo no está disponible, la interfaz lo muestra como no registrado en vez de inferirlo.
+La procedencia se conserva cuando existe en el frontmatter o en los lockfiles (`source_url`, `source_repository`, `source_commit`, `source_ref`, `source_skill_path`, `license` e `installed_at`). Si un campo no está disponible, la interfaz lo muestra como no registrado en vez de inferirlo.
 
 La cuarentena mueve una instalación exacta al archivo reversible de Skill Control. La restauración nunca sobrescribe una carpeta existente.
 
-La aplicación usa una CSP Tauri con scripts locales, sin `unsafe-eval`, sin scripts remotos y con conexiones limitadas al canal local de desarrollo. La integración online con skills.sh, el proxy serverless y el sandbox dinámico quedan deliberadamente fuera del primer lanzamiento local-first; deben añadirse como fases separadas con comparación de hash exacto y sin subir skills privadas automáticamente.
+La aplicación usa una CSP Tauri con scripts locales, sin `unsafe-eval`, sin scripts remotos y con conexiones limitadas al canal local de desarrollo. La comprobación online es opcional y hash-bound: el botón **Check online reputation** envía solo el identificador `owner/repository/skill` y el SHA-256 local. Nunca sube el contenido de una skill privada.
+
+## Reputación online opcional
+
+Skill Control puede consultar el detalle y las auditorías agregadas de [skills.sh](https://skills.sh/docs/api). La reputación no sustituye el análisis local:
+
+- Si el hash auditado coincide, muestra los proveedores por separado y conserva sus desacuerdos (`pass`, `warn` o `fail`).
+- Si el hash no coincide, muestra `Version not covered` y no reutiliza auditorías anteriores.
+- Un `fail` externo con hash coincidente bloquea por defecto; popularidad, instalaciones y estrellas son señales de contexto, nunca pruebas de seguridad.
+- Los resultados se almacenan localmente por `skillId + hash` en SQLite.
+
+Para producción, despliega `api/skills-reputation.ts` en Vercel con OIDC habilitado y compila la aplicación con el proxy configurado:
+
+```bash
+SKILL_CONTROL_REPUTATION_PROXY_URL=https://tu-proyecto.vercel.app/api/skills-reputation pnpm exec tauri build
+```
+
+El proxy usa `VERCEL_OIDC_TOKEN` para llamar a la API autenticada de skills.sh. Si no se configura, el escritorio intenta los endpoints públicos directamente sin credenciales; una respuesta que requiera autenticación se muestra como error, no como reputación favorable.
 
 ## Seguridad de escritura
 
