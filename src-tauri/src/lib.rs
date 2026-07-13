@@ -9,6 +9,9 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+// The engine is intentionally not wired to a Tauri command until the next
+// Auto Skills step; keep the pure module warning-free while it is staged.
+#[allow(dead_code)]
 mod detection;
 
 const MAX_PROJECT_SCAN_DEPTH: usize = 32;
