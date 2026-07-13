@@ -1,12 +1,12 @@
 [package]
-name = "skill-control"
+name = "skillsdock"
 version = "0.1.0"
-description = "Local control center for Agent Skills"
-authors = ["Skill Control"]
+description = "Local-first control center for agent skills"
+authors = ["SkillsDock"]
 edition = "2021"
 
 [lib]
-name = "skill_control_lib"
+name = "skillsdock_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

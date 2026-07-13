@@ -965,14 +965,14 @@ fn unix_millis() -> String {
 fn archive_database_path() -> Result<PathBuf, String> {
     Ok(dirs::home_dir()
         .ok_or("Could not determine your home folder")?
-        .join(".skill-control")
+        .join(".skillsdock")
         .join("state.db"))
 }
 
 fn disabled_archive_root() -> Result<PathBuf, String> {
     Ok(dirs::home_dir()
         .ok_or("Could not determine your home folder")?
-        .join(".skill-control")
+        .join(".skillsdock")
         .join("disabled"))
 }
 
@@ -1185,7 +1185,7 @@ fn write_skill_atomically(destination: &Path, content: &str) -> Result<(), Strin
         .ok_or("Could not determine the target skills folder")?;
     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     let temporary = parent.join(format!(
-        ".skill-control-install-{}-{}",
+        ".skillsdock-install-{}-{}",
         destination
             .file_name()
             .and_then(|name| name.to_str())
@@ -1235,7 +1235,7 @@ fn copy_skill_atomically(source: &Path, destination: &Path) -> Result<(), String
         .ok_or("Could not determine the target skills folder")?;
     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     let temporary = parent.join(format!(
-        ".skill-control-copy-{}-{}",
+        ".skillsdock-copy-{}-{}",
         destination
             .file_name()
             .and_then(|name| name.to_str())
@@ -1376,7 +1376,7 @@ fn preview_disable(installation: Installation) -> ChangePreview {
     ChangePreview {
         title: format!("Disable {skill_name}"),
         changes: vec![format!(
-            "Move {} to Skill Control's disabled archive",
+            "Move {} to SkillsDock's disabled archive",
             installation.path
         )],
         warnings: vec![
@@ -1449,7 +1449,7 @@ fn restore_skill(archive_id: String) -> Result<(), String> {
     let archive_root = normalize_path(&disabled_archive_root()?);
     let normalized_archive = normalize_path(&archived);
     if !normalized_archive.starts_with(&archive_root) {
-        return Err("The archive path is outside Skill Control's disabled folder.".into());
+        return Err("The archive path is outside SkillsDock's disabled folder.".into());
     }
     if source.exists() {
         return Err("A skill already exists at the original location. Move it before restoring this archive.".into());
@@ -1539,7 +1539,7 @@ fn install_catalog_skill(
 
     let installed_at = unix_seconds();
     let content = format!(
-        "---\nname: {skill_id}\ndescription: {description}\nversion: 1.0.0\nsource: Skill Control curated library\nsource_url: https://github.com/Mafia-Labs/SkillsControl\nsource_owner: Mafia-Labs\nsource_repository: Mafia-Labs/SkillsControl\nsource_commit: {CURATED_SOURCE_COMMIT}\nsource_skill_path: src-tauri/src/lib.rs#catalog_definition\ninstalled_at: {installed_at}\n---\n\n# {skill_id}\n\n{instructions}\n"
+        "---\nname: {skill_id}\ndescription: {description}\nversion: 1.0.0\nsource: SkillsDock curated library\nsource_url: https://github.com/Mafia-Labs/SkillsControl\nsource_owner: Mafia-Labs\nsource_repository: Mafia-Labs/SkillsControl\nsource_commit: {CURATED_SOURCE_COMMIT}\nsource_skill_path: src-tauri/src/lib.rs#catalog_definition\ninstalled_at: {installed_at}\n---\n\n# {skill_id}\n\n{instructions}\n"
     );
     let mut created = Vec::new();
     for destination in &destinations {
@@ -1585,7 +1585,7 @@ pub fn run() {
             install_catalog_skill
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Skill Control")
+        .expect("error while running SkillsDock")
 }
 
 #[cfg(test)]
@@ -1598,7 +1598,7 @@ mod tests {
 
     fn temporary_directory(label: &str) -> std::path::PathBuf {
         env::temp_dir().join(format!(
-            "skill-control-{label}-{}-{}",
+            "skillsdock-{label}-{}-{}",
             std::process::id(),
             super::unix_millis()
         ))

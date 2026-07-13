@@ -1,3 +1,3 @@
 fn main() {
-    skill_control_lib::run()
+    skillsdock_lib::run()
 }

@@ -13,7 +13,7 @@ import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanRep
 
 const loadWorkspaceRoots = (): string[] => {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem('skill-control-projects') ?? '[]')
+    const value: unknown = JSON.parse(localStorage.getItem('skillsdock-projects') ?? '[]')
     return Array.isArray(value) && value.every((item) => typeof item === 'string') ? value : []
   } catch { return [] }
 }
@@ -57,7 +57,7 @@ export default function App() {
   }
 
   useEffect(() => { void refresh() }, [])
-  useEffect(() => { localStorage.setItem('skill-control-projects', JSON.stringify(workspaceRoots)) }, [workspaceRoots])
+  useEffect(() => { localStorage.setItem('skillsdock-projects', JSON.stringify(workspaceRoots)) }, [workspaceRoots])
 
   const filteredSkills = useMemo(() => (report?.skills ?? []).filter((skill) => `${skill.name} ${skill.description}`.toLowerCase().includes(search.toLowerCase())), [report, search])
   const selected = report?.skills.find((skill) => skill.id === selectedId) ?? null

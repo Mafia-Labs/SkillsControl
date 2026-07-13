@@ -23,7 +23,7 @@ export const previewDisable = async (installation: Installation): Promise<Change
 }
 
 export const disableSkill = async (installation: Installation): Promise<ArchiveEntry> => {
-  if (!isTauri()) return { id: 'demo-archive', skillName: installation.path.replace(/\\/g, '/').split('/').slice(-1)[0] ?? 'skill', sourcePath: installation.path, archivePath: '~/.skill-control/disabled/demo', createdAt: new Date().toISOString() }
+  if (!isTauri()) return { id: 'demo-archive', skillName: installation.path.replace(/\\/g, '/').split('/').slice(-1)[0] ?? 'skill', sourcePath: installation.path, archivePath: '~/.skillsdock/disabled/demo', createdAt: new Date().toISOString() }
   return invoke<ArchiveEntry>('disable_skill', { installation })
 }
 
