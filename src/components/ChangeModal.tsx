@@ -69,7 +69,7 @@ function ProjectSelector({ projects, value, onChange }: { projects: ProjectSumma
 }
 
 function InstallPlan({ paths, multiple }: { paths: string[], multiple: boolean }) {
-  return <div className="change-list"><strong>SkillsDock will</strong>{paths.map((path) => <span key={path}>• Create <code>{path}</code></span>)}<span>• Never overwrite an existing installation</span>{multiple && <span>• Roll back every new copy if one target fails</span>}</div>
+  return <div className="change-list"><strong>Skill Control will</strong>{paths.map((path) => <span key={path}>• Create <code>{path}</code></span>)}<span>• Never overwrite an existing installation</span>{multiple && <span>• Roll back every new copy if one target fails</span>}</div>
 }
 
 function previewPaths(scope: Scope, target: InstallTarget, skillId: string, projectPath?: string) {

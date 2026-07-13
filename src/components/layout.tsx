@@ -11,7 +11,7 @@ const navigation: Array<{ id: View, label: string, icon: string }> = [
 
 export function Sidebar({ view, onChange }: { view: View, onChange: (view: View) => void }) {
   return <aside className="sidebar">
-    <div className="brand"><span className="brand-mark">S</span><span>SkillsDock</span></div>
+    <div className="brand"><span className="brand-mark">S</span><span>Skill Control</span></div>
     <nav aria-label="Primary navigation">
       {navigation.map((item) => <button key={item.id} className={`nav-item ${view === item.id ? 'active' : ''}`} onClick={() => onChange(item.id)}>
         <span aria-hidden>{item.icon}</span>{item.label}
@@ -30,7 +30,7 @@ export function TopBar({ view, search, onSearch, onScan, onAddProject, projectCo
   projectCount: number
   isScanning: boolean
 }) {
-  const title = navigation.find((item) => item.id === view)?.label ?? 'SkillsDock'
+  const title = navigation.find((item) => item.id === view)?.label ?? 'Skill Control'
   const workspace = projectCount ? `Local workspace · ${projectCount} scope${projectCount === 1 ? '' : 's'} detected` : 'Local workspace'
   return <header className="topbar">
     <div><p className="eyebrow">{workspace}</p><h1>{title}</h1></div>

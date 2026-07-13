@@ -16,7 +16,7 @@ export const scanSkills = async (projects: string[]): Promise<ScanReport> => {
 export const previewDisable = async (installation: Installation): Promise<ChangePreview> => {
   if (!isTauri()) return {
     title: `Disable ${installation.path.replace(/\\/g, '/').split('/').slice(-1)[0] ?? 'skill'}`,
-    changes: [`Move ${installation.path} to SkillsDock's disabled archive`],
+    changes: [`Move ${installation.path} to Skill Control's disabled archive`],
     warnings: ['Only this exact installation is removed. A reversible backup is retained.']
   }
   return invoke<ChangePreview>('preview_disable', { installation })
