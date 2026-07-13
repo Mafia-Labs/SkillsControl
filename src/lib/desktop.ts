@@ -57,9 +57,10 @@ export const installCatalogSkill = async (skillId: string, scope: Scope, target:
   return invoke<string[]>('install_catalog_skill', { skillId, scope, target, projectPath })
 }
 
-export const chooseProject = async (): Promise<string | null> => {
-  if (!isTauri()) return null
+export const chooseProjects = async (): Promise<string[]> => {
+  if (!isTauri()) return []
   const { open } = await import('@tauri-apps/plugin-dialog')
-  const selection = await open({ directory: true, multiple: false, title: 'Add a project or workspace folder to scan' })
-  return typeof selection === 'string' ? selection : null
+  const selection = await open({ directory: true, multiple: true, title: 'Add project or workspace folders to scan' })
+  if (typeof selection === 'string') return [selection]
+  return selection ?? []
 }

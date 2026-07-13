@@ -7,7 +7,7 @@ import { Sidebar, TopBar, type View } from './components/layout'
 import { Overview } from './components/Overview'
 import { Empty, Banner, Loading } from './components/shared'
 import { SkillMap } from './components/SkillMap'
-import { chooseProject, copySkillToProject, installCatalogSkill, listArchives, previewDisable, quarantineSkill, restoreSkill, scanSkills, trustSkillVersion } from './lib/desktop'
+import { chooseProjects, copySkillToProject, installCatalogSkill, listArchives, previewDisable, quarantineSkill, restoreSkill, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth } from './lib/skill-utils'
 import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanReport, Scope } from './lib/types'
 
@@ -113,18 +113,19 @@ export default function App() {
     }
   }
 
-  const addWorkspaceRoot = async () => {
+  const addWorkspaceRoots = async () => {
     try {
-      const project = await chooseProject()
-      if (!project) return
-      if (workspaceRoots.includes(project)) {
-        setNotice('That folder is already part of this workspace.')
+      const selectedProjects = await chooseProjects()
+      if (!selectedProjects.length) return
+      const additions = selectedProjects.filter((project, index) => selectedProjects.indexOf(project) === index && !workspaceRoots.includes(project))
+      if (!additions.length) {
+        setNotice('Those folders are already part of this workspace.')
         return
       }
-      const nextRoots = [...workspaceRoots, project]
+      const nextRoots = [...workspaceRoots, ...additions]
       setWorkspaceRoots(nextRoots)
       await refresh(nextRoots)
-      setNotice(`Added ${project.replace(/\\/g, '/').split('/').slice(-1)[0]} and scanned nested project scopes.`)
+      setNotice(`Added ${additions.length} project folder${additions.length === 1 ? '' : 's'} and scanned nested scopes.`)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Could not add the selected folder.')
     }
@@ -144,7 +145,7 @@ export default function App() {
   return <main className="app-shell">
     <Sidebar view={view} onChange={setView} />
     <section className="workspace">
-      <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} onAddProject={() => void addWorkspaceRoot()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
+      <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} onAddProject={() => void addWorkspaceRoots()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
       {error && <Banner tone="error" message={error} onDismiss={() => setError(null)} />}
       {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: 'Undo', onClick: () => void restoreArchive(recentArchive) } : undefined} onDismiss={() => setNotice(null)} />}
       {isScanning && !report ? <Loading /> : <div className="page-content">

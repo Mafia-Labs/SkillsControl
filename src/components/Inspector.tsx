@@ -28,6 +28,7 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
       <div className="provenance-grid">
         <span>Origin</span><code title={skill.provenance.sourceUrl}>{skill.provenance.sourceRepository ?? skill.source ?? 'Unknown origin'}</code>
         <span>Commit</span><code>{skill.provenance.sourceCommit ?? 'Not recorded'}</code>
+        {skill.provenance.sourceRef && <><span>Ref</span><code>{skill.provenance.sourceRef}</code></>}
         <span>SHA-256</span><code className="hash-value">{skill.contentHashSha256}</code>
         <span>Reviewed hash</span><code>{exactVersionReviewed ? `${skill.provenance.reviewedHash} · ${skill.provenance.reviewedAt ?? 'locally'}` : 'No exact-version review'}</code>
       </div>

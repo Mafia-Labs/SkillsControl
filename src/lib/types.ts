@@ -10,6 +10,7 @@ export type SkillProvenance = {
   sourceOwner?: string
   sourceRepository?: string
   sourceCommit?: string
+  sourceRef?: string
   sourceSkillPath?: string
   contentHashSha256: string
   installedAt: string

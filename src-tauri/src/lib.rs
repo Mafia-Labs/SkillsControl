@@ -1,5 +1,6 @@
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::{
     collections::{HashMap, HashSet},
@@ -8,7 +9,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-const MAX_PROJECT_SCAN_DEPTH: usize = 8;
+const MAX_PROJECT_SCAN_DEPTH: usize = 32;
 // The bundled catalog is reviewed with the source revision that introduced its
 // current definitions. Update this pin whenever a curated definition changes.
 const CURATED_SOURCE_COMMIT: &str = "1d8ed03";
@@ -65,6 +66,7 @@ struct SkillProvenance {
     source_owner: Option<String>,
     source_repository: Option<String>,
     source_commit: Option<String>,
+    source_ref: Option<String>,
     source_skill_path: Option<String>,
     content_hash_sha256: String,
     installed_at: String,
@@ -145,6 +147,19 @@ struct CandidatePath {
     scope: String,
     agent: String,
     project_path: Option<PathBuf>,
+}
+
+#[derive(Default)]
+struct LockMetadata {
+    source: Option<String>,
+    source_url: Option<String>,
+    source_owner: Option<String>,
+    source_repository: Option<String>,
+    source_commit: Option<String>,
+    source_ref: Option<String>,
+    source_skill_path: Option<String>,
+    installed_at: Option<String>,
+    license: Option<String>,
 }
 
 fn normalize_path(path: &Path) -> PathBuf {
@@ -328,6 +343,99 @@ fn project_summaries(candidates: &[CandidatePath]) -> Vec<ProjectSummary> {
     }
     projects.sort_by(|a, b| a.name.cmp(&b.name).then_with(|| a.path.cmp(&b.path)));
     projects
+}
+
+fn json_string(value: &Value, keys: &[&str]) -> Option<String> {
+    keys.iter().find_map(|key| {
+        value
+            .get(*key)
+            .and_then(Value::as_str)
+            .filter(|value| !value.trim().is_empty())
+            .map(ToOwned::to_owned)
+    })
+}
+
+fn lock_entry<'a>(lock: &'a Value, skill_name: &str) -> Option<&'a Value> {
+    let skills = lock.get("skills")?;
+    if let Some(entries) = skills.as_object() {
+        return entries.get(skill_name);
+    }
+    skills
+        .as_array()?
+        .iter()
+        .find(|entry| json_string(entry, &["name", "skill"]).as_deref() == Some(skill_name))
+}
+
+fn lockfile_paths(scope: &str, project_path: Option<&Path>) -> Vec<PathBuf> {
+    let Some(home) = dirs::home_dir() else {
+        return Vec::new();
+    };
+    if scope == "project" {
+        let Some(project) = project_path else {
+            return Vec::new();
+        };
+        return vec![
+            project.join("skills-lock.json"),
+            project.join(".agents/.skill-lock.json"),
+            project.join(".skill-lock.json"),
+        ];
+    }
+
+    let mut paths = Vec::new();
+    if let Ok(xdg_state_home) = std::env::var("XDG_STATE_HOME") {
+        if !xdg_state_home.trim().is_empty() {
+            paths.push(PathBuf::from(xdg_state_home).join("skills/.skill-lock.json"));
+        }
+    }
+    paths.push(home.join(".agents/.skill-lock.json"));
+    paths
+}
+
+fn read_lock_metadata(skill_name: &str, scope: &str, project_path: Option<&Path>) -> LockMetadata {
+    for path in lockfile_paths(scope, project_path) {
+        let Ok(content) = fs::read_to_string(&path) else {
+            continue;
+        };
+        let Ok(lock) = serde_json::from_str::<Value>(&content) else {
+            continue;
+        };
+        let Some(entry) = lock_entry(&lock, skill_name) else {
+            continue;
+        };
+        let source = json_string(entry, &["source", "repository"]);
+        let source_type = json_string(entry, &["sourceType", "type"]);
+        let source_repository =
+            json_string(entry, &["sourceRepository", "repository"]).or_else(|| {
+                source
+                    .as_deref()
+                    .filter(|source| {
+                        source_type.as_deref() == Some("github") || source.matches('/').count() == 1
+                    })
+                    .map(ToOwned::to_owned)
+            });
+        let source_owner = json_string(entry, &["sourceOwner", "owner"]).or_else(|| {
+            source_repository
+                .as_deref()
+                .and_then(|repository| repository.split('/').next())
+                .filter(|owner| !owner.is_empty())
+                .map(ToOwned::to_owned)
+        });
+        return LockMetadata {
+            source,
+            source_url: json_string(entry, &["sourceUrl", "url"]),
+            source_owner,
+            source_repository,
+            source_commit: json_string(
+                entry,
+                &["commit", "sourceCommit", "resolvedCommit", "revision"],
+            ),
+            source_ref: json_string(entry, &["ref", "branch", "tag"]),
+            source_skill_path: json_string(entry, &["skillPath", "path"]),
+            installed_at: json_string(entry, &["installedAt", "installed_at"]),
+            license: json_string(entry, &["license"]),
+        };
+    }
+    LockMetadata::default()
 }
 
 fn frontmatter(content: &str) -> (HashMap<String, String>, bool) {
@@ -1051,6 +1159,48 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                 skill_root_is_symlink,
             );
             findings.extend(local_scan.findings);
+            let lock_metadata = read_lock_metadata(
+                &id,
+                &candidate.scope,
+                candidate.project_path.as_deref(),
+            );
+            let source = metadata
+                .get("source")
+                .cloned()
+                .or(lock_metadata.source.clone());
+            let source_url = metadata
+                .get("source_url")
+                .cloned()
+                .or(lock_metadata.source_url.clone());
+            let source_owner = metadata
+                .get("source_owner")
+                .cloned()
+                .or(lock_metadata.source_owner.clone());
+            let source_repository = metadata
+                .get("source_repository")
+                .cloned()
+                .or(lock_metadata.source_repository.clone());
+            let source_commit = metadata
+                .get("source_commit")
+                .cloned()
+                .or(lock_metadata.source_commit.clone());
+            let source_ref = metadata
+                .get("source_ref")
+                .cloned()
+                .or(lock_metadata.source_ref.clone());
+            let source_skill_path = metadata
+                .get("source_skill_path")
+                .cloned()
+                .or(lock_metadata.source_skill_path.clone());
+            let installed_at = metadata
+                .get("installed_at")
+                .cloned()
+                .or(lock_metadata.installed_at.clone())
+                .unwrap_or_else(|| "unknown".into());
+            let license = metadata
+                .get("license")
+                .cloned()
+                .or(lock_metadata.license.clone());
             let installation = Installation {
                 id: installation_id,
                 path: installation_path,
@@ -1070,21 +1220,19 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                     name,
                     description: metadata.get("description").cloned().unwrap_or_default(),
                     version: metadata.get("version").cloned(),
-                    source: metadata.get("source").cloned(),
+                    source,
                     provenance: SkillProvenance {
-                        source_url: metadata.get("source_url").cloned(),
-                        source_owner: metadata.get("source_owner").cloned(),
-                        source_repository: metadata.get("source_repository").cloned(),
-                        source_commit: metadata.get("source_commit").cloned(),
-                        source_skill_path: metadata.get("source_skill_path").cloned(),
+                        source_url,
+                        source_owner,
+                        source_repository,
+                        source_commit,
+                        source_ref,
+                        source_skill_path,
                         content_hash_sha256: source_hash.clone(),
-                        installed_at: metadata
-                            .get("installed_at")
-                            .cloned()
-                            .unwrap_or_else(|| "unknown".into()),
+                        installed_at,
                         reviewed_hash: metadata.get("reviewed_hash").cloned(),
                         reviewed_at: metadata.get("reviewed_at").cloned(),
-                        license: metadata.get("license").cloned(),
+                        license,
                     },
                     installations: vec![installation],
                     files,
@@ -1855,6 +2003,57 @@ mod tests {
         }));
 
         fs::remove_dir_all(workspace).expect("workspace should clean up");
+    }
+
+    #[test]
+    fn discovers_project_skills_beyond_the_previous_depth_limit() {
+        let workspace = temporary_directory("deep-workspace");
+        let project = (0..12).fold(workspace.clone(), |path, index| {
+            path.join(format!("level-{index}"))
+        });
+        let skill = project.join(".agents/skills/deep-skill");
+        fs::create_dir_all(&skill).expect("deep skill directory should be created");
+        fs::write(project.join("package.json"), "{}").expect("project marker should be created");
+        fs::write(
+            skill.join("SKILL.md"),
+            "---\nname: deep-skill\ndescription: Deep project skill\n---\n",
+        )
+        .expect("skill should be created");
+
+        let candidates = agent_paths(&[workspace.to_string_lossy().to_string()]);
+        assert!(candidates.iter().any(|candidate| {
+            candidate.project_path.as_deref() == Some(super::normalize_path(&project).as_path())
+                && candidate.path == super::normalize_path(&project).join(".agents/skills")
+        }));
+
+        fs::remove_dir_all(workspace).expect("workspace should clean up");
+    }
+
+    #[test]
+    fn reads_project_lockfile_provenance_without_treating_ref_as_commit() {
+        let project = temporary_directory("lockfile");
+        fs::create_dir_all(&project).expect("project folder should be created");
+        fs::write(
+            project.join("skills-lock.json"),
+            r#"{"skills":[{"name":"find-skills","source":"vercel-labs/skills","sourceType":"github","sourceUrl":"https://github.com/vercel-labs/skills","ref":"main","skillPath":"skills/find-skills/SKILL.md","installedAt":"2026-07-13T10:00:00Z"}]}"#,
+        )
+        .expect("lockfile should be created");
+
+        let metadata = super::read_lock_metadata("find-skills", "project", Some(&project));
+        assert_eq!(metadata.source.as_deref(), Some("vercel-labs/skills"));
+        assert_eq!(metadata.source_owner.as_deref(), Some("vercel-labs"));
+        assert_eq!(
+            metadata.source_repository.as_deref(),
+            Some("vercel-labs/skills")
+        );
+        assert_eq!(metadata.source_ref.as_deref(), Some("main"));
+        assert_eq!(metadata.source_commit, None);
+        assert_eq!(
+            metadata.source_skill_path.as_deref(),
+            Some("skills/find-skills/SKILL.md")
+        );
+
+        fs::remove_dir_all(project).expect("project folder should clean up");
     }
 
     #[test]
