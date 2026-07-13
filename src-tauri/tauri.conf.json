@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "SkillsDock",
+  "productName": "Skill Control",
   "version": "0.1.0",
-  "identifier": "com.skillsdock.desktop",
+  "identifier": "com.skillcontrol.desktop",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "SkillsDock",
+        "title": "Skill Control",
         "width": 1440,
         "height": 940,
         "minWidth": 1040,
