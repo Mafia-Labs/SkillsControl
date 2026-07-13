@@ -9,7 +9,7 @@ export function Overview({ report, onViewHealth, onViewMap }: { report: ScanRepo
   const meterPercent = Math.min(100, Math.max(0, Math.round(tokenTotal / 650) * 10))
   return <>
     <section className="hero">
-      <div><p className="eyebrow">System diagnosis</p><h2>Your agent skills, made legible.</h2><p>Inventory global and folder-scoped installations, find risky or divergent copies, and deploy the smallest configuration each project needs.</p></div>
+      <div><p className="eyebrow">SkillsDock · System diagnosis</p><h2>Every skill. Every agent. Under control.</h2><p>Inventory global and folder-scoped installations, find risky or divergent copies, and deploy the smallest configuration each project needs.</p></div>
       <button className="primary-button" onClick={onViewMap}>Open Skill Map <span>→</span></button>
     </section>
     <section className="stat-grid" aria-label="Inventory summary">
