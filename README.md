@@ -1,8 +1,8 @@
-# Skill Control
+# SkillsDock
 
-> Un centro de control local para entender, revisar y mantener las *skills* que usan tus agentes.
+> Every skill. Every agent. Under control.
 
-**Skill Control** reúne en una aplicación de escritorio las skills instaladas para Codex/Agent Skills y Claude Code. En vez de navegar carpetas ocultas y editar archivos a mano, muestra dónde está activa cada copia, detecta problemas estructurales y aplica cambios reversibles.
+**SkillsDock** reúne en una aplicación de escritorio las skills instaladas para Codex/Agent Skills y Claude Code. En vez de navegar carpetas ocultas y editar archivos a mano, muestra dónde está activa cada copia, detecta problemas estructurales y aplica cambios reversibles.
 
 <p align="center">
   <code>Inventario local</code> · <code>Diagnóstico</code> · <code>Instalación por proyecto</code> · <code>Archivo reversible</code>
@@ -16,7 +16,7 @@ Una skill global aparece en trabajos donde quizá no aporta nada. Una skill loca
 
 ## Qué resuelve
 
-| Necesidad | Cómo ayuda Skill Control |
+| Necesidad | Cómo ayuda SkillsDock |
 | --- | --- |
 | Saber qué hay instalado | Escanea las ubicaciones globales y locales reconocidas por Codex y Claude Code. |
 | Descubrir proyectos automáticamente | Al añadir una carpeta de trabajo, encuentra repositorios, paquetes y carpetas con skills locales hasta ocho niveles de profundidad. |
@@ -34,7 +34,7 @@ Una skill global aparece en trabajos donde quizá no aporta nada. Una skill loca
 | Codex / Agent Skills | `~/.agents/skills` | `<carpeta>/.agents/skills` |
 | Claude Code | `~/.claude/skills` | `<carpeta>/.claude/skills` |
 
-Codex busca `.agents/skills` desde el directorio de trabajo hasta la raíz del repositorio. Claude Code usa `.claude/skills` en el proyecto y también puede descubrir ámbitos anidados. Por eso Skill Control trata una carpeta local como una unidad real de configuración, no solo la raíz superior de un repositorio.
+Codex busca `.agents/skills` desde el directorio de trabajo hasta la raíz del repositorio. Claude Code usa `.claude/skills` en el proyecto y también puede descubrir ámbitos anidados. Por eso SkillsDock trata una carpeta local como una unidad real de configuración, no solo la raíz superior de un repositorio.
 
 Una skill se reconoce como una carpeta que contiene `SKILL.md`. El recorrido general del workspace no sigue enlaces para evitar ciclos y salidas accidentales del árbol elegido; las copias que contienen enlaces simbólicos no se migran automáticamente.
 
@@ -70,7 +70,7 @@ Los enlaces simbólicos internos no se copian automáticamente, porque podrían 
 
 ## Desactivación y restauración
 
-**Disable** actúa sobre una instalación exacta, no sobre todas las copias con el mismo nombre. El backend valida que el destino sea realmente una skill bajo `.agents/skills` o `.claude/skills`, la mueve a `~/.skill-control/disabled/<id>` y registra la operación en SQLite.
+**Disable** actúa sobre una instalación exacta, no sobre todas las copias con el mismo nombre. El backend valida que el destino sea realmente una skill bajo `.agents/skills` o `.claude/skills`, la mueve a `~/.skillsdock/disabled/<id>` y registra la operación en SQLite.
 
 La restauración recibe solo el identificador del archivo guardado y recupera el resto de los datos desde la base local. Esto evita confiar en rutas arbitrarias enviadas por la interfaz.
 
@@ -94,7 +94,7 @@ El escáner es determinista, offline y produce evidencias/capacidades, no una ga
 
 La procedencia se conserva cuando existe en el frontmatter (`source_url`, `source_repository`, `source_commit`, `source_skill_path`, `license` e `installed_at`). Si un campo no está disponible, la interfaz lo muestra como no registrado en vez de inferirlo.
 
-La cuarentena mueve una instalación exacta al archivo reversible de Skill Control. La restauración nunca sobrescribe una carpeta existente.
+La cuarentena mueve una instalación exacta al archivo reversible de SkillsDock. La restauración nunca sobrescribe una carpeta existente.
 
 La aplicación usa una CSP Tauri con scripts locales, sin `unsafe-eval`, sin scripts remotos y con conexiones limitadas al canal local de desarrollo. La integración online con skills.sh, el proxy serverless y el sandbox dinámico quedan deliberadamente fuera del primer lanzamiento local-first; deben añadirse como fases separadas con comparación de hash exacto y sin subir skills privadas automáticamente.
 
@@ -160,7 +160,7 @@ src-tauri/
 
 ## Estado
 
-Skill Control está en fase inicial (`0.1.0`). La biblioteca curada es pequeña y el diagnóstico sigue siendo estructural. Revisa siempre las instrucciones y scripts de una skill de terceros antes de confiar en ella.
+SkillsDock está en fase inicial (`0.1.0`). La biblioteca curada es pequeña y el diagnóstico sigue siendo estructural. Revisa siempre las instrucciones y scripts de una skill de terceros antes de confiar en ella.
 
 ---
 
