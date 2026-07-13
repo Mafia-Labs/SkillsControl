@@ -9,6 +9,8 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+mod detection;
+
 const MAX_PROJECT_SCAN_DEPTH: usize = 32;
 // The bundled catalog is reviewed with the source revision that introduced its
 // current definitions. Update this pin whenever a curated definition changes.
@@ -2174,6 +2176,9 @@ async fn check_online_reputation(
 }
 
 pub fn run() {
+    if let Err(error) = detection::load_detection_map() {
+        eprintln!("Auto Skills detection map unavailable: {error}");
+    }
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![

@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "technologies": [
+    {
+      "id": "nextjs",
+      "name": "Next.js",
+      "category": "framework-frontend",
+      "detect": {
+        "packages": ["next"],
+        "package_patterns": [],
+        "config_files": ["next.config.js", "next.config.mjs", "next.config.ts"],
+        "file_extensions": [],
+        "config_file_content": []
+      },
+      "skills": [
+        {
+          "id": "next-best-practices",
+          "source_repo": "vercel-labs/next-skills",
+          "description": "Buenas prácticas para construir y mantener aplicaciones Next.js."
+        }
+      ]
+    },
+    {
+      "id": "react",
+      "name": "React",
+      "category": "library-frontend",
+      "detect": {
+        "packages": ["react", "react-dom"],
+        "package_patterns": [],
+        "config_files": [],
+        "file_extensions": [".jsx", ".tsx"],
+        "config_file_content": []
+      },
+      "skills": [
+        {
+          "id": "react-best-practices",
+          "source_repo": "vercel-labs/skills",
+          "description": "Patrones para diseñar componentes React mantenibles y eficientes."
+        }
+      ]
+    },
+    {
+      "id": "typescript",
+      "name": "TypeScript",
+      "category": "language",
+      "detect": {
+        "packages": ["typescript"],
+        "package_patterns": [],
+        "config_files": ["tsconfig.json", "tsconfig.app.json"],
+        "file_extensions": [".ts", ".tsx"],
+        "config_file_content": []
+      },
+      "skills": [
+        {
+          "id": "typescript-advanced-types",
+          "source_repo": "vercel-labs/skills",
+          "description": "Técnicas para modelar tipos TypeScript claros y seguros."
+        }
+      ]
+    },
+    {
+      "id": "supabase",
+      "name": "Supabase",
+      "category": "backend-data",
+      "detect": {
+        "packages": ["@supabase/supabase-js", "supabase"],
+        "package_patterns": [],
+        "config_files": ["supabase/config.toml"],
+        "file_extensions": [],
+        "config_file_content": []
+      },
+      "skills": [
+        {
+          "id": "supabase-postgres-best-practices",
+          "source_repo": "supabase/skills",
+          "description": "Buenas prácticas para diseñar y operar datos con Supabase y Postgres."
+        }
+      ]
+    }
+  ],
+  "combos": [
+    {
+      "id": "nextjs-supabase",
+      "name": "Next.js + Supabase",
+      "requires": ["nextjs", "supabase"],
+      "skills": [
+        {
+          "id": "nextjs-supabase-patterns",
+          "source_repo": "vercel-labs/skills",
+          "description": "Patrones para integrar una aplicación Next.js con Supabase."
+        }
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "frontend",
+      "name": "Frontend",
+      "categories": ["framework-frontend", "library-frontend"],
+      "file_extensions": [".tsx", ".jsx", ".vue", ".svelte", ".html", ".css"],
+      "skills": [
+        {
+          "id": "frontend-design",
+          "source_repo": "anthropics/skills",
+          "description": "Criterios transversales para crear interfaces frontend claras y consistentes."
+        },
+        {
+          "id": "web-accessibility",
+          "source_repo": "anthropics/skills",
+          "description": "Buenas prácticas de accesibilidad para interfaces web."
+        },
+        {
+          "id": "technical-seo",
+          "source_repo": "vercel-labs/skills",
+          "description": "Fundamentos de SEO técnico para proyectos web."
+        }
+      ]
+    }
+  ]
+}
