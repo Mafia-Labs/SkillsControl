@@ -64,6 +64,29 @@
 .global-row strong { color: #eef0f4; font-size: 13px; }
 .global-row small { color: #8b919c; font-size: 11px; }
 
+.detail-head-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+
+/* Auto Skills analysis panel */
+.analysis-panel { border-color: #2b2a45; background: linear-gradient(180deg, #14131f, #101216); }
+.analysis-timestamp { color: #8b8fa0; font-size: 11px; }
+.stack-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px; }
+.stack-chip { padding: 4px 11px; border: 1px solid #35335a; border-radius: 999px; color: #cfccff; background: #201f31; font-size: 12px; font-weight: 600; }
+.recommend-heading { margin: 18px 0 11px; color: #e5e8ee; font-size: 13px; }
+.recommend-list { display: grid; gap: 10px; }
+.recommend-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 12px; border: 1px solid #26293a; border-radius: 9px; background: #13141d; }
+.recommend-main { display: grid; gap: 5px; }
+.recommend-main strong { color: #f2f4f7; font-size: 13px; }
+.recommend-main small { color: #9298a4; font-size: 11px; }
+.recommend-reasons { display: grid; gap: 3px; margin-top: 2px; }
+.recommend-reason { color: #a7a2e0; font-size: 11px; }
+.recommend-reason::before { content: "↳ "; color: #6f6aa8; }
+.recommend-source { color: #777e8b; font-size: 10px; }
+.recommend-row button:disabled { cursor: not-allowed; opacity: .55; }
+.recommend-installed { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+.installed-chip { padding: 4px 10px; border: 1px solid #24402f; border-radius: 999px; color: #8ed4af; background: #16281e; font-size: 11px; }
+.installed-chip:hover { border-color: #2f5540; background: #1a2f23; }
+.analysis-warnings { display: grid; gap: 4px; margin-top: 12px; color: #e0a855; font-size: 11px; }
+
 @media (max-width: 980px) {
   .skill-table-row { grid-template-columns: 1fr; gap: 4px; }
   .skill-table-row.table-head { display: none; }

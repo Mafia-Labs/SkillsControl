@@ -1,5 +1,5 @@
-import { demoReport } from './demo-data'
-import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, ScanReport, Scope, Skill } from './types'
+import { demoReport, demoStackDetection } from './demo-data'
+import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, ScanReport, Scope, Skill, StackDetection } from './types'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
 
@@ -68,6 +68,11 @@ export const checkOnlineReputation = async (skill: Skill): Promise<ExternalReput
     skillName: skill.name,
     localHash: skill.contentHashSha256,
   })
+}
+
+export const detectStack = async (projectPath: string, installedSkills: string[]): Promise<StackDetection> => {
+  if (!isTauri()) return demoStackDetection()
+  return invoke<StackDetection>('detect_stack', { projectPath, installedSkills })
 }
 
 // Returns null in demo (non-Tauri) mode so the caller keeps using localStorage.

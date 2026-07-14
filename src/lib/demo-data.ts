@@ -1,4 +1,4 @@
-import type { CatalogSkill, ScanReport } from './types'
+import type { CatalogSkill, ScanReport, StackDetection } from './types'
 
 export const demoReport: ScanReport = {
   scannedAt: new Date().toISOString(),
@@ -44,6 +44,27 @@ export const demoReport: ScanReport = {
     { id: 'f3', skillId: 'security-review', severity: 'warning', title: 'Executable script', detail: 'Review scripts/check.sh before running it with an agent.' }
   ]
 }
+
+// Canned Auto Skills result so the browser demo can exercise the analysis UI.
+export const demoStackDetection = (): StackDetection => ({
+  detected: [
+    { techId: 'nextjs', techName: 'Next.js', category: 'framework-frontend', evidence: [{ kind: 'packageDependency', name: 'next' }], hasSkills: true },
+    { techId: 'react', techName: 'React', category: 'library-frontend', evidence: [{ kind: 'packageDependency', name: 'react' }], hasSkills: true },
+    { techId: 'typescript', techName: 'TypeScript', category: 'language', evidence: [{ kind: 'configFilePresent', path: 'tsconfig.json' }], hasSkills: true },
+    { techId: 'supabase', techName: 'Supabase', category: 'backend-data', evidence: [{ kind: 'packageDependency', name: '@supabase/supabase-js' }], hasSkills: true }
+  ],
+  recommendations: [
+    { skillId: 'next-best-practices', sourceRepo: 'vercel-labs/next-skills', description: 'Best practices for building and maintaining Next.js applications.', reasons: [{ techName: 'Next.js', evidenceText: 'Found in the project dependencies: next.' }], installed: false },
+    { skillId: 'react-best-practices', sourceRepo: 'vercel-labs/skills', description: 'Patterns for designing maintainable, efficient React components.', reasons: [{ techName: 'React', evidenceText: 'Found in the project dependencies: react.' }], installed: false },
+    { skillId: 'nextjs-supabase-patterns', sourceRepo: 'vercel-labs/skills', description: 'Patterns for integrating a Next.js application with Supabase.', reasons: [{ techName: 'Next.js + Supabase', evidenceText: 'Detected the combination of Next.js + Supabase.' }], installed: false },
+    { skillId: 'frontend-design', sourceRepo: 'anthropics/skills', description: 'Cross-cutting criteria for building clear, consistent frontend interfaces.', reasons: [{ techName: 'Frontend', evidenceText: 'The project uses a technology in the framework-frontend category.' }], installed: true }
+  ],
+  groups: [
+    { label: 'Next.js', kind: 'technology', skillIds: ['next-best-practices'] },
+    { label: 'Next.js + Supabase', kind: 'combo', skillIds: ['nextjs-supabase-patterns'] }
+  ],
+  warnings: []
+})
 
 export const catalog: CatalogSkill[] = [
   { id: 'repo-hygiene', name: 'repo-hygiene', description: 'Keep repositories small, predictable and easy for agents to navigate.', category: 'Engineering', risk: 'Reviewed', compatibility: ['codex', 'claude'], contextTokens: 780, source: 'Alex Picks' },

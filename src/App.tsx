@@ -9,9 +9,9 @@ import { Projects } from './components/Projects'
 import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, copySkillToProject, getWorkspaceRoots, installCatalogSkill, isDemoMode, listArchives, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, copySkillToProject, detectStack, getWorkspaceRoots, installCatalogSkill, isDemoMode, listArchives, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
-import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill } from './lib/types'
+import type { ArchiveEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
 
 const loadWorkspaceRoots = (): string[] => {
   try {
@@ -39,6 +39,8 @@ export default function App() {
   const [workspaceRoots, setWorkspaceRoots] = useState(loadWorkspaceRoots)
   const [archives, setArchives] = useState<ArchiveEntry[]>([])
   const [recentArchive, setRecentArchive] = useState<ArchiveEntry | null>(null)
+  const [analyses, setAnalyses] = useState<Record<string, { result: StackDetection, at: string }>>({})
+  const [analyzingPath, setAnalyzingPath] = useState<string | null>(null)
 
   const applyReport = (next: ScanReport) => {
     setReport(next)
@@ -112,6 +114,20 @@ export default function App() {
     setView('map')
   }
 
+  const analyzeProject = async (inventory: ProjectInventory) => {
+    setAnalyzingPath(inventory.path)
+    setError(null)
+    try {
+      const installedIds = [...new Set([...inventory.skills.map((entry) => entry.skill.id), ...inventory.globalSkills.map((skill) => skill.id)])]
+      const result = await detectStack(inventory.path, installedIds)
+      setAnalyses((current) => ({ ...current, [inventory.path]: { result, at: new Date().toISOString() } }))
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'The project could not be analyzed.')
+    } finally {
+      setAnalyzingPath(null)
+    }
+  }
+
   const applyModal = async (scope: Scope = 'user', target: InstallTarget = 'all', projectPath?: string) => {
     if (!modal) return
     try {
@@ -183,7 +199,7 @@ export default function App() {
   const removeWorkspaceRoot = async (root: string) => {
     if (selectedProjectPath && selectedProjectPath.replace(/\\/g, '/').startsWith(root.replace(/\\/g, '/'))) setSelectedProjectPath(null)
     await persistRoots(workspaceRoots.filter((existing) => existing !== root))
-    setNotice('Carpeta quitada del workspace.')
+    setNotice('Folder removed from the workspace.')
   }
 
   const restoreArchive = async (archive: ArchiveEntry) => {
@@ -201,12 +217,12 @@ export default function App() {
     <Sidebar view={view} onChange={setView} />
     <section className="workspace">
       <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} onAddProject={() => void addWorkspaceRoots()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
-      {isDemo && <div className="demo-banner" role="status"><span>◒</span>Modo demostración — estás viendo datos de ejemplo, no tus skills reales.</div>}
+      {isDemo && <div className="demo-banner" role="status"><span>◒</span>Demo mode — you're seeing example data, not your real skills.</div>}
       {error && <Banner tone="error" message={error} onDismiss={() => setError(null)} />}
       {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: 'Undo', onClick: () => void restoreArchive(recentArchive) } : undefined} onDismiss={() => setNotice(null)} />}
       {isScanning && !report ? <Loading /> : <div className="page-content">
         {view === 'projects' && (selectedInventory
-          ? <ProjectDetail inventory={selectedInventory} findings={report?.findings ?? []} onBack={() => setSelectedProjectPath(null)} onInspect={inspectSkill} onQuarantine={(installation) => void requestDisable(installation)} onLocalize={requestLocalize} />
+          ? <ProjectDetail inventory={selectedInventory} findings={report?.findings ?? []} analysis={analyses[selectedInventory.path] ?? null} analyzing={analyzingPath === selectedInventory.path} onAnalyze={() => void analyzeProject(selectedInventory)} onBack={() => setSelectedProjectPath(null)} onInspect={inspectSkill} onQuarantine={(installation) => void requestDisable(installation)} onLocalize={requestLocalize} />
           : <Projects inventories={filteredInventories} findings={report?.findings ?? []} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} />)}
         {view === 'overview' && report && <Overview report={report} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} />}
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} selectedId={selectedId} onSelect={setSelectedId} />}

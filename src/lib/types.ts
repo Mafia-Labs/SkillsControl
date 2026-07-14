@@ -120,6 +120,46 @@ export type ArchiveEntry = {
   createdAt: string
 }
 
+export type DetectionEvidence =
+  | { kind: 'packageDependency', name: string }
+  | { kind: 'configFilePresent', path: string }
+  | { kind: 'fileExtensionFound', ext: string, examplePath: string }
+  | { kind: 'contentMatch', file: string, pattern: string }
+
+export type DetectedTechnology = {
+  techId: string
+  techName: string
+  category: string
+  evidence: DetectionEvidence[]
+  hasSkills: boolean
+}
+
+export type RecommendationReason = {
+  techName: string
+  evidenceText: string
+}
+
+export type SkillRecommendation = {
+  skillId: string
+  sourceRepo: string
+  description: string
+  reasons: RecommendationReason[]
+  installed: boolean
+}
+
+export type RecommendationGroup = {
+  label: string
+  kind: string
+  skillIds: string[]
+}
+
+export type StackDetection = {
+  detected: DetectedTechnology[]
+  recommendations: SkillRecommendation[]
+  groups: RecommendationGroup[]
+  warnings: string[]
+}
+
 export type CatalogSkill = {
   id: string
   name: string
