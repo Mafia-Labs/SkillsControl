@@ -3,7 +3,11 @@ import type { CatalogSkill, ScanReport } from './types'
 export const demoReport: ScanReport = {
   scannedAt: new Date().toISOString(),
   scannedPaths: ['~/.agents/skills', '~/.claude/skills', '/workspace/demo/.agents/skills', '/workspace/demo/.claude/skills'],
-  projects: [{ path: '/workspace/demo', name: 'demo', agents: ['codex', 'claude'] }],
+  projects: [
+    { path: '/workspace/demo', name: 'demo', agents: ['codex', 'claude'] },
+    { path: '/workspace/newsletter', name: 'newsletter', agents: ['claude'] },
+    { path: '/workspace/landing-web', name: 'landing-web', agents: [] }
+  ],
   agents: ['codex', 'claude'],
   skills: [
     {
@@ -24,7 +28,14 @@ export const demoReport: ScanReport = {
     },
     {
       id: 'copywriting', name: 'copywriting', description: 'Write concise product copy and message variants.', version: '1.3.0', source: 'Alex Picks', provenance: { contentHashSha256: '91efca7', installedAt: 'demo' }, capabilities: ['Read project files'], securityStatus: 'Unknown', contextTokens: 1180, contentHashSha256: '91efca7', files: ['SKILL.md'], executableScripts: [], invokedScripts: [],
-      installations: [{ id: 'cw-claude', path: '~/.claude/skills/copywriting', scope: 'user', agent: 'claude', enabled: true, modified: false, contentHashSha256: '91efca7' }]
+      installations: [
+        { id: 'cw-claude', path: '~/.claude/skills/copywriting', scope: 'user', agent: 'claude', enabled: true, modified: false, contentHashSha256: '91efca7' },
+        { id: 'cw-news-project', path: '/workspace/newsletter/.claude/skills/copywriting', scope: 'project', agent: 'claude', projectPath: '/workspace/newsletter', enabled: true, modified: false, contentHashSha256: '91efca7' }
+      ]
+    },
+    {
+      id: 'newsletter-writer', name: 'newsletter-writer', description: 'Draft and structure recurring newsletter issues with a consistent voice.', version: '1.1.0', source: 'Alex Picks', provenance: { contentHashSha256: 'de77a10', installedAt: 'demo' }, capabilities: ['Read project files'], securityStatus: 'Reviewed', contextTokens: 1420, contentHashSha256: 'de77a10', files: ['SKILL.md'], executableScripts: [], invokedScripts: [],
+      installations: [{ id: 'nw-news-project', path: '/workspace/newsletter/.claude/skills/newsletter-writer', scope: 'project', agent: 'claude', projectPath: '/workspace/newsletter', enabled: true, modified: false, contentHashSha256: 'de77a10' }]
     }
   ],
   findings: [
