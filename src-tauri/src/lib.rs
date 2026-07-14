@@ -9,9 +9,6 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-// The engine is intentionally not wired to a Tauri command until the next
-// Auto Skills step; keep the pure module warning-free while it is staged.
-#[allow(dead_code)]
 mod detection;
 
 const MAX_PROJECT_SCAN_DEPTH: usize = 32;
@@ -2226,6 +2223,18 @@ async fn check_online_reputation(
     Ok(reputation)
 }
 
+#[tauri::command]
+fn detect_stack(
+    project_path: String,
+    installed_skills: Vec<String>,
+) -> Result<detection::DetectionResult, String> {
+    let map = detection::load_detection_map().map_err(|error| error.to_string())?;
+    let snapshot = detection::read_project_snapshot(Path::new(&project_path), &map)
+        .map_err(|error| error.to_string())?;
+    let installed: HashSet<String> = installed_skills.into_iter().collect();
+    Ok(detection::detect_project(&snapshot, &map, &installed))
+}
+
 pub fn run() {
     if let Err(error) = detection::load_detection_map() {
         eprintln!("Auto Skills detection map unavailable: {error}");
@@ -2244,7 +2253,8 @@ pub fn run() {
             install_catalog_skill,
             check_online_reputation,
             get_workspace_roots,
-            set_workspace_roots
+            set_workspace_roots,
+            detect_stack
         ])
         .run(tauri::generate_context!())
         .expect("error while running Skill Control")

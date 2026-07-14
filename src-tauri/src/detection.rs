@@ -267,12 +267,17 @@ pub(crate) struct ProjectSnapshot {
     pub(crate) packages: Vec<PackageSnapshot>,
     pub(crate) files: Vec<ProjectFile>,
     pub(crate) config_contents: HashMap<String, String>,
+    // Diagnostic metadata: which pnpm workspaces contributed to this snapshot.
+    // Recorded during the scan and surfaced in tests; not read by detection yet.
+    #[allow(dead_code)]
     pub(crate) scanned_workspaces: Vec<String>,
     pub(crate) warnings: Vec<String>,
 }
 
 #[derive(Clone, Debug, Default)]
 pub(crate) struct PackageSnapshot {
+    // Diagnostic metadata: the manifest path this dependency set came from.
+    #[allow(dead_code)]
     pub(crate) relative_path: String,
     pub(crate) dependencies: BTreeSet<String>,
 }
@@ -327,7 +332,8 @@ pub(crate) struct RecommendationGroup {
     pub(crate) skill_ids: Vec<String>,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct DetectionResult {
     pub(crate) detected: Vec<DetectedTechnology>,
     pub(crate) recommendations: Vec<SkillRecommendation>,
