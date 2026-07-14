@@ -7,17 +7,10 @@
       "category": "framework-frontend",
       "detect": {
         "packages": ["next"],
-        "package_patterns": [],
-        "config_files": ["next.config.js", "next.config.mjs", "next.config.ts"],
-        "file_extensions": [],
-        "config_file_content": []
+        "config_files": ["next.config.js", "next.config.mjs", "next.config.ts"]
       },
       "skills": [
-        {
-          "id": "next-best-practices",
-          "source_repo": "vercel-labs/next-skills",
-          "description": "Buenas prácticas para construir y mantener aplicaciones Next.js."
-        }
+        { "id": "next-best-practices", "source_repo": "vercel-labs/next-skills", "description": "Best practices for building and maintaining Next.js applications." }
       ]
     },
     {
@@ -26,17 +19,73 @@
       "category": "library-frontend",
       "detect": {
         "packages": ["react", "react-dom"],
-        "package_patterns": [],
-        "config_files": [],
-        "file_extensions": [".jsx", ".tsx"],
-        "config_file_content": []
+        "file_extensions": [".jsx", ".tsx"]
       },
       "skills": [
-        {
-          "id": "react-best-practices",
-          "source_repo": "vercel-labs/skills",
-          "description": "Patrones para diseñar componentes React mantenibles y eficientes."
-        }
+        { "id": "react-best-practices", "source_repo": "vercel-labs/skills", "description": "Patterns for designing maintainable, efficient React components." }
+      ]
+    },
+    {
+      "id": "vue",
+      "name": "Vue",
+      "category": "framework-frontend",
+      "detect": {
+        "packages": ["vue"],
+        "config_files": ["vue.config.js"],
+        "file_extensions": [".vue"]
+      },
+      "skills": [
+        { "id": "vue-best-practices", "source_repo": "vuejs/skills", "description": "Composition API patterns and conventions for Vue applications." }
+      ]
+    },
+    {
+      "id": "svelte",
+      "name": "Svelte",
+      "category": "framework-frontend",
+      "detect": {
+        "packages": ["svelte", "@sveltejs/kit"],
+        "config_files": ["svelte.config.js"],
+        "file_extensions": [".svelte"]
+      },
+      "skills": [
+        { "id": "svelte-best-practices", "source_repo": "sveltejs/skills", "description": "Idiomatic reactivity and store patterns for Svelte and SvelteKit." }
+      ]
+    },
+    {
+      "id": "angular",
+      "name": "Angular",
+      "category": "framework-frontend",
+      "detect": {
+        "packages": ["@angular/core"],
+        "config_files": ["angular.json"]
+      },
+      "skills": [
+        { "id": "angular-best-practices", "source_repo": "angular/skills", "description": "Module, dependency-injection and RxJS patterns for Angular apps." }
+      ]
+    },
+    {
+      "id": "astro",
+      "name": "Astro",
+      "category": "framework-frontend",
+      "detect": {
+        "packages": ["astro"],
+        "config_files": ["astro.config.mjs", "astro.config.ts"],
+        "file_extensions": [".astro"]
+      },
+      "skills": [
+        { "id": "astro-content-best-practices", "source_repo": "withastro/skills", "description": "Content-collection and island-architecture patterns for Astro." }
+      ]
+    },
+    {
+      "id": "remix",
+      "name": "Remix",
+      "category": "framework-frontend",
+      "detect": {
+        "packages": ["@remix-run/react", "@remix-run/node"],
+        "config_files": ["remix.config.js"]
+      },
+      "skills": [
+        { "id": "remix-data-best-practices", "source_repo": "remix-run/skills", "description": "Loader, action and nested-routing data patterns for Remix." }
       ]
     },
     {
@@ -45,17 +94,111 @@
       "category": "language",
       "detect": {
         "packages": ["typescript"],
-        "package_patterns": [],
         "config_files": ["tsconfig.json", "tsconfig.app.json"],
-        "file_extensions": [".ts", ".tsx"],
-        "config_file_content": []
+        "file_extensions": [".ts", ".tsx"]
       },
       "skills": [
-        {
-          "id": "typescript-advanced-types",
-          "source_repo": "vercel-labs/skills",
-          "description": "Técnicas para modelar tipos TypeScript claros y seguros."
-        }
+        { "id": "typescript-advanced-types", "source_repo": "vercel-labs/skills", "description": "Techniques for modelling clear, sound TypeScript types." }
+      ]
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "category": "language",
+      "detect": {
+        "config_files": ["pyproject.toml", "requirements.txt", "setup.py", "Pipfile"],
+        "file_extensions": [".py"]
+      },
+      "skills": [
+        { "id": "python-best-practices", "source_repo": "anthropics/skills", "description": "Idiomatic, well-structured and testable Python code." }
+      ]
+    },
+    {
+      "id": "rust",
+      "name": "Rust",
+      "category": "language",
+      "detect": {
+        "config_files": ["Cargo.toml"],
+        "file_extensions": [".rs"]
+      },
+      "skills": [
+        { "id": "rust-best-practices", "source_repo": "rust-lang/skills", "description": "Ownership, error-handling and API-design patterns for Rust." }
+      ]
+    },
+    {
+      "id": "go",
+      "name": "Go",
+      "category": "language",
+      "detect": {
+        "config_files": ["go.mod"],
+        "file_extensions": [".go"]
+      },
+      "skills": [
+        { "id": "go-best-practices", "source_repo": "golang/skills", "description": "Package layout, concurrency and error-handling patterns for Go." }
+      ]
+    },
+    {
+      "id": "tailwind",
+      "name": "Tailwind CSS",
+      "category": "styling",
+      "detect": {
+        "packages": ["tailwindcss"],
+        "config_files": ["tailwind.config.js", "tailwind.config.ts", "tailwind.config.cjs"]
+      },
+      "skills": [
+        { "id": "tailwind-best-practices", "source_repo": "tailwindlabs/skills", "description": "Utility-first composition and design-token discipline for Tailwind." }
+      ]
+    },
+    {
+      "id": "express",
+      "name": "Express",
+      "category": "backend-web",
+      "detect": {
+        "packages": ["express"]
+      },
+      "skills": [
+        { "id": "express-api-best-practices", "source_repo": "expressjs/skills", "description": "Middleware structure, validation and error handling for Express APIs." }
+      ]
+    },
+    {
+      "id": "fastapi",
+      "name": "FastAPI",
+      "category": "backend-web",
+      "detect": {
+        "config_file_content": [
+          { "files": ["requirements.txt", "pyproject.toml", "Pipfile"], "patterns": ["fastapi"] }
+        ]
+      },
+      "skills": [
+        { "id": "fastapi-best-practices", "source_repo": "tiangolo/skills", "description": "Dependency injection, Pydantic models and async patterns for FastAPI." }
+      ]
+    },
+    {
+      "id": "django",
+      "name": "Django",
+      "category": "backend-web",
+      "detect": {
+        "config_files": ["manage.py"],
+        "config_file_content": [
+          { "files": ["requirements.txt", "pyproject.toml", "Pipfile"], "patterns": ["django", "Django"] }
+        ]
+      },
+      "skills": [
+        { "id": "django-best-practices", "source_repo": "django/skills", "description": "Model, view and ORM query patterns for Django projects." }
+      ]
+    },
+    {
+      "id": "rails",
+      "name": "Ruby on Rails",
+      "category": "backend-web",
+      "detect": {
+        "config_files": ["config/application.rb"],
+        "config_file_content": [
+          { "files": ["Gemfile"], "patterns": ["rails"] }
+        ]
+      },
+      "skills": [
+        { "id": "rails-best-practices", "source_repo": "rails/skills", "description": "Convention-over-configuration and ActiveRecord patterns for Rails." }
       ]
     },
     {
@@ -64,17 +207,114 @@
       "category": "backend-data",
       "detect": {
         "packages": ["@supabase/supabase-js", "supabase"],
-        "package_patterns": [],
-        "config_files": ["supabase/config.toml"],
-        "file_extensions": [],
-        "config_file_content": []
+        "config_files": ["supabase/config.toml"]
       },
       "skills": [
-        {
-          "id": "supabase-postgres-best-practices",
-          "source_repo": "supabase/skills",
-          "description": "Buenas prácticas para diseñar y operar datos con Supabase y Postgres."
-        }
+        { "id": "supabase-postgres-best-practices", "source_repo": "supabase/skills", "description": "Best practices for designing and operating data with Supabase and Postgres." }
+      ]
+    },
+    {
+      "id": "prisma",
+      "name": "Prisma",
+      "category": "backend-data",
+      "detect": {
+        "packages": ["prisma", "@prisma/client"],
+        "config_files": ["prisma/schema.prisma"]
+      },
+      "skills": [
+        { "id": "prisma-schema-best-practices", "source_repo": "prisma/skills", "description": "Schema modelling, migrations and query patterns for Prisma." }
+      ]
+    },
+    {
+      "id": "postgres",
+      "name": "PostgreSQL",
+      "category": "backend-data",
+      "detect": {
+        "packages": ["pg", "postgres"]
+      },
+      "skills": [
+        { "id": "postgres-query-best-practices", "source_repo": "anthropics/skills", "description": "Indexing, query design and transaction patterns for PostgreSQL." }
+      ]
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "category": "backend-data",
+      "detect": {
+        "packages": ["mongodb", "mongoose"]
+      },
+      "skills": [
+        { "id": "mongodb-schema-best-practices", "source_repo": "mongodb/skills", "description": "Document modelling and aggregation patterns for MongoDB." }
+      ]
+    },
+    {
+      "id": "graphql",
+      "name": "GraphQL",
+      "category": "api",
+      "detect": {
+        "packages": ["graphql", "@apollo/client", "@apollo/server"]
+      },
+      "skills": [
+        { "id": "graphql-schema-best-practices", "source_repo": "graphql/skills", "description": "Schema design, resolver structure and N+1 avoidance for GraphQL." }
+      ]
+    },
+    {
+      "id": "jest",
+      "name": "Jest",
+      "category": "testing",
+      "detect": {
+        "packages": ["jest"],
+        "config_files": ["jest.config.js", "jest.config.ts"]
+      },
+      "skills": [
+        { "id": "jest-testing-best-practices", "source_repo": "jestjs/skills", "description": "Structuring reliable unit tests and mocks with Jest." }
+      ]
+    },
+    {
+      "id": "vitest",
+      "name": "Vitest",
+      "category": "testing",
+      "detect": {
+        "packages": ["vitest"],
+        "config_files": ["vitest.config.ts", "vitest.config.js"]
+      },
+      "skills": [
+        { "id": "vitest-testing-best-practices", "source_repo": "vitest-dev/skills", "description": "Fast, isolated unit tests and coverage practices with Vitest." }
+      ]
+    },
+    {
+      "id": "playwright",
+      "name": "Playwright",
+      "category": "testing",
+      "detect": {
+        "packages": ["@playwright/test", "playwright"],
+        "config_files": ["playwright.config.ts", "playwright.config.js"]
+      },
+      "skills": [
+        { "id": "playwright-e2e-best-practices", "source_repo": "microsoft/skills", "description": "Resilient selectors and stable end-to-end tests with Playwright." }
+      ]
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "category": "infra",
+      "detect": {
+        "config_files": ["Dockerfile", "docker-compose.yml", "compose.yaml"]
+      },
+      "skills": [
+        { "id": "docker-image-best-practices", "source_repo": "anthropics/skills", "description": "Small, reproducible and secure container images with Docker." }
+      ]
+    },
+    {
+      "id": "tauri",
+      "name": "Tauri",
+      "category": "desktop",
+      "detect": {
+        "packages": ["@tauri-apps/api"],
+        "config_files": ["src-tauri/tauri.conf.json", "tauri.conf.json"]
+      },
+      "skills": [
+        { "id": "tauri-best-practices", "source_repo": "tauri-apps/skills", "description": "Command, capability and IPC patterns for secure Tauri apps." }
       ]
     }
   ],
@@ -84,11 +324,23 @@
       "name": "Next.js + Supabase",
       "requires": ["nextjs", "supabase"],
       "skills": [
-        {
-          "id": "nextjs-supabase-patterns",
-          "source_repo": "vercel-labs/skills",
-          "description": "Patrones para integrar una aplicación Next.js con Supabase."
-        }
+        { "id": "nextjs-supabase-patterns", "source_repo": "vercel-labs/skills", "description": "Patterns for integrating a Next.js application with Supabase." }
+      ]
+    },
+    {
+      "id": "react-tailwind",
+      "name": "React + Tailwind CSS",
+      "requires": ["react", "tailwind"],
+      "skills": [
+        { "id": "react-tailwind-patterns", "source_repo": "tailwindlabs/skills", "description": "Composing accessible React components with Tailwind utilities." }
+      ]
+    },
+    {
+      "id": "prisma-postgres",
+      "name": "Prisma + PostgreSQL",
+      "requires": ["prisma", "postgres"],
+      "skills": [
+        { "id": "prisma-postgres-patterns", "source_repo": "prisma/skills", "description": "Mapping Prisma schemas to efficient PostgreSQL structures." }
       ]
     }
   ],
@@ -99,21 +351,26 @@
       "categories": ["framework-frontend", "library-frontend"],
       "file_extensions": [".tsx", ".jsx", ".vue", ".svelte", ".html", ".css"],
       "skills": [
-        {
-          "id": "frontend-design",
-          "source_repo": "anthropics/skills",
-          "description": "Criterios transversales para crear interfaces frontend claras y consistentes."
-        },
-        {
-          "id": "web-accessibility",
-          "source_repo": "anthropics/skills",
-          "description": "Buenas prácticas de accesibilidad para interfaces web."
-        },
-        {
-          "id": "technical-seo",
-          "source_repo": "vercel-labs/skills",
-          "description": "Fundamentos de SEO técnico para proyectos web."
-        }
+        { "id": "frontend-design", "source_repo": "anthropics/skills", "description": "Cross-cutting criteria for building clear, consistent frontend interfaces." },
+        { "id": "web-accessibility", "source_repo": "anthropics/skills", "description": "Accessibility best practices for web interfaces." },
+        { "id": "technical-seo", "source_repo": "vercel-labs/skills", "description": "Technical SEO fundamentals for web projects." }
+      ]
+    },
+    {
+      "id": "backend",
+      "name": "Backend",
+      "categories": ["backend-web", "backend-data", "api"],
+      "skills": [
+        { "id": "api-design", "source_repo": "anthropics/skills", "description": "Designing compatible, well-documented API contracts." },
+        { "id": "database-best-practices", "source_repo": "anthropics/skills", "description": "Data modelling, indexing and migration discipline across databases." }
+      ]
+    },
+    {
+      "id": "testing",
+      "name": "Testing",
+      "categories": ["testing"],
+      "skills": [
+        { "id": "testing-strategy", "source_repo": "anthropics/skills", "description": "Choosing the right test level and keeping suites fast and reliable." }
       ]
     }
   ]

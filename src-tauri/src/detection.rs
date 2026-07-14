@@ -1071,6 +1071,15 @@ mod tests {
         assert!(map.technologies.iter().any(|item| item.id == "nextjs"));
         assert!(map.combos.iter().any(|item| item.id == "nextjs-supabase"));
         assert!(map.profiles.iter().any(|item| item.id == "frontend"));
+        // The map is now a broader seed spanning languages, backends and tooling,
+        // not just the original frontend four.
+        assert!(map.technologies.len() >= 20);
+        for expected in ["python", "rust", "go", "django", "tailwind", "docker", "tauri"] {
+            assert!(
+                map.technologies.iter().any(|item| item.id == expected),
+                "expected technology {expected} to be present"
+            );
+        }
     }
 
     #[test]
