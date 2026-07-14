@@ -70,6 +70,17 @@ export const checkOnlineReputation = async (skill: Skill): Promise<ExternalReput
   })
 }
 
+// Returns null in demo (non-Tauri) mode so the caller keeps using localStorage.
+export const getWorkspaceRoots = async (): Promise<string[] | null> => {
+  if (!isTauri()) return null
+  return invoke<string[]>('get_workspace_roots')
+}
+
+export const saveWorkspaceRoots = async (roots: string[]): Promise<void> => {
+  if (!isTauri()) return
+  return invoke<void>('set_workspace_roots', { roots })
+}
+
 export const chooseProjects = async (): Promise<string[]> => {
   if (!isTauri()) return []
   const { open } = await import('@tauri-apps/plugin-dialog')

@@ -1333,6 +1333,54 @@ fn disabled_archive_root() -> Result<PathBuf, String> {
         .join("disabled"))
 }
 
+fn workspace_roots_path() -> Result<PathBuf, String> {
+    Ok(dirs::home_dir()
+        .ok_or("Could not determine your home folder")?
+        .join(".skill-control")
+        .join("workspace-roots.json"))
+}
+
+fn dedupe_roots(roots: Vec<String>) -> Vec<String> {
+    let mut unique: Vec<String> = Vec::new();
+    for root in roots {
+        if !unique.contains(&root) {
+            unique.push(root);
+        }
+    }
+    unique
+}
+
+// Only surface folders that still exist so a removed drive or deleted project
+// does not resurrect as a phantom root on every launch.
+fn existing_roots(roots: Vec<String>) -> Vec<String> {
+    roots
+        .into_iter()
+        .filter(|root| Path::new(root).is_dir())
+        .collect()
+}
+
+#[tauri::command]
+fn get_workspace_roots() -> Result<Vec<String>, String> {
+    let path = workspace_roots_path()?;
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let contents = fs::read_to_string(&path).map_err(|error| error.to_string())?;
+    let roots: Vec<String> = serde_json::from_str(&contents).map_err(|error| error.to_string())?;
+    Ok(existing_roots(roots))
+}
+
+#[tauri::command]
+fn set_workspace_roots(roots: Vec<String>) -> Result<(), String> {
+    let path = workspace_roots_path()?;
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+    let payload =
+        serde_json::to_string_pretty(&dedupe_roots(roots)).map_err(|error| error.to_string())?;
+    fs::write(&path, payload).map_err(|error| error.to_string())
+}
+
 fn open_archive_database(path: &Path) -> Result<Connection, String> {
     if let Some(parent) = path.parent() {
         fs::create_dir_all(parent).map_err(|error| error.to_string())?;
@@ -2194,7 +2242,9 @@ pub fn run() {
             list_archives,
             copy_skill_to_project,
             install_catalog_skill,
-            check_online_reputation
+            check_online_reputation,
+            get_workspace_roots,
+            set_workspace_roots
         ])
         .run(tauri::generate_context!())
         .expect("error while running Skill Control")
@@ -2203,8 +2253,9 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::{
-        agent_paths, build_external_reputation, external_verdict, frontmatter, github_source,
-        open_archive_database, skill_root, target_agents, validate_skill_id, ExternalAudit,
+        agent_paths, build_external_reputation, dedupe_roots, existing_roots, external_verdict,
+        frontmatter, github_source, open_archive_database, skill_root, target_agents,
+        validate_skill_id, ExternalAudit,
     };
     use std::{env, fs, path::Path};
 
@@ -2214,6 +2265,28 @@ mod tests {
             std::process::id(),
             super::unix_millis()
         ))
+    }
+
+    #[test]
+    fn deduplicates_workspace_roots_preserving_order() {
+        let roots = dedupe_roots(vec![
+            "/work/a".into(),
+            "/work/b".into(),
+            "/work/a".into(),
+        ]);
+        assert_eq!(roots, vec!["/work/a".to_string(), "/work/b".to_string()]);
+    }
+
+    #[test]
+    fn filters_out_workspace_roots_that_no_longer_exist() {
+        let present = temporary_directory("roots");
+        fs::create_dir_all(&present).expect("root should be created");
+        let roots = existing_roots(vec![
+            present.to_string_lossy().to_string(),
+            "/definitely/missing/skill-control-root".into(),
+        ]);
+        assert_eq!(roots, vec![present.to_string_lossy().to_string()]);
+        fs::remove_dir_all(&present).expect("temporary root should clean up");
     }
 
     #[test]

@@ -9,7 +9,7 @@ import { Projects } from './components/Projects'
 import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, copySkillToProject, installCatalogSkill, isDemoMode, listArchives, previewDisable, quarantineSkill, restoreSkill, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, copySkillToProject, getWorkspaceRoots, installCatalogSkill, isDemoMode, listArchives, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
 import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill } from './lib/types'
 
@@ -59,8 +59,29 @@ export default function App() {
     }
   }
 
-  useEffect(() => { void refresh() }, [])
+  // Reconcile the frontend's legacy localStorage roots with the backend store.
+  // The backend (app data dir) is the source of truth; localStorage is migrated
+  // once and then kept only as the demo-mode fallback.
+  useEffect(() => {
+    void (async () => {
+      const stored = await getWorkspaceRoots()
+      if (stored === null) { void refresh(); return }
+      if (stored.length === 0 && workspaceRoots.length > 0) {
+        await saveWorkspaceRoots(workspaceRoots)
+        void refresh(workspaceRoots)
+      } else {
+        setWorkspaceRoots(stored)
+        void refresh(stored)
+      }
+    })()
+  }, [])
   useEffect(() => { localStorage.setItem('skill-control-projects', JSON.stringify(workspaceRoots)) }, [workspaceRoots])
+
+  const persistRoots = async (nextRoots: string[]) => {
+    setWorkspaceRoots(nextRoots)
+    await saveWorkspaceRoots(nextRoots)
+    await refresh(nextRoots)
+  }
 
   const filteredSkills = useMemo(() => (report?.skills ?? []).filter((skill) => `${skill.name} ${skill.description}`.toLowerCase().includes(search.toLowerCase())), [report, search])
   const inventories = useMemo(() => (report ? groupInstallationsByProject(report) : []), [report])
@@ -152,9 +173,7 @@ export default function App() {
         setNotice('Those folders are already part of this workspace.')
         return
       }
-      const nextRoots = [...workspaceRoots, ...additions]
-      setWorkspaceRoots(nextRoots)
-      await refresh(nextRoots)
+      await persistRoots([...workspaceRoots, ...additions])
       setNotice(`Added ${additions.length} project folder${additions.length === 1 ? '' : 's'} and scanned nested scopes.`)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Could not add the selected folder.')
@@ -162,10 +181,8 @@ export default function App() {
   }
 
   const removeWorkspaceRoot = async (root: string) => {
-    const nextRoots = workspaceRoots.filter((existing) => existing !== root)
-    setWorkspaceRoots(nextRoots)
     if (selectedProjectPath && selectedProjectPath.replace(/\\/g, '/').startsWith(root.replace(/\\/g, '/'))) setSelectedProjectPath(null)
-    await refresh(nextRoots)
+    await persistRoots(workspaceRoots.filter((existing) => existing !== root))
     setNotice('Carpeta quitada del workspace.')
   }
 
