@@ -353,14 +353,14 @@ impl fmt::Display for SnapshotError {
             Self::InvalidRoot(path) => {
                 write!(
                     formatter,
-                    "la ruta no existe o no es una carpeta de proyecto: {}",
+                    "the path does not exist or is not a project folder: {}",
                     path.display()
                 )
             }
             Self::ReadRoot { path, source } => {
                 write!(
                     formatter,
-                    "no se pudo leer la carpeta {}: {source}",
+                    "could not read the folder {}: {source}",
                     path.display()
                 )
             }
@@ -779,7 +779,7 @@ pub(crate) fn detect_project(
             .collect::<Vec<_>>();
         let reason = RecommendationReason {
             tech_name: combo.name.clone(),
-            evidence_text: format!("Detectamos la combinación de {}.", names.join(" + ")),
+            evidence_text: format!("Detected the combination of {}.", names.join(" + ")),
         };
         let skill_ids = combo
             .skills
@@ -815,13 +815,13 @@ pub(crate) fn detect_project(
         }
         let evidence = if category_match {
             format!(
-                "El proyecto usa una tecnología de la categoría {}.",
+                "The project uses a technology in the {} category.",
                 profile.categories.join(", ")
             )
         } else if let Some((extension, example_path)) = extension_match {
-            format!("Hay archivos {extension}, por ejemplo {example_path}.")
+            format!("There are {extension} files, e.g. {example_path}.")
         } else {
-            "El contenido del proyecto encaja con este perfil.".into()
+            "The project content matches this profile.".into()
         };
         let reason = RecommendationReason {
             tech_name: profile.name.clone(),
@@ -953,16 +953,16 @@ fn package_matches_pattern(package: &str, pattern: &str) -> bool {
 fn evidence_text(evidence: &DetectionEvidence) -> String {
     match evidence {
         DetectionEvidence::PackageDependency { name } => {
-            format!("Encontrado en las dependencias del proyecto: {name}.")
+            format!("Found in the project dependencies: {name}.")
         }
         DetectionEvidence::ConfigFilePresent { path } => {
-            format!("Existe el archivo {path}.")
+            format!("The file {path} exists.")
         }
         DetectionEvidence::FileExtensionFound { ext, example_path } => {
-            format!("Hay archivos {ext}, por ejemplo {example_path}.")
+            format!("There are {ext} files, e.g. {example_path}.")
         }
         DetectionEvidence::ContentMatch { file, pattern } => {
-            format!("El archivo {file} contiene «{pattern}».")
+            format!("The file {file} contains \"{pattern}\".")
         }
     }
 }
@@ -1262,7 +1262,7 @@ mod tests {
         assert!(recommendation.installed);
         assert!(recommendation.reasons[0]
             .evidence_text
-            .contains("dependencias"));
+            .contains("dependencies"));
     }
 
     #[test]
@@ -1273,6 +1273,6 @@ mod tests {
         let error = read_project_snapshot(&project.path.join("README.md"), &map)
             .expect_err("a file cannot be a project root");
 
-        assert!(error.to_string().contains("no existe"));
+        assert!(error.to_string().contains("does not exist"));
     }
 }

@@ -8,9 +8,9 @@ type ProjectHealth = { label: string, tone: 'error' | 'warning' | 'info' }
 
 const aggregateHealth = (inventory: ProjectInventory, findings: Finding[]): ProjectHealth => {
   const labels = inventory.skills.map((entry) => healthLabel(entry.skill, findings))
-  if (labels.includes('Needs attention')) return { label: 'Requiere atención', tone: 'error' }
-  if (labels.includes('Review suggested')) return { label: 'Revisión sugerida', tone: 'warning' }
-  return { label: 'Saludable', tone: 'info' }
+  if (labels.includes('Needs attention')) return { label: 'Needs attention', tone: 'error' }
+  if (labels.includes('Review suggested')) return { label: 'Review suggested', tone: 'warning' }
+  return { label: 'Healthy', tone: 'info' }
 }
 
 export function Projects({ inventories, findings, workspaceRoots, isDemo, onAddFolder, onRemoveFolder, onOpen }: {
@@ -24,18 +24,18 @@ export function Projects({ inventories, findings, workspaceRoots, isDemo, onAddF
 }) {
   return <section className="projects">
     <div className="projects-heading">
-      <div><p className="eyebrow">Tus carpetas</p><h2>Un skill vive dentro de un proyecto.</h2><p>Cada carpeta añadida se escanea en busca de skills locales de Codex y Claude Code. Abre un proyecto para ver exactamente qué tiene y qué le falta.</p></div>
+      <div><p className="eyebrow">Your folders</p><h2>A skill lives inside a project.</h2><p>Every folder you add is scanned for local Codex and Claude Code skills. Open a project to see exactly what it has and what it is missing.</p></div>
     </div>
 
-    <div className="workspace-roots" aria-label="Carpetas del workspace">
+    <div className="workspace-roots" aria-label="Workspace folders">
       {workspaceRoots.length ? workspaceRoots.map((root) => <span className="root-chip" key={root}>
         <code title={root}>{abbreviate(root)}</code>
-        <button className="root-remove" aria-label={`Quitar ${root} del workspace`} onClick={() => onRemoveFolder(root)}>×</button>
-      </span>) : <span className="root-empty">No hay carpetas añadidas todavía.</span>}
-      <button className="secondary-button compact" onClick={onAddFolder}>Añadir carpeta</button>
+        <button className="root-remove" aria-label={`Remove ${root} from the workspace`} onClick={() => onRemoveFolder(root)}>×</button>
+      </span>) : <span className="root-empty">No folders added yet.</span>}
+      <button className="secondary-button compact" onClick={onAddFolder}>Add folder</button>
     </div>
 
-    {isDemo && <p className="demo-hint">Modo demostración: estos proyectos son datos de ejemplo.</p>}
+    {isDemo && <p className="demo-hint">Demo mode: these projects are example data.</p>}
 
     {inventories.length ? <div className="project-grid">
       {inventories.map((inventory) => {
@@ -43,22 +43,22 @@ export function Projects({ inventories, findings, workspaceRoots, isDemo, onAddF
         const preview = inventory.skills.slice(0, 4)
         const remaining = inventory.skills.length - preview.length
         return <article className="project-card" key={inventory.path}>
-          <button className="project-card-open" onClick={() => onOpen(inventory.path)} aria-label={`Abrir ${inventory.name}`}>
+          <button className="project-card-open" onClick={() => onOpen(inventory.path)} aria-label={`Open ${inventory.name}`}>
             <div className="project-card-head">
               <div><h3>{inventory.name}</h3><code className="project-path" title={inventory.path}>{abbreviate(inventory.path)}</code></div>
               {inventory.skills.length > 0 && <span className={`health-pill ${health.tone}`}>{health.label}</span>}
             </div>
-            <div className="agent-badges">{inventory.agents.length ? inventory.agents.map((agent) => <span className="agent-badge" key={agent}>{agentLabels[agent]}</span>) : <span className="agent-badge muted">Sin agente activo</span>}</div>
+            <div className="agent-badges">{inventory.agents.length ? inventory.agents.map((agent) => <span className="agent-badge" key={agent}>{agentLabels[agent]}</span>) : <span className="agent-badge muted">No active agent</span>}</div>
           </button>
           {inventory.skills.length ? <>
-            <p className="project-skill-count">{inventory.skills.length} skill{inventory.skills.length === 1 ? '' : 's'} instalada{inventory.skills.length === 1 ? '' : 's'}</p>
+            <p className="project-skill-count">{inventory.skills.length} skill{inventory.skills.length === 1 ? '' : 's'} installed</p>
             <div className="skill-chips">{preview.map((entry) => <span className="skill-chip" key={entry.skill.id}>{entry.skill.name}</span>)}{remaining > 0 && <span className="skill-chip muted">+{remaining}</span>}</div>
           </> : <div className="project-empty">
-            <p>Este proyecto no tiene skills todavía.</p>
-            <button className="primary-button compact" onClick={() => onOpen(inventory.path)}>Analizar y recomendar <span>→</span></button>
+            <p>This project has no skills yet.</p>
+            <button className="primary-button compact" onClick={() => onOpen(inventory.path)}>Analyze and recommend <span>→</span></button>
           </div>}
         </article>
       })}
-    </div> : <Empty icon="◇" title="Aún no hay proyectos" detail="Añade una carpeta con skills de Codex o Claude Code para empezar." />}
+    </div> : <Empty icon="◇" title="No projects yet" detail="Add a folder that contains Codex or Claude Code skills to get started." />}
   </section>
 }

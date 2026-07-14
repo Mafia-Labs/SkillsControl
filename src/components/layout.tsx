@@ -3,7 +3,7 @@ import type { ChangeEvent } from 'react'
 export type View = 'projects' | 'overview' | 'map' | 'discover' | 'health'
 
 const navigation: Array<{ id: View, label: string, icon: string }> = [
-  { id: 'projects', label: 'Proyectos', icon: '◇' },
+  { id: 'projects', label: 'Projects', icon: '◇' },
   { id: 'overview', label: 'Overview', icon: '◉' },
   { id: 'map', label: 'Skill Map', icon: '⊞' },
   { id: 'discover', label: 'Discover', icon: '⌕' },
