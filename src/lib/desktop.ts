@@ -3,6 +3,8 @@ import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, Ins
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
 
+export const isDemoMode = () => !isTauri()
+
 const invoke = async <T>(command: string, args?: Record<string, unknown>): Promise<T> => {
   const { invoke: tauriInvoke } = await import('@tauri-apps/api/core')
   return tauriInvoke<T>(command, args)

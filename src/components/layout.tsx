@@ -1,8 +1,9 @@
 import type { ChangeEvent } from 'react'
 
-export type View = 'overview' | 'map' | 'discover' | 'health'
+export type View = 'projects' | 'overview' | 'map' | 'discover' | 'health'
 
 const navigation: Array<{ id: View, label: string, icon: string }> = [
+  { id: 'projects', label: 'Proyectos', icon: '◇' },
   { id: 'overview', label: 'Overview', icon: '◉' },
   { id: 'map', label: 'Skill Map', icon: '⊞' },
   { id: 'discover', label: 'Discover', icon: '⌕' },
