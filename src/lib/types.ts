@@ -84,6 +84,19 @@ export type ProjectSummary = {
   agents: Agent[]
 }
 
+export type ProjectSkillEntry = {
+  skill: Skill
+  installations: Installation[]
+}
+
+export type ProjectInventory = {
+  path: string
+  name: string
+  agents: Agent[]
+  skills: ProjectSkillEntry[]
+  globalSkills: Skill[]
+}
+
 export type ScanReport = {
   skills: Skill[]
   findings: Finding[]
