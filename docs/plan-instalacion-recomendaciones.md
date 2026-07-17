@@ -94,9 +94,23 @@ Integración (Discover renace como "Marketplace"):
 11. **"Update disponible":** comparar hash local contra el commit fijado del origen (reutiliza `check_online_reputation`) y ofrecer reinstalar.
 12. **Consistencia de idioma** (decisión tomada: inglés en UI) y repaso de empty states — primera ejecución sin carpetas debe llevar de la mano a "añadir carpeta → analizar → instalar".
 
+### Fase D — Skill Control para agentes (CLI + meta-skill + MCP)
+
+**Estado hoy: no hay nada agent-facing.** Toda la lógica (escaneo, detección, instalación) vive como comandos Tauri en `src-tauri/src/lib.rs`, solo invocables desde la UI de escritorio. Un agente (Claude Code, Codex, OpenCode…) no tiene forma de usar Skill Control. Esta fase lo arregla en tres pasos, por orden de apalancamiento:
+
+**D1 — CLI (`skillctl`).** Refactor de `src-tauri` a workspace de Rust: crate `core` (escaneo, detección, instalador de la lista, lockfile) compartido por la app Tauri y un binario CLI. Comandos: `skillctl detect [ruta]`, `skillctl recommend`, `skillctl install <id> [--project .] [--agents all|codex|claude]`, `skillctl list`, todos con `--json` para consumo por máquinas. Por qué primero: **todos** los agentes tienen shell; cero configuración por agente. La frontera de confianza es la lista curada: el CLI solo instala entradas de `list.json` con su commit+hash fijados — un agente no puede instalarse contenido arbitrario a través de él.
+
+**D2 — La meta-skill (bootstrap).** Publicar en `Mafia-Claude-Skills` una skill `skill-control` que enseña a cualquier agente cuándo y cómo usar el CLI: "si detectas que el stack del proyecto se beneficiaría de una skill que no está instalada, ejecuta `skillctl recommend` y propón instalar". Se distribuye por la propia lista — el canal ya existe. Es el equivalente evolucionado de la skill `find-skills` que ya está en la colección: aquella descubre, esta detecta e instala con verificación.
+
+**D3 — Servidor MCP (`skillctl mcp`).** Subcomando que expone el mismo core por stdio como servidor MCP (tools: `detect_stack`, `recommend_skills`, `install_skill`, `list_installed`), para agentes/entornos donde MCP es más natural que la shell (Claude Desktop, clientes MCP). Mismo binario, misma frontera de confianza.
+
+**Decisión de seguridad transversal:** instalación iniciada por agente = solo ámbito proyecto por defecto, solo entradas de la lista, y el resultado queda visible/reversible en la app (mismo archivo SQLite y cuarentena). Escalar a global requiere flag explícito pensado para humanos.
+
+**Hecho cuando:** en un proyecto real, Claude Code (u otro agente con la meta-skill) ejecuta `skillctl recommend --json`, propone instalar una skill de la lista, la instala con `skillctl install`, y la instalación aparece en la UI de Skill Control con su procedencia.
+
 ## 4. Orden
 
-A es bloqueante y es la brecha visible hoy (con la lista sembrada a mano ya se puede instalar). A2 depende de A (mismo instalador; el marketplace solo alimenta la lista). B reutiliza el instalador de A. C.8 y C.9 pueden ir en paralelo con A2/B; C.10–C.11 después.
+A es bloqueante y es la brecha visible hoy (con la lista sembrada a mano ya se puede instalar). A2 depende de A (mismo instalador; el marketplace solo alimenta la lista). B reutiliza el instalador de A. C.8 y C.9 pueden ir en paralelo con A2/B; C.10–C.11 después. D depende de A (el CLI instala desde la lista) y conviene hacer D1 junto al refactor de A2 para extraer el crate `core` una sola vez; D2 y D3 son incrementales encima.
 
 ## 5. Riesgos
 
