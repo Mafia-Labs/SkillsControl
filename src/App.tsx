@@ -5,11 +5,13 @@ import { Health } from './components/Health'
 import { Inspector } from './components/Inspector'
 import { Sidebar, TopBar, type View } from './components/layout'
 import { Overview } from './components/Overview'
+import { Projects } from './components/Projects'
+import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, copySkillToProject, installCatalogSkill, listArchives, previewDisable, quarantineSkill, restoreSkill, scanSkills, trustSkillVersion } from './lib/desktop'
-import { getSkillHealth } from './lib/skill-utils'
-import type { ArchiveEntry, Installation, InstallTarget, ProjectSummary, ScanReport, Scope, SecurityStatus } from './lib/types'
+import { checkOnlineReputation, chooseProjects, copySkillToProject, detectStack, getWorkspaceRoots, installCatalogSkill, isDemoMode, listArchives, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
+import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
+import type { ArchiveEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
 
 const loadWorkspaceRoots = (): string[] => {
   try {
@@ -25,9 +27,10 @@ const fallbackProject = (path: string): ProjectSummary => ({
 })
 
 export default function App() {
-  const [view, setView] = useState<View>('overview')
+  const [view, setView] = useState<View>('projects')
   const [report, setReport] = useState<ScanReport | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedProjectPath, setSelectedProjectPath] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [isScanning, setIsScanning] = useState(true)
   const [modal, setModal] = useState<ModalState | null>(null)
@@ -36,6 +39,8 @@ export default function App() {
   const [workspaceRoots, setWorkspaceRoots] = useState(loadWorkspaceRoots)
   const [archives, setArchives] = useState<ArchiveEntry[]>([])
   const [recentArchive, setRecentArchive] = useState<ArchiveEntry | null>(null)
+  const [analyses, setAnalyses] = useState<Record<string, { result: StackDetection, at: string }>>({})
+  const [analyzingPath, setAnalyzingPath] = useState<string | null>(null)
 
   const applyReport = (next: ScanReport) => {
     setReport(next)
@@ -56,12 +61,37 @@ export default function App() {
     }
   }
 
-  useEffect(() => { void refresh() }, [])
+  // Reconcile the frontend's legacy localStorage roots with the backend store.
+  // The backend (app data dir) is the source of truth; localStorage is migrated
+  // once and then kept only as the demo-mode fallback.
+  useEffect(() => {
+    void (async () => {
+      const stored = await getWorkspaceRoots()
+      if (stored === null) { void refresh(); return }
+      if (stored.length === 0 && workspaceRoots.length > 0) {
+        await saveWorkspaceRoots(workspaceRoots)
+        void refresh(workspaceRoots)
+      } else {
+        setWorkspaceRoots(stored)
+        void refresh(stored)
+      }
+    })()
+  }, [])
   useEffect(() => { localStorage.setItem('skill-control-projects', JSON.stringify(workspaceRoots)) }, [workspaceRoots])
 
+  const persistRoots = async (nextRoots: string[]) => {
+    setWorkspaceRoots(nextRoots)
+    await saveWorkspaceRoots(nextRoots)
+    await refresh(nextRoots)
+  }
+
   const filteredSkills = useMemo(() => (report?.skills ?? []).filter((skill) => `${skill.name} ${skill.description}`.toLowerCase().includes(search.toLowerCase())), [report, search])
+  const inventories = useMemo(() => (report ? groupInstallationsByProject(report) : []), [report])
+  const filteredInventories = useMemo(() => inventories.filter((inventory) => `${inventory.name} ${inventory.path}`.toLowerCase().includes(search.toLowerCase())), [inventories, search])
   const selected = report?.skills.find((skill) => skill.id === selectedId) ?? null
+  const selectedInventory = selectedProjectPath ? inventories.find((inventory) => inventory.path === selectedProjectPath) ?? null : null
   const projects = report?.projects.length ? report.projects : workspaceRoots.map(fallbackProject)
+  const isDemo = isDemoMode()
 
   const requestDisable = async (installation: Installation) => {
     try {
@@ -71,13 +101,31 @@ export default function App() {
     }
   }
 
-  const requestLocalize = (installation: Installation) => {
-    if (!selected) return
+  const requestLocalize = (skill: Skill, installation: Installation) => {
     if (!projects.length) {
       setError('Add a project or workspace folder before creating a local copy.')
       return
     }
-    setModal({ kind: 'localize', skill: selected, source: installation })
+    setModal({ kind: 'localize', skill, source: installation })
+  }
+
+  const inspectSkill = (id: string) => {
+    setSelectedId(id)
+    setView('map')
+  }
+
+  const analyzeProject = async (inventory: ProjectInventory) => {
+    setAnalyzingPath(inventory.path)
+    setError(null)
+    try {
+      const installedIds = [...new Set([...inventory.skills.map((entry) => entry.skill.id), ...inventory.globalSkills.map((skill) => skill.id)])]
+      const result = await detectStack(inventory.path, installedIds)
+      setAnalyses((current) => ({ ...current, [inventory.path]: { result, at: new Date().toISOString() } }))
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'The project could not be analyzed.')
+    } finally {
+      setAnalyzingPath(null)
+    }
   }
 
   const applyModal = async (scope: Scope = 'user', target: InstallTarget = 'all', projectPath?: string) => {
@@ -141,13 +189,17 @@ export default function App() {
         setNotice('Those folders are already part of this workspace.')
         return
       }
-      const nextRoots = [...workspaceRoots, ...additions]
-      setWorkspaceRoots(nextRoots)
-      await refresh(nextRoots)
+      await persistRoots([...workspaceRoots, ...additions])
       setNotice(`Added ${additions.length} project folder${additions.length === 1 ? '' : 's'} and scanned nested scopes.`)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Could not add the selected folder.')
     }
+  }
+
+  const removeWorkspaceRoot = async (root: string) => {
+    if (selectedProjectPath && selectedProjectPath.replace(/\\/g, '/').startsWith(root.replace(/\\/g, '/'))) setSelectedProjectPath(null)
+    await persistRoots(workspaceRoots.filter((existing) => existing !== root))
+    setNotice('Folder removed from the workspace.')
   }
 
   const restoreArchive = async (archive: ArchiveEntry) => {
@@ -165,9 +217,13 @@ export default function App() {
     <Sidebar view={view} onChange={setView} />
     <section className="workspace">
       <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} onAddProject={() => void addWorkspaceRoots()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
+      {isDemo && <div className="demo-banner" role="status"><span>◒</span>Demo mode — you're seeing example data, not your real skills.</div>}
       {error && <Banner tone="error" message={error} onDismiss={() => setError(null)} />}
       {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: 'Undo', onClick: () => void restoreArchive(recentArchive) } : undefined} onDismiss={() => setNotice(null)} />}
       {isScanning && !report ? <Loading /> : <div className="page-content">
+        {view === 'projects' && (selectedInventory
+          ? <ProjectDetail inventory={selectedInventory} findings={report?.findings ?? []} analysis={analyses[selectedInventory.path] ?? null} analyzing={analyzingPath === selectedInventory.path} onAnalyze={() => void analyzeProject(selectedInventory)} onBack={() => setSelectedProjectPath(null)} onInspect={inspectSkill} onQuarantine={(installation) => void requestDisable(installation)} onLocalize={requestLocalize} />
+          : <Projects inventories={filteredInventories} findings={report?.findings ?? []} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} />)}
         {view === 'overview' && report && <Overview report={report} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} />}
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} selectedId={selectedId} onSelect={setSelectedId} />}
         {view === 'discover' && <Discover query={search} onInstall={(skill) => setModal({ kind: 'install', skill })} />}
@@ -175,7 +231,7 @@ export default function App() {
         {!report && <Empty icon="!" title="No report available" detail="Run another scan to inspect your local skills." />}
       </div>}
     </section>
-    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={requestLocalize} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
+    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
     {modal && <ChangeModal modal={modal} projects={projects} onCancel={() => setModal(null)} onApply={applyModal} />}
   </main>
 }

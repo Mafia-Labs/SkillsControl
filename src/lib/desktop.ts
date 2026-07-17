@@ -1,7 +1,9 @@
-import { demoReport } from './demo-data'
-import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, ScanReport, Scope, Skill } from './types'
+import { demoReport, demoStackDetection } from './demo-data'
+import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, ScanReport, Scope, Skill, StackDetection } from './types'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
+
+export const isDemoMode = () => !isTauri()
 
 const invoke = async <T>(command: string, args?: Record<string, unknown>): Promise<T> => {
   const { invoke: tauriInvoke } = await import('@tauri-apps/api/core')
@@ -66,6 +68,22 @@ export const checkOnlineReputation = async (skill: Skill): Promise<ExternalReput
     skillName: skill.name,
     localHash: skill.contentHashSha256,
   })
+}
+
+export const detectStack = async (projectPath: string, installedSkills: string[]): Promise<StackDetection> => {
+  if (!isTauri()) return demoStackDetection()
+  return invoke<StackDetection>('detect_stack', { projectPath, installedSkills })
+}
+
+// Returns null in demo (non-Tauri) mode so the caller keeps using localStorage.
+export const getWorkspaceRoots = async (): Promise<string[] | null> => {
+  if (!isTauri()) return null
+  return invoke<string[]>('get_workspace_roots')
+}
+
+export const saveWorkspaceRoots = async (roots: string[]): Promise<void> => {
+  if (!isTauri()) return
+  return invoke<void>('set_workspace_roots', { roots })
 }
 
 export const chooseProjects = async (): Promise<string[]> => {

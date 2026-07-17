@@ -1,4 +1,4 @@
-import type { Agent, Finding, ScanReport, Skill } from './types'
+import type { Agent, Finding, Installation, ProjectInventory, ScanReport, Skill } from './types'
 
 export const agentLabels: Record<Agent, string> = {
   codex: 'Codex / Agent Skills',
@@ -38,6 +38,56 @@ export const countDuplicates = (report: ScanReport) =>
     })
     return divergent || override
   }).length
+
+const normalizeProjectPath = (path: string) => path.replace(/\\/g, '/').replace(/\/+$/, '')
+
+const agentsFromInstallations = (installations: Installation[]): Agent[] =>
+  [...new Set(installations.map((installation) => installation.agent))].sort()
+
+// The scanner is skill-centric; this regroups the same physical installations by
+// the project that owns them so the UI can answer "what does this project have?".
+// Global (user-scope) copies are attached to every project because an agent
+// working inside a project can also resolve them.
+export const groupInstallationsByProject = (report: ScanReport): ProjectInventory[] => {
+  const byPath = new Map<string, ProjectInventory>()
+  const ensure = (path: string, name: string, agents: Agent[]): ProjectInventory => {
+    const key = normalizeProjectPath(path)
+    const existing = byPath.get(key)
+    if (existing) {
+      existing.agents = [...new Set([...existing.agents, ...agents])].sort()
+      return existing
+    }
+    const inventory: ProjectInventory = { path, name, agents: [...agents].sort(), skills: [], globalSkills: [] }
+    byPath.set(key, inventory)
+    return inventory
+  }
+
+  for (const project of report.projects) ensure(project.path, project.name, project.agents)
+
+  const globalSkills: Skill[] = []
+  for (const skill of report.skills) {
+    if (skill.installations.some((installation) => installation.scope === 'user')) globalSkills.push(skill)
+    const projectInstallations = skill.installations.filter((installation) => installation.scope === 'project')
+    const grouped = new Map<string, Installation[]>()
+    for (const installation of projectInstallations) {
+      const path = installation.projectPath ?? installation.path
+      const key = normalizeProjectPath(path)
+      grouped.set(key, [...(grouped.get(key) ?? []), installation])
+    }
+    for (const [, installations] of grouped) {
+      const path = installations[0].projectPath ?? installations[0].path
+      const inventory = ensure(path, projectName(path), agentsFromInstallations(installations))
+      inventory.skills.push({ skill, installations })
+    }
+  }
+
+  const inventories = [...byPath.values()]
+  for (const inventory of inventories) {
+    inventory.skills.sort((a, b) => a.skill.name.localeCompare(b.skill.name))
+    inventory.globalSkills = [...globalSkills].sort((a, b) => a.name.localeCompare(b.name))
+  }
+  return inventories.sort((a, b) => a.name.localeCompare(b.name) || a.path.localeCompare(b.path))
+}
 
 export const formatTokenCount = (tokens: number) =>
   new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(tokens)
