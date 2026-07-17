@@ -33,7 +33,7 @@ Dos causas, una de código y una de datos:
 
 **Modelo:** Auto Skills solo recomienda skills que Alex ha seleccionado a mano. El `detection-map.json` deja de llevar skills incrustadas: mapea tecnología → ids de "Mi lista". Si una tecnología detectada no tiene skill en la lista, se muestra el chip de stack y un enlace "buscar en el marketplace", nunca una recomendación inventada.
 
-1. **`my-skills.json` (la lista personal).** Cada entrada: `id`, `source` (`owner/repo` + `skill_path` **o** id de skills.sh), `commit` fijado, `sha256` del contenido, `techs` (tecnologías a las que aplica), y nota personal de por qué está en la lista. Vive en un repo de Alex (p. ej. `Mafia-Labs/skills-list`) y la app la carga con fallback embebido — se cura sin publicar app. Arranque: semilla con las fuentes verificadas hoy (`anthropics/skills`, `vercel-labs/skills`, `vercel-labs/next-skills`, `angular/skills`, `withastro/skills`, `prisma/skills`, `microsoft/skills`).
+1. **`list.json` (la lista personal). ✅ Hecho 2026-07-17.** Cada entrada: `id`, `name`, `description`, `source` (`repo` + `path` + `commit` fijado + `sha256` del contenido), `upstream` (repo original si la fuente es copia vendorizada), `review` (auditoría IA si existe), `techs` y `note`. Vive en `alexdcd/Mafia-Claude-Skills` (`list.json` + `schema.json`; consumo: `raw.githubusercontent.com/alexdcd/Mafia-Claude-Skills/main/list.json`) con fallback embebido pendiente en la app. Semilla real: 235 skills — el mapa de autoskills (registry auditado de midudev, con upstreams de vercel-labs, antfu, better-auth, clerk…) + las 19 skills de La Mafia IA. Hash: sha256 sobre líneas `<relpath>\0<sha256(archivo)>\n` ordenadas por ruta — Skill Control debe reproducir este algoritmo al verificar.
 2. **Comando `install_listed_skill(entry_id, scope, target, project_path)`.** Descarga el tarball del repo en el commit fijado (codeload de GitHub), extrae la carpeta de la skill, verifica el `sha256`, e instala con `copy_skill_atomically` reutilizando la transaccionalidad multi-agente de `install_catalog_skill`. Sin commit/hash verificado, no instala.
 3. **Procedencia persistente.** Al instalar, escribir/actualizar la entrada en el `skills-lock.json` local del proyecto (origen, ruta, commit, hash) — el escáner ya sabe leerlo; ahora también lo escribe.
 4. **UI.** Habilitar el botón Install → abre el `ChangeModal` existente con ámbito preseleccionado al proyecto actual y cobertura "todos los agentes" por defecto. Tras instalar: `refresh()` + re-marcar `installed` en el análisis sin re-analizar a mano.
@@ -43,7 +43,7 @@ Dos causas, una de código y una de datos:
 
 ### Fase A1 — El repo de la lista: `MafiaIA Skill List`
 
-La lista vive en un repo público de GitHub (p. ej. `MafiaIA/skill-list`). No es solo almacenamiento: es el pipeline que impide que la lista degenere en punteros rotos (el fallo original del detection-map).
+**✅ Hecho 2026-07-17.** La lista vive en `alexdcd/Mafia-Claude-Skills` (decisión: reutilizar el repo existente con seguidores y enlaces en lugar de uno nuevo; `alexdcd/mafiaia-skill-list` quedó archivado con redirección). No es solo almacenamiento: es el pipeline que impide que la lista degenere en punteros rotos (el fallo original del detection-map).
 
 ```
 skill-list/
