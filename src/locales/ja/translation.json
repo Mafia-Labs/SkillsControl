@@ -28,6 +28,9 @@
       "reputationCouldNotBeChecked": "オンライン評価を確認できませんでした。",
       "couldNotAddFolder": "選択したフォルダを追加できませんでした。",
       "skillCouldNotBeRestored": "skill を復元できませんでした。",
+      "couldNotOpenSkill": "skill ファイルを開けませんでした。",
+      "couldNotOpenFolder": "skill フォルダを開けませんでした。",
+      "couldNotCopyHandoff": "引き継ぎプロンプトをコピーできませんでした。",
       "noReport": "レポートはありません",
       "runScan": "別のスキャンを実行してローカル skills を確認してください。"
     },
@@ -43,7 +46,10 @@
       "foldersAdded_one": "{{count}} 個のプロジェクトフォルダを追加し、ネストされたスコープをスキャンしました。",
       "foldersAdded_other": "{{count}} 個のプロジェクトフォルダを追加し、ネストされたスコープをスキャンしました。",
       "folderRemoved": "フォルダをワークスペースから削除しました。",
-      "skillRestored": "Skill を元の場所に復元しました。"
+      "skillRestored": "Skill を元の場所に復元しました。",
+      "skillOpened": "SKILL.md を既定のエディタで開きました。",
+      "folderOpened": "Skill フォルダを開きました。",
+      "handoffCopied": "{{agent}} 用の引き継ぎプロンプトをコピーしました。"
     },
     "demoBanner": "デモモード — 実際の skills ではなくサンプルデータが表示されています。",
     "processApplyTitle": "skill-control — apply"
@@ -306,6 +312,9 @@
     "projectScope": "プロジェクト",
     "differs": "相違あり",
     "quarantineFrom": "{{name}} を {{path}} からアンインストール",
+    "editSkill": "SKILL.md を編集",
+    "revealFolder": "フォルダを表示",
+    "copyHandoff": "{{agent}} 用プロンプトをコピー",
     "contextFootprint": "コンテキストフットプリント",
     "contextDescription": "推定は SKILL.md に基づきます。プロジェクトスコープは skill の発見範囲を縮小しますが、実際の読み込み動作はエージェントに依存します。",
     "estimatedTokens": "推定トークン",

@@ -28,6 +28,9 @@
       "reputationCouldNotBeChecked": "No se ha podido comprobar la reputación online.",
       "couldNotAddFolder": "No se ha podido añadir la carpeta seleccionada.",
       "skillCouldNotBeRestored": "No se ha podido restaurar el skill.",
+      "couldNotOpenSkill": "No se ha podido abrir el archivo del skill.",
+      "couldNotOpenFolder": "No se ha podido abrir la carpeta del skill.",
+      "couldNotCopyHandoff": "No se ha podido copiar el prompt de entrega.",
       "noReport": "No hay ningún informe disponible",
       "runScan": "Ejecuta otro escaneo para inspeccionar tus skills locales."
     },
@@ -43,7 +46,10 @@
       "foldersAdded_one": "Añadida {{count}} carpeta de proyecto y escaneados los ámbitos anidados.",
       "foldersAdded_other": "Añadidas {{count}} carpetas de proyecto y escaneados los ámbitos anidados.",
       "folderRemoved": "Carpeta eliminada del workspace.",
-      "skillRestored": "Skill restaurado en su ubicación original."
+      "skillRestored": "Skill restaurado en su ubicación original.",
+      "skillOpened": "SKILL.md abierto en tu editor predeterminado.",
+      "folderOpened": "Carpeta del skill abierta.",
+      "handoffCopied": "Prompt de entrega copiado para {{agent}}."
     },
     "demoBanner": "Modo demo — estás viendo datos de ejemplo, no tus skills reales.",
     "processApplyTitle": "skill-control — apply"
@@ -306,6 +312,9 @@
     "projectScope": "Proyecto",
     "differs": "difiere",
     "quarantineFrom": "Desinstalar {{name}} desde {{path}}",
+    "editSkill": "Editar SKILL.md",
+    "revealFolder": "Mostrar carpeta",
+    "copyHandoff": "Copiar prompt para {{agent}}",
     "contextFootprint": "Huella de contexto",
     "contextDescription": "La estimación se basa en SKILL.md. El ámbito de proyecto reduce dónde se puede descubrir un skill; el comportamiento de carga real depende del agente.",
     "estimatedTokens": "tokens estimados",

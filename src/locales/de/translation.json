@@ -28,6 +28,9 @@
       "reputationCouldNotBeChecked": "Die Online-Reputation konnte nicht geprüft werden.",
       "couldNotAddFolder": "Der ausgewählte Ordner konnte nicht hinzugefügt werden.",
       "skillCouldNotBeRestored": "Der skill konnte nicht wiederhergestellt werden.",
+      "couldNotOpenSkill": "Die Skill-Datei konnte nicht geöffnet werden.",
+      "couldNotOpenFolder": "Der Skill-Ordner konnte nicht geöffnet werden.",
+      "couldNotCopyHandoff": "Der Übergabe-Prompt konnte nicht kopiert werden.",
       "noReport": "Kein Bericht verfügbar",
       "runScan": "Führen Sie einen weiteren Scan durch, um Ihre lokalen skills zu überprüfen."
     },
@@ -43,7 +46,10 @@
       "foldersAdded_one": "{{count}} Projektordner hinzugefügt und verschachtelte Bereiche gescannt.",
       "foldersAdded_other": "{{count}} Projektordner hinzugefügt und verschachtelte Bereiche gescannt.",
       "folderRemoved": "Ordner aus dem Workspace entfernt.",
-      "skillRestored": "Skill an seinen ursprünglichen Ort wiederhergestellt."
+      "skillRestored": "Skill an seinen ursprünglichen Ort wiederhergestellt.",
+      "skillOpened": "SKILL.md im Standardeditor geöffnet.",
+      "folderOpened": "Skill-Ordner geöffnet.",
+      "handoffCopied": "Übergabe-Prompt für {{agent}} kopiert."
     },
     "demoBanner": "Demo-Modus — Sie sehen Beispieldaten, nicht Ihre echten skills.",
     "processApplyTitle": "skill-control — apply"
@@ -306,6 +312,9 @@
     "projectScope": "Projekt",
     "differs": "weicht ab",
     "quarantineFrom": "{{name}} von {{path}} deinstallieren",
+    "editSkill": "SKILL.md bearbeiten",
+    "revealFolder": "Ordner anzeigen",
+    "copyHandoff": "Prompt für {{agent}} kopieren",
     "contextFootprint": "Kontext-Fußabdruck",
     "contextDescription": "Die Schätzung basiert auf SKILL.md. Projektbereich reduziert die Auffindbarkeit eines skills; das tatsächliche Ladeverhalten hängt vom Agenten ab.",
     "estimatedTokens": "geschätzte Tokens",

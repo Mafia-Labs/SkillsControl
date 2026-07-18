@@ -12,9 +12,9 @@ import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { appendConsoleLines, ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, detectStack, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, moveSkillToProject, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, detectStack, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, moveSkillToProject, openSkillFile, previewDisable, quarantineSkill, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
-import type { ArchiveEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
+import type { Agent, ArchiveEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
 
 const loadWorkspaceRoots = (): string[] => {
   try {
@@ -32,6 +32,23 @@ const fallbackProject = (path: string): ProjectSummary => ({
 })
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const copyText = async (value: string) => {
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value)
+    return
+  }
+  const textarea = document.createElement('textarea')
+  textarea.value = value
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.opacity = '0'
+  document.body.appendChild(textarea)
+  textarea.select()
+  const copied = document.execCommand('copy')
+  textarea.remove()
+  if (!copied) throw new Error('Clipboard access is unavailable.')
+}
 
 const scanScript = (rootCount: number): ConsoleLine[] => [
   { id: 'cmd', text: i18n.t('app.scan.command'), tone: 'cmd', delay: 120 },
@@ -159,6 +176,39 @@ export default function App() {
   const inspectSkill = (id: string) => {
     setSelectedId(id)
     setView('map')
+  }
+
+  const editSkill = async (installation: Installation) => {
+    try {
+      await openSkillFile(installation)
+      setNotice(t('app.notices.skillOpened'))
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : t('app.errors.couldNotOpenSkill'))
+    }
+  }
+
+  const revealSkill = async (installation: Installation) => {
+    try {
+      await revealSkillFolder(installation)
+      setNotice(t('app.notices.folderOpened'))
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : t('app.errors.couldNotOpenFolder'))
+    }
+  }
+
+  const copyHandoff = async (skill: Skill, installation: Installation, agent: Agent) => {
+    const agentName = t(`agents.${agent}`)
+    const prompt = `Review and edit the skill definition at ${installation.path}/SKILL.md.\n\nSkill: ${skill.name}\nAgent: ${agentName}\nScope: ${installation.scope}\n\nPreserve the frontmatter contract, explain any proposed changes, and do not modify files outside this skill folder. Inspect the current content before editing.`
+    try {
+      if (isDemoMode()) {
+        setNotice(t('app.notices.handoffCopied', { agent: agentName }))
+        return
+      }
+      await copyText(prompt)
+      setNotice(t('app.notices.handoffCopied', { agent: agentName }))
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : t('app.errors.couldNotCopyHandoff'))
+    }
   }
 
   const analyzeProject = async (inventory: ProjectInventory) => {
@@ -311,7 +361,7 @@ export default function App() {
         {!report && <Empty icon="!" title={t('app.errors.noReport')} detail={t('app.errors.runScan')} />}
       </div>}
     </section>
-    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
+    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onDisable={requestDisable} onEdit={(installation) => void editSkill(installation)} onReveal={(installation) => void revealSkill(installation)} onCopyHandoff={(skill, installation, agent) => void copyHandoff(skill, installation, agent)} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
     {modal && <ChangeModal modal={modal} projects={projects} applying={applying} onCancel={() => setModal(null)} onApply={applyModal} />}
     {scanConsole && <div className="console-overlay" role="presentation">
       <ProcessConsole title={t('app.scan.title')} lines={scanConsole.lines} done={scanConsole.done} onSettled={() => setTimeout(() => setScanConsole(null), 900)} />

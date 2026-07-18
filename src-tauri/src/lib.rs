@@ -6,6 +6,7 @@ use std::{
     collections::{HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
+    process::Command,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -2054,6 +2055,64 @@ fn move_skill_to_project(
     })
 }
 
+fn launch_path(path: &Path, reveal: bool) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    let mut command = {
+        let mut command = Command::new("open");
+        if reveal {
+            command.arg("-R");
+        }
+        command.arg(path);
+        command
+    };
+
+    #[cfg(target_os = "windows")]
+    let mut command = {
+        let mut command = Command::new("explorer.exe");
+        if reveal {
+            command.arg(format!("/select,{}", path.to_string_lossy()));
+        } else {
+            command.arg(path);
+        }
+        command
+    };
+
+    #[cfg(target_os = "linux")]
+    let mut command = {
+        let target = if reveal {
+            path.parent().unwrap_or(path)
+        } else {
+            path
+        };
+        let mut command = Command::new("xdg-open");
+        command.arg(target);
+        command
+    };
+
+    command
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| format!("Could not open {}: {error}", path.to_string_lossy()))
+}
+
+#[tauri::command]
+fn open_skill_file(installation: Installation) -> Result<(), String> {
+    let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
+    let source = validate_installation(&installation, &home)?;
+    let file = source.join("SKILL.md");
+    if !file.is_file() {
+        return Err("This skill does not contain a readable SKILL.md file.".into());
+    }
+    launch_path(&file, false)
+}
+
+#[tauri::command]
+fn reveal_skill_folder(installation: Installation) -> Result<(), String> {
+    let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
+    let source = validate_installation(&installation, &home)?;
+    launch_path(&source, true)
+}
+
 #[tauri::command]
 fn install_catalog_skill(
     skill_id: String,
@@ -2489,6 +2548,8 @@ pub fn run() {
             list_archives,
             copy_skill_to_project,
             move_skill_to_project,
+            open_skill_file,
+            reveal_skill_folder,
             install_catalog_skill,
             install_listed_skill,
             check_online_reputation,

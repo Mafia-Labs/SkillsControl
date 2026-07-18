@@ -61,6 +61,16 @@ export const moveSkillToProject = async (installation: Installation, projectPath
   return invoke<MoveSkillResult>('move_skill_to_project', { installation, projectPath, removeSource })
 }
 
+export const openSkillFile = async (installation: Installation): Promise<void> => {
+  if (!isTauri()) return
+  return invoke<void>('open_skill_file', { installation })
+}
+
+export const revealSkillFolder = async (installation: Installation): Promise<void> => {
+  if (!isTauri()) return
+  return invoke<void>('reveal_skill_folder', { installation })
+}
+
 export const installCatalogSkill = async (skillId: string, scope: Scope, target: InstallTarget, projectPath?: string): Promise<string[]> => {
   if (!isTauri()) return []
   return invoke<string[]>('install_catalog_skill', { skillId, scope, target, projectPath })

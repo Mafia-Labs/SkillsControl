@@ -28,6 +28,9 @@
       "reputationCouldNotBeChecked": "Could not check online reputation.",
       "couldNotAddFolder": "Could not add the selected folder.",
       "skillCouldNotBeRestored": "The skill could not be restored.",
+      "couldNotOpenSkill": "The skill file could not be opened.",
+      "couldNotOpenFolder": "The skill folder could not be opened.",
+      "couldNotCopyHandoff": "The handoff prompt could not be copied.",
       "noReport": "No report available",
       "runScan": "Run another scan to inspect your local skills."
     },
@@ -43,7 +46,10 @@
       "foldersAdded_one": "Added {{count}} project folder and scanned nested scopes.",
       "foldersAdded_other": "Added {{count}} project folders and scanned nested scopes.",
       "folderRemoved": "Folder removed from the workspace.",
-      "skillRestored": "Skill restored to its original location."
+      "skillRestored": "Skill restored to its original location.",
+      "skillOpened": "SKILL.md opened in your default editor.",
+      "folderOpened": "Skill folder opened.",
+      "handoffCopied": "Handoff prompt copied for {{agent}}."
     },
     "demoBanner": "Demo mode — you're seeing example data, not your real skills.",
     "processApplyTitle": "skill-control — apply"
@@ -306,6 +312,9 @@
     "projectScope": "Project",
     "differs": "differs",
     "quarantineFrom": "Uninstall {{name}} from {{path}}",
+    "editSkill": "Edit SKILL.md",
+    "revealFolder": "Show folder",
+    "copyHandoff": "Copy prompt for {{agent}}",
     "contextFootprint": "Context footprint",
     "contextDescription": "The estimate is based on SKILL.md. Project scope reduces where a skill is discoverable; actual loading behavior still depends on the agent.",
     "estimatedTokens": "estimated tokens",

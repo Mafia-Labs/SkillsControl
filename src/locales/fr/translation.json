@@ -28,6 +28,9 @@
       "reputationCouldNotBeChecked": "Impossible de vérifier la réputation en ligne.",
       "couldNotAddFolder": "Impossible d'ajouter le dossier sélectionné.",
       "skillCouldNotBeRestored": "Le skill n'a pas pu être restauré.",
+      "couldNotOpenSkill": "Le fichier du skill n'a pas pu être ouvert.",
+      "couldNotOpenFolder": "Le dossier du skill n'a pas pu être ouvert.",
+      "couldNotCopyHandoff": "Le prompt de transmission n'a pas pu être copié.",
       "noReport": "Aucun rapport disponible",
       "runScan": "Lancez une nouvelle analyse pour inspecter vos skills locaux."
     },
@@ -43,7 +46,10 @@
       "foldersAdded_one": "{{count}} dossier de projet ajouté et portées imbriquées analysées.",
       "foldersAdded_other": "{{count}} dossiers de projet ajoutés et portées imbriquées analysées.",
       "folderRemoved": "Dossier supprimé du workspace.",
-      "skillRestored": "Skill restauré à son emplacement d'origine."
+      "skillRestored": "Skill restauré à son emplacement d'origine.",
+      "skillOpened": "SKILL.md ouvert dans votre éditeur par défaut.",
+      "folderOpened": "Dossier du skill ouvert.",
+      "handoffCopied": "Prompt de transmission copié pour {{agent}}."
     },
     "demoBanner": "Mode démo — vous voyez des données d'exemple, pas vos vrais skills.",
     "processApplyTitle": "skill-control — apply"
@@ -306,6 +312,9 @@
     "projectScope": "Projet",
     "differs": "diffère",
     "quarantineFrom": "Désinstaller {{name}} depuis {{path}}",
+    "editSkill": "Modifier SKILL.md",
+    "revealFolder": "Afficher le dossier",
+    "copyHandoff": "Copier le prompt pour {{agent}}",
     "contextFootprint": "Empreinte de contexte",
     "contextDescription": "L'estimation repose sur SKILL.md. La portée du projet réduit les emplacements où un skill peut être découvert ; le comportement de chargement réel dépend toujours de l'agent.",
     "estimatedTokens": "tokens estimés",

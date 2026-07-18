@@ -76,6 +76,7 @@
 .global-row small { color: #8b919c; font-size: 11px; }
 .global-row .skill-name-button strong { font-weight: 650; }
 .location .danger-button { justify-self: start; margin-top: 2px; }
+.location-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 
 .detail-head-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .scope-panel { min-height: 0; border-color: #2b2a45 !important; }

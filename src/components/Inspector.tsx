@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { formatTokenCount, projectName, securityStatusClass } from '../lib/skill-utils'
-import type { ExternalReputation, Finding, Installation, Skill } from '../lib/types'
+import type { Agent, ExternalReputation, Finding, Installation, Skill } from '../lib/types'
 import { InspectorSection } from './shared'
 
-export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable, onTrust, onCheckReputation }: {
+export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable, onEdit, onReveal, onCopyHandoff, onTrust, onCheckReputation }: {
   skill: Skill
   findings: Finding[]
   canLocalize: boolean
   onLocalize: (installation: Installation) => void
   onDisable: (installation: Installation) => void
+  onEdit: (installation: Installation) => void
+  onReveal: (installation: Installation) => void
+  onCopyHandoff: (skill: Skill, installation: Installation, agent: Agent) => void
   onTrust: (installation: Installation) => void
   onCheckReputation: () => void
 }) {
@@ -48,7 +51,7 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
       {showChanges && <div className="change-hash-list"><strong>{t('inspector.hashDivergence')}</strong>{skill.installations.map((installation) => <span key={installation.id}><code>{installation.contentHashSha256}</code> · {installation.path}</span>)}</div>}
     </InspectorSection>
 
-    <InspectorSection title={t('inspector.installedIn')}>{skill.installations.map((installation) => <div className="location" key={installation.id}><span><i className={`scope-dot ${installation.scope}`} />{installation.scope === 'project' ? `${projectName(installation.projectPath)} · ${t('inspector.projectScope')}` : t('common.global')} · {t(`agents.${installation.agent}`)}{installation.modified ? ` · ${t('inspector.differs')}` : ''}</span><code title={installation.path}>{installation.path}</code><button className="danger-button compact" aria-label={t('inspector.quarantineFrom', { name: skill.name, path: installation.path })} onClick={() => onDisable(installation)}>{t('common.uninstall')}</button></div>)}</InspectorSection>
+    <InspectorSection title={t('inspector.installedIn')}>{skill.installations.map((installation) => <div className="location" key={installation.id}><span><i className={`scope-dot ${installation.scope}`} />{installation.scope === 'project' ? `${projectName(installation.projectPath)} · ${t('inspector.projectScope')}` : t('common.global')} · {t(`agents.${installation.agent}`)}{installation.modified ? ` · ${t('inspector.differs')}` : ''}</span><code title={installation.path}>{installation.path}</code><div className="location-actions"><button className="secondary-button compact" onClick={() => onEdit(installation)}>{t('inspector.editSkill')}</button><button className="secondary-button compact" onClick={() => onReveal(installation)}>{t('inspector.revealFolder')}</button><button className="secondary-button compact" onClick={() => onCopyHandoff(skill, installation, installation.agent)}>{t('inspector.copyHandoff', { agent: t(`agents.${installation.agent}`) })}</button><button className="danger-button compact" aria-label={t('inspector.quarantineFrom', { name: skill.name, path: installation.path })} onClick={() => onDisable(installation)}>{t('common.uninstall')}</button></div></div>)}</InspectorSection>
     <InspectorSection title={t('inspector.contextFootprint')}><div className="token-number">{formatTokenCount(skill.contextTokens)} <small>{t('inspector.estimatedTokens')}</small></div><p className="muted-copy">{t('inspector.contextDescription')}</p></InspectorSection>
     {showFiles && <InspectorSection title={t('inspector.files')}><ul className="file-list">{skill.files.map((file) => <li key={file}><span>⌁</span>{file}{skill.executableScripts.includes(file) && <b>{t('inspector.executable')}</b>}{skill.invokedScripts.includes(file) && <b>{t('inspector.invoked')}</b>}</li>)}</ul></InspectorSection>}
     <InspectorSection title={t('inspector.localFindings')}>{findings.length ? <ul className="finding-list">{findings.map((finding) => <li key={finding.id}><span className={`severity ${finding.severity}`} /><div><strong>{finding.title}</strong><small>{finding.detail}</small></div></li>)}</ul> : <p className="healthy-copy">{t('health.noFindingsExactCopy')}</p>}</InspectorSection>

@@ -28,6 +28,9 @@
       "reputationCouldNotBeChecked": "无法在线检查信誉。",
       "couldNotAddFolder": "无法添加选定的文件夹。",
       "skillCouldNotBeRestored": "无法恢复此 skill。",
+      "couldNotOpenSkill": "无法打开 skill 文件。",
+      "couldNotOpenFolder": "无法打开 skill 文件夹。",
+      "couldNotCopyHandoff": "无法复制交接提示。",
       "noReport": "没有可用的报告",
       "runScan": "再次运行扫描以检查本地 skills。"
     },
@@ -43,7 +46,10 @@
       "foldersAdded_one": "已添加 {{count}} 个项目文件夹，并扫描嵌套作用域。",
       "foldersAdded_other": "已添加 {{count}} 个项目文件夹，并扫描嵌套作用域。",
       "folderRemoved": "已从 workspace 中移除文件夹。",
-      "skillRestored": "Skill 已恢复到原始位置。"
+      "skillRestored": "Skill 已恢复到原始位置。",
+      "skillOpened": "SKILL.md 已在默认编辑器中打开。",
+      "folderOpened": "Skill 文件夹已打开。",
+      "handoffCopied": "已为 {{agent}} 复制交接提示。"
     },
     "demoBanner": "演示模式 — 当前显示的是示例数据，不是你的真实 skills。",
     "processApplyTitle": "skill-control — apply"
@@ -306,6 +312,9 @@
     "projectScope": "项目",
     "differs": "存在差异",
     "quarantineFrom": "从 {{path}} 卸载 {{name}}",
+    "editSkill": "编辑 SKILL.md",
+    "revealFolder": "显示文件夹",
+    "copyHandoff": "复制 {{agent}} 提示",
     "contextFootprint": "上下文占用",
     "contextDescription": "估算基于 SKILL.md。项目作用域会减少 skill 可被发现的位置；实际加载行为仍取决于 agent。",
     "estimatedTokens": "预计 tokens",
