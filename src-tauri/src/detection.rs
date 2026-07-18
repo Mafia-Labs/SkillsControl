@@ -214,10 +214,31 @@ fn validate_criteria(criteria: &DetectionCriteria) -> Result<(), DetectionMapErr
     Ok(())
 }
 
+// Skill ids follow the curated list's schema (^[A-Za-z0-9][A-Za-z0-9._-]*$),
+// which mirrors real upstream folder names (e.g. better-auth's "emailAndPassword").
+fn validate_skill_list_id(value: &str, label: &str) -> Result<(), DetectionMapError> {
+    let mut characters = value.chars();
+    let valid_first = characters
+        .next()
+        .is_some_and(|character| character.is_ascii_alphanumeric());
+    let valid = valid_first
+        && value.len() <= 100
+        && characters.all(|character| {
+            character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '.')
+        });
+    if valid {
+        Ok(())
+    } else {
+        Err(DetectionMapError::InvalidSchema(format!(
+            "{label} inválido: {value:?}"
+        )))
+    }
+}
+
 fn validate_skills(skills: &[SkillDefinition]) -> Result<(), DetectionMapError> {
     let mut ids = HashSet::new();
     for skill in skills {
-        validate_identifier(&skill.id, "skill id")?;
+        validate_skill_list_id(&skill.id, "skill id")?;
         validate_text(&skill.source_repo, "skill source repo")?;
         validate_text(&skill.description, "skill description")?;
         if skill.source_repo.chars().any(char::is_whitespace) {
@@ -1069,7 +1090,7 @@ mod tests {
         let map = load_detection_map().expect("bundled map should be valid");
         assert_eq!(map.version, 1);
         assert!(map.technologies.iter().any(|item| item.id == "nextjs"));
-        assert!(map.combos.iter().any(|item| item.id == "nextjs-supabase"));
+        assert!(map.combos.iter().any(|item| item.id == "react-hook-form-zod"));
         assert!(map.profiles.iter().any(|item| item.id == "frontend"));
         // The map is now a broader seed spanning languages, backends and tooling,
         // not just the original frontend four.
@@ -1236,7 +1257,7 @@ mod tests {
         let project = TemporaryProject::new("combo");
         project.write(
             "package.json",
-            r#"{"dependencies":{"next":"15","@supabase/supabase-js":"2"}}"#,
+            r#"{"dependencies":{"react-hook-form":"7","zod":"3"}}"#,
         );
         let map = load_detection_map().expect("bundled map should be valid");
         let snapshot = read_project_snapshot(&project.path, &map).expect("snapshot should load");
@@ -1245,7 +1266,7 @@ mod tests {
         assert!(result
             .groups
             .iter()
-            .any(|group| group.kind == "combo" && group.label == "Next.js + Supabase"));
+            .any(|group| group.kind == "combo" && group.label == "React Hook Form + Zod"));
 
         let only_next = TemporaryProject::new("only-next");
         only_next.write("package.json", r#"{"dependencies":{"next":"15"}}"#);

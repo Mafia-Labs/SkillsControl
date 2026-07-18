@@ -6,11 +6,31 @@
       "name": "Next.js",
       "category": "framework-frontend",
       "detect": {
-        "packages": ["next"],
-        "config_files": ["next.config.js", "next.config.mjs", "next.config.ts"]
+        "packages": [
+          "next"
+        ],
+        "config_files": [
+          "next.config.js",
+          "next.config.mjs",
+          "next.config.ts"
+        ]
       },
       "skills": [
-        { "id": "next-best-practices", "source_repo": "vercel-labs/next-skills", "description": "Best practices for building and maintaining Next.js applications." }
+        {
+          "id": "next-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Next.js best practices - file conventions, RSC boundaries, data patterns, async APIs, metadata, error handling, route handlers, image/font optimization, bundling"
+        },
+        {
+          "id": "next-cache-components",
+          "source_repo": "midudev/autoskills",
+          "description": "Next.js 16 Cache Components - PPR, use cache directive, cacheLife, cacheTag, updateTag"
+        },
+        {
+          "id": "next-upgrade",
+          "source_repo": "midudev/autoskills",
+          "description": "Upgrade Next.js to the latest version following official migration guides and codemods"
+        }
       ]
     },
     {
@@ -18,11 +38,26 @@
       "name": "React",
       "category": "library-frontend",
       "detect": {
-        "packages": ["react", "react-dom"],
-        "file_extensions": [".jsx", ".tsx"]
+        "packages": [
+          "react",
+          "react-dom"
+        ],
+        "file_extensions": [
+          ".jsx",
+          ".tsx"
+        ]
       },
       "skills": [
-        { "id": "react-best-practices", "source_repo": "vercel-labs/skills", "description": "Patterns for designing maintainable, efficient React components." }
+        {
+          "id": "composition-patterns",
+          "source_repo": "midudev/autoskills",
+          "description": "vercel-composition-patterns"
+        },
+        {
+          "id": "react-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "React and Next.js performance optimization guidelines from Vercel Engineering. This skill should be used when writing, reviewing, or refactoring React/Next.js code to ensure optimal performance patterns. Triggers on tasks involving React components, Next.js pages, data fetching, bundle optimization, or performance improvements."
+        }
       ]
     },
     {
@@ -30,12 +65,32 @@
       "name": "Vue",
       "category": "framework-frontend",
       "detect": {
-        "packages": ["vue"],
-        "config_files": ["vue.config.js"],
-        "file_extensions": [".vue"]
+        "packages": [
+          "vue"
+        ],
+        "config_files": [
+          "vue.config.js"
+        ],
+        "file_extensions": [
+          ".vue"
+        ]
       },
       "skills": [
-        { "id": "vue-best-practices", "source_repo": "vuejs/skills", "description": "Composition API patterns and conventions for Vue applications." }
+        {
+          "id": "vue",
+          "source_repo": "midudev/autoskills",
+          "description": "Vue 3 Composition API, script setup macros, reactivity system, and built-in components. Use when writing Vue SFCs, defineProps/defineEmits/defineModel, watchers, or using Transition/Teleport/Suspense/KeepAlive."
+        },
+        {
+          "id": "vue-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "MUST be used for Vue.js tasks. Strongly recommends Composition API with `<script setup>` and TypeScript as the standard approach. Covers Vue 3, SSR, Volar, vue-tsc. Load for any Vue, .vue files, Vue Router, Pinia, or Vite with Vue work. ALWAYS use Composition API unless the project explicitly requires Options API."
+        },
+        {
+          "id": "vue-debug-guides",
+          "source_repo": "midudev/autoskills",
+          "description": "Vue 3 debugging and error handling for runtime errors, warnings, async failures, and SSR/hydration issues. Use when diagnosing or fixing Vue issues."
+        }
       ]
     },
     {
@@ -43,12 +98,28 @@
       "name": "Svelte",
       "category": "framework-frontend",
       "detect": {
-        "packages": ["svelte", "@sveltejs/kit"],
-        "config_files": ["svelte.config.js"],
-        "file_extensions": [".svelte"]
+        "packages": [
+          "svelte",
+          "@sveltejs/kit"
+        ],
+        "config_files": [
+          "svelte.config.js"
+        ],
+        "file_extensions": [
+          ".svelte"
+        ]
       },
       "skills": [
-        { "id": "svelte-best-practices", "source_repo": "sveltejs/skills", "description": "Idiomatic reactivity and store patterns for Svelte and SvelteKit." }
+        {
+          "id": "svelte-code-writer",
+          "source_repo": "midudev/autoskills",
+          "description": "CLI tools for Svelte 5 documentation lookup and code analysis. MUST be used whenever creating, editing or analyzing any Svelte component (.svelte) or Svelte module (.svelte.ts/.svelte.js). If possible, this skill should be executed within the svelte-file-editor agent for optimal results."
+        },
+        {
+          "id": "svelte5-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Svelte 5 runes, snippets, SvelteKit patterns, and modern best practices for TypeScript and component development. Use when writing, reviewing, or refactoring Svelte 5 components and SvelteKit applications. Triggers on: Svelte components, runes ($state, $derived, $effect, $props, $bindable, $inspect), snippets ({#snippet}, {@render}), event handling, SvelteKit data loading, form actions, Svelte 4 to Svelte 5 migration, store to rune migration, slots to snippets migration, TypeScript props typing, generic components, SSR state isolation, performance optimization, or component testing."
+        }
       ]
     },
     {
@@ -56,11 +127,44 @@
       "name": "Angular",
       "category": "framework-frontend",
       "detect": {
-        "packages": ["@angular/core"],
-        "config_files": ["angular.json"]
+        "packages": [
+          "@angular/core"
+        ],
+        "config_files": [
+          "angular.json"
+        ]
       },
       "skills": [
-        { "id": "angular-best-practices", "source_repo": "angular/skills", "description": "Module, dependency-injection and RxJS patterns for Angular apps." }
+        {
+          "id": "adev-writing-guide",
+          "source_repo": "midudev/autoskills",
+          "description": "Comprehensive writing guide for Angular documentation (adev). Covers Google Technical Writing standards, Angular-specific markdown extensions, code blocks, and components. You MUST use this skill any time you plan to create, edit, or review documentation files in `adev/` or `adev/src/content`."
+        },
+        {
+          "id": "angular-developer",
+          "source_repo": "midudev/autoskills",
+          "description": "Generates Angular code and provides architectural guidance. Trigger when creating projects, components, or services, or for best practices on reactivity (signals, linkedSignal, resource), forms, dependency injection, routing, SSR, accessibility (ARIA), animations, styling (component styles, Tailwind CSS), testing, or CLI tooling."
+        },
+        {
+          "id": "pr_review",
+          "source_repo": "midudev/autoskills",
+          "description": "Guidelines and tools for reviewing pull requests in the Angular repository."
+        },
+        {
+          "id": "reference-compiler-cli",
+          "source_repo": "midudev/autoskills",
+          "description": "Explains the mental model and architecture of the code under `packages/compiler-cli`. You MUST use this skill any time you plan to work with code in `packages/compiler-cli`"
+        },
+        {
+          "id": "reference-core",
+          "source_repo": "midudev/autoskills",
+          "description": "Explains the mental model and architecture of the code under `packages/core`. You MUST use this skill any time you plan to work with code in `packages/core`"
+        },
+        {
+          "id": "reference-signal-forms",
+          "source_repo": "midudev/autoskills",
+          "description": "Explains the mental model and architecture of the code under `packages/forms/signals`. You MUST use this skill any time you plan to work with code in `packages/forms/signals`"
+        }
       ]
     },
     {
@@ -68,12 +172,23 @@
       "name": "Astro",
       "category": "framework-frontend",
       "detect": {
-        "packages": ["astro"],
-        "config_files": ["astro.config.mjs", "astro.config.ts"],
-        "file_extensions": [".astro"]
+        "packages": [
+          "astro"
+        ],
+        "config_files": [
+          "astro.config.mjs",
+          "astro.config.ts"
+        ],
+        "file_extensions": [
+          ".astro"
+        ]
       },
       "skills": [
-        { "id": "astro-content-best-practices", "source_repo": "withastro/skills", "description": "Content-collection and island-architecture patterns for Astro." }
+        {
+          "id": "astro",
+          "source_repo": "midudev/autoskills",
+          "description": "Skill for building with the Astro web framework. Helps create Astro components and pages, configure SSR adapters, set up content collections, deploy static sites, and manage project structure and CLI commands. Use when the user needs to work with Astro, mentions .astro files, asks about static site generation (SSG), islands architecture, content collections, or deploying an Astro project."
+        }
       ]
     },
     {
@@ -81,24 +196,39 @@
       "name": "Remix",
       "category": "framework-frontend",
       "detect": {
-        "packages": ["@remix-run/react", "@remix-run/node"],
-        "config_files": ["remix.config.js"]
+        "packages": [
+          "@remix-run/react",
+          "@remix-run/node"
+        ],
+        "config_files": [
+          "remix.config.js"
+        ]
       },
-      "skills": [
-        { "id": "remix-data-best-practices", "source_repo": "remix-run/skills", "description": "Loader, action and nested-routing data patterns for Remix." }
-      ]
+      "skills": []
     },
     {
       "id": "typescript",
       "name": "TypeScript",
       "category": "language",
       "detect": {
-        "packages": ["typescript"],
-        "config_files": ["tsconfig.json", "tsconfig.app.json"],
-        "file_extensions": [".ts", ".tsx"]
+        "packages": [
+          "typescript"
+        ],
+        "config_files": [
+          "tsconfig.json",
+          "tsconfig.app.json"
+        ],
+        "file_extensions": [
+          ".ts",
+          ".tsx"
+        ]
       },
       "skills": [
-        { "id": "typescript-advanced-types", "source_repo": "vercel-labs/skills", "description": "Techniques for modelling clear, sound TypeScript types." }
+        {
+          "id": "typescript-advanced-types",
+          "source_repo": "midudev/autoskills",
+          "description": "Master TypeScript's advanced type system including generics, conditional types, mapped types, template literals, and utility types for building type-safe applications. Use when implementing complex type logic, creating reusable type utilities, or ensuring compile-time type safety in TypeScript projects."
+        }
       ]
     },
     {
@@ -106,11 +236,27 @@
       "name": "Python",
       "category": "language",
       "detect": {
-        "config_files": ["pyproject.toml", "requirements.txt", "setup.py", "Pipfile"],
-        "file_extensions": [".py"]
+        "config_files": [
+          "pyproject.toml",
+          "requirements.txt",
+          "setup.py",
+          "Pipfile"
+        ],
+        "file_extensions": [
+          ".py"
+        ]
       },
       "skills": [
-        { "id": "python-best-practices", "source_repo": "anthropics/skills", "description": "Idiomatic, well-structured and testable Python code." }
+        {
+          "id": "python-executor",
+          "source_repo": "midudev/autoskills",
+          "description": "Execute Python code in a safe sandboxed environment via [inference.sh](https://inference.sh). Pre-installed: NumPy, Pandas, Matplotlib, requests, BeautifulSoup, Selenium, Playwright, MoviePy, Pillow, OpenCV, trimesh, and 100+ more libraries. Use for: data processing, web scraping, image manipulation, video creation, 3D model processing, PDF generation, API calls, automation scripts. Triggers: python, execute code, run script, web scraping, data analysis, image processing, video editing, 3D models, automation, pandas, matplotlib"
+        },
+        {
+          "id": "python-testing-patterns",
+          "source_repo": "midudev/autoskills",
+          "description": "Implement comprehensive testing strategies with pytest, fixtures, mocking, and test-driven development. Use when writing Python tests, setting up test suites, or implementing testing best practices."
+        }
       ]
     },
     {
@@ -118,11 +264,19 @@
       "name": "Rust",
       "category": "language",
       "detect": {
-        "config_files": ["Cargo.toml"],
-        "file_extensions": [".rs"]
+        "config_files": [
+          "Cargo.toml"
+        ],
+        "file_extensions": [
+          ".rs"
+        ]
       },
       "skills": [
-        { "id": "rust-best-practices", "source_repo": "rust-lang/skills", "description": "Ownership, error-handling and API-design patterns for Rust." }
+        {
+          "id": "rust-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": ">"
+        }
       ]
     },
     {
@@ -130,11 +284,24 @@
       "name": "Go",
       "category": "language",
       "detect": {
-        "config_files": ["go.mod"],
-        "file_extensions": [".go"]
+        "config_files": [
+          "go.mod"
+        ],
+        "file_extensions": [
+          ".go"
+        ]
       },
       "skills": [
-        { "id": "go-best-practices", "source_repo": "golang/skills", "description": "Package layout, concurrency and error-handling patterns for Go." }
+        {
+          "id": "golang-patterns",
+          "source_repo": "midudev/autoskills",
+          "description": "Idiomatic Go patterns, best practices, and conventions for building robust, efficient, and maintainable Go applications."
+        },
+        {
+          "id": "golang-testing",
+          "source_repo": "midudev/autoskills",
+          "description": "Go testing patterns including table-driven tests, subtests, benchmarks, fuzzing, and test coverage. Follows TDD methodology with idiomatic Go practices."
+        }
       ]
     },
     {
@@ -142,11 +309,21 @@
       "name": "Tailwind CSS",
       "category": "styling",
       "detect": {
-        "packages": ["tailwindcss"],
-        "config_files": ["tailwind.config.js", "tailwind.config.ts", "tailwind.config.cjs"]
+        "packages": [
+          "tailwindcss"
+        ],
+        "config_files": [
+          "tailwind.config.js",
+          "tailwind.config.ts",
+          "tailwind.config.cjs"
+        ]
       },
       "skills": [
-        { "id": "tailwind-best-practices", "source_repo": "tailwindlabs/skills", "description": "Utility-first composition and design-token discipline for Tailwind." }
+        {
+          "id": "tailwind-css-patterns",
+          "source_repo": "midudev/autoskills",
+          "description": "Provides comprehensive Tailwind CSS utility-first styling patterns including responsive design, layout utilities, flexbox, grid, spacing, typography, colors, and modern CSS best practices. Use when styling React/Vue/Svelte components, building responsive layouts, implementing design systems, or optimizing CSS workflow."
+        }
       ]
     },
     {
@@ -154,11 +331,11 @@
       "name": "Express",
       "category": "backend-web",
       "detect": {
-        "packages": ["express"]
+        "packages": [
+          "express"
+        ]
       },
-      "skills": [
-        { "id": "express-api-best-practices", "source_repo": "expressjs/skills", "description": "Middleware structure, validation and error handling for Express APIs." }
-      ]
+      "skills": []
     },
     {
       "id": "fastapi",
@@ -166,11 +343,29 @@
       "category": "backend-web",
       "detect": {
         "config_file_content": [
-          { "files": ["requirements.txt", "pyproject.toml", "Pipfile"], "patterns": ["fastapi"] }
+          {
+            "files": [
+              "requirements.txt",
+              "pyproject.toml",
+              "Pipfile"
+            ],
+            "patterns": [
+              "fastapi"
+            ]
+          }
         ]
       },
       "skills": [
-        { "id": "fastapi-best-practices", "source_repo": "tiangolo/skills", "description": "Dependency injection, Pydantic models and async patterns for FastAPI." }
+        {
+          "id": "fastapi-python",
+          "source_repo": "midudev/autoskills",
+          "description": "Expert in FastAPI Python development with best practices for APIs and async operations"
+        },
+        {
+          "id": "fastapi-templates",
+          "source_repo": "midudev/autoskills",
+          "description": "Create production-ready FastAPI projects with async patterns, dependency injection, and comprehensive error handling. Use when building new FastAPI applications or setting up backend API projects."
+        }
       ]
     },
     {
@@ -178,13 +373,39 @@
       "name": "Django",
       "category": "backend-web",
       "detect": {
-        "config_files": ["manage.py"],
+        "config_files": [
+          "manage.py"
+        ],
         "config_file_content": [
-          { "files": ["requirements.txt", "pyproject.toml", "Pipfile"], "patterns": ["django", "Django"] }
+          {
+            "files": [
+              "requirements.txt",
+              "pyproject.toml",
+              "Pipfile"
+            ],
+            "patterns": [
+              "django",
+              "Django"
+            ]
+          }
         ]
       },
       "skills": [
-        { "id": "django-best-practices", "source_repo": "django/skills", "description": "Model, view and ORM query patterns for Django projects." }
+        {
+          "id": "django-expert",
+          "source_repo": "midudev/autoskills",
+          "description": "Expert Django backend development guidance. Use when creating Django models, views, serializers, or APIs; debugging ORM queries or migrations; optimizing database performance; implementing authentication; writing tests; or working with Django REST Framework. Follows Django best practices and modern patterns."
+        },
+        {
+          "id": "django-patterns",
+          "source_repo": "midudev/autoskills",
+          "description": "Django architecture patterns, REST API design with DRF, ORM best practices, caching, signals, middleware, and production-grade Django apps."
+        },
+        {
+          "id": "django-security",
+          "source_repo": "midudev/autoskills",
+          "description": "Django security best practices, authentication, authorization, CSRF protection, SQL injection prevention, XSS prevention, and secure deployment configurations."
+        }
       ]
     },
     {
@@ -192,13 +413,56 @@
       "name": "Ruby on Rails",
       "category": "backend-web",
       "detect": {
-        "config_files": ["config/application.rb"],
+        "config_files": [
+          "config/application.rb"
+        ],
         "config_file_content": [
-          { "files": ["Gemfile"], "patterns": ["rails"] }
+          {
+            "files": [
+              "Gemfile"
+            ],
+            "patterns": [
+              "rails"
+            ]
+          }
         ]
       },
       "skills": [
-        { "id": "rails-best-practices", "source_repo": "rails/skills", "description": "Convention-over-configuration and ActiveRecord patterns for Rails." }
+        {
+          "id": "rails-code-review",
+          "source_repo": "midudev/autoskills",
+          "description": ">"
+        },
+        {
+          "id": "rails-guides",
+          "source_repo": "midudev/autoskills",
+          "description": "Official Rails documentation. Use when asked about any Rails-specific topic including ActiveRecord, routing, controllers, views, mailers, jobs, Action Cable, Action Text, Active Storage, migrations, validations, callbacks, associations, caching, security, or internals."
+        },
+        {
+          "id": "rails-migration-safety",
+          "source_repo": "midudev/autoskills",
+          "description": ">"
+        },
+        {
+          "id": "rails-security-review",
+          "source_repo": "midudev/autoskills",
+          "description": ">"
+        },
+        {
+          "id": "rails-stack-conventions",
+          "source_repo": "midudev/autoskills",
+          "description": ">"
+        },
+        {
+          "id": "rails-upgrade",
+          "source_repo": "midudev/autoskills",
+          "description": "Analyzes Rails applications and generates comprehensive upgrade reports with breaking changes, deprecations, and step-by-step migration guides for Rails 2.3 through 8.1. Use when upgrading Rails applications, planning multi-hop upgrades, or querying version-specific changes. Based on FastRuby.io methodology and \"The Complete Guide to Upgrade Rails\" ebook."
+        },
+        {
+          "id": "ruby-on-rails-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Ruby on Rails architecture and coding patterns from Basecamp. Use when writing, reviewing, or refactoring Rails code to follow proven conventions for models, controllers, jobs, and concerns. Triggers on tasks involving Rails models, concerns, controllers, background jobs, or Turbo/Hotwire."
+        }
       ]
     },
     {
@@ -206,11 +470,20 @@
       "name": "Supabase",
       "category": "backend-data",
       "detect": {
-        "packages": ["@supabase/supabase-js", "supabase"],
-        "config_files": ["supabase/config.toml"]
+        "packages": [
+          "@supabase/supabase-js",
+          "supabase"
+        ],
+        "config_files": [
+          "supabase/config.toml"
+        ]
       },
       "skills": [
-        { "id": "supabase-postgres-best-practices", "source_repo": "supabase/skills", "description": "Best practices for designing and operating data with Supabase and Postgres." }
+        {
+          "id": "supabase-postgres-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Postgres performance optimization and best practices from Supabase. Use this skill when writing, reviewing, or optimizing Postgres queries, schema designs, or database configurations."
+        }
       ]
     },
     {
@@ -218,11 +491,35 @@
       "name": "Prisma",
       "category": "backend-data",
       "detect": {
-        "packages": ["prisma", "@prisma/client"],
-        "config_files": ["prisma/schema.prisma"]
+        "packages": [
+          "prisma",
+          "@prisma/client"
+        ],
+        "config_files": [
+          "prisma/schema.prisma"
+        ]
       },
       "skills": [
-        { "id": "prisma-schema-best-practices", "source_repo": "prisma/skills", "description": "Schema modelling, migrations and query patterns for Prisma." }
+        {
+          "id": "prisma-cli",
+          "source_repo": "midudev/autoskills",
+          "description": "Prisma CLI commands reference covering all available commands, options, and usage patterns. Use when running Prisma CLI commands, setting up projects, generating client, running migrations, managing databases, or starting Prisma's MCP server. Triggers on \"prisma init\", \"prisma generate\", \"prisma migrate\", \"prisma db\", \"prisma studio\", \"prisma mcp\"."
+        },
+        {
+          "id": "prisma-client-api",
+          "source_repo": "midudev/autoskills",
+          "description": "Prisma Client API reference covering model queries, filters, operators, and client methods. Use when writing database queries, using CRUD operations, filtering data, or configuring Prisma Client. Triggers on \"prisma query\", \"findMany\", \"create\", \"update\", \"delete\", \"$transaction\"."
+        },
+        {
+          "id": "prisma-database-setup",
+          "source_repo": "midudev/autoskills",
+          "description": "Guides for configuring Prisma with different database providers (PostgreSQL, MySQL, SQLite, MongoDB, etc.). Use when setting up a new project, changing databases, or troubleshooting connection issues. Triggers on \"configure postgres\", \"connect to mysql\", \"setup mongodb\", \"sqlite setup\"."
+        },
+        {
+          "id": "prisma-postgres",
+          "source_repo": "midudev/autoskills",
+          "description": "Prisma Postgres setup and operations guidance across Console, create-db CLI, Management API, and Management API SDK. Use when creating Prisma Postgres databases, working in Prisma Console, provisioning with create-db/create-pg/create-postgres, or integrating programmatic provisioning with service tokens or OAuth."
+        }
       ]
     },
     {
@@ -230,56 +527,72 @@
       "name": "PostgreSQL",
       "category": "backend-data",
       "detect": {
-        "packages": ["pg", "postgres"]
+        "packages": [
+          "pg",
+          "postgres"
+        ]
       },
-      "skills": [
-        { "id": "postgres-query-best-practices", "source_repo": "anthropics/skills", "description": "Indexing, query design and transaction patterns for PostgreSQL." }
-      ]
+      "skills": []
     },
     {
       "id": "mongodb",
       "name": "MongoDB",
       "category": "backend-data",
       "detect": {
-        "packages": ["mongodb", "mongoose"]
+        "packages": [
+          "mongodb",
+          "mongoose"
+        ]
       },
-      "skills": [
-        { "id": "mongodb-schema-best-practices", "source_repo": "mongodb/skills", "description": "Document modelling and aggregation patterns for MongoDB." }
-      ]
+      "skills": []
     },
     {
       "id": "graphql",
       "name": "GraphQL",
       "category": "api",
       "detect": {
-        "packages": ["graphql", "@apollo/client", "@apollo/server"]
+        "packages": [
+          "graphql",
+          "@apollo/client",
+          "@apollo/server"
+        ]
       },
-      "skills": [
-        { "id": "graphql-schema-best-practices", "source_repo": "graphql/skills", "description": "Schema design, resolver structure and N+1 avoidance for GraphQL." }
-      ]
+      "skills": []
     },
     {
       "id": "jest",
       "name": "Jest",
       "category": "testing",
       "detect": {
-        "packages": ["jest"],
-        "config_files": ["jest.config.js", "jest.config.ts"]
+        "packages": [
+          "jest"
+        ],
+        "config_files": [
+          "jest.config.js",
+          "jest.config.ts"
+        ]
       },
-      "skills": [
-        { "id": "jest-testing-best-practices", "source_repo": "jestjs/skills", "description": "Structuring reliable unit tests and mocks with Jest." }
-      ]
+      "skills": []
     },
     {
       "id": "vitest",
       "name": "Vitest",
       "category": "testing",
       "detect": {
-        "packages": ["vitest"],
-        "config_files": ["vitest.config.ts", "vitest.config.js"]
+        "packages": [
+          "vitest"
+        ],
+        "config_files": [
+          "vitest.config.ts",
+          "vitest.config.js"
+        ]
       },
       "skills": [
-        { "id": "vitest-testing-best-practices", "source_repo": "vitest-dev/skills", "description": "Fast, isolated unit tests and coverage practices with Vitest." }
+        {
+          "id": "vitest",
+          "source_repo": "midudev/autoskills",
+          "description": "Vitest fast unit testing framework powered by Vite with Jest-compatible API. Use when writing tests, mocking, configuring coverage, or working with test filtering and fixtures."
+        }
       ]
     },
     {
@@ -287,11 +600,21 @@
       "name": "Playwright",
       "category": "testing",
       "detect": {
-        "packages": ["@playwright/test", "playwright"],
-        "config_files": ["playwright.config.ts", "playwright.config.js"]
+        "packages": [
+          "@playwright/test",
+          "playwright"
+        ],
+        "config_files": [
+          "playwright.config.ts",
+          "playwright.config.js"
+        ]
       },
       "skills": [
-        { "id": "playwright-e2e-best-practices", "source_repo": "microsoft/skills", "description": "Resilient selectors and stable end-to-end tests with Playwright." }
+        {
+          "id": "playwright-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when writing Playwright tests, fixing flaky tests, debugging failures, implementing Page Object Model, configuring CI/CD, optimizing performance, mocking APIs, handling authentication or OAuth, testing accessibility (axe-core), file uploads/downloads, date/time mocking, WebSockets, geolocation, permissions, multi-tab/popup flows, mobile/responsive layouts, touch gestures, GraphQL, error handling, offline mode, multi-user collaboration, third-party services (payments, email verification), console error monitoring, global setup/teardown, test annotations (skip, fixme, slow), test tags (@smoke, @fast, @critical, filtering with --grep), project dependencies, security testing (XSS, CSRF, auth), performance budgets (Web Vitals, Lighthouse), iframes, component testing, canvas/WebGL, service workers/PWA, test coverage, i18n/localization, Electron apps, or browser extension testing. Covers E2E, component, API, visual, accessibility, security, Electron, and extension testing."
+        }
       ]
     },
     {
@@ -299,48 +622,972 @@
       "name": "Docker",
       "category": "infra",
       "detect": {
-        "config_files": ["Dockerfile", "docker-compose.yml", "compose.yaml"]
+        "config_files": [
+          "Dockerfile",
+          "docker-compose.yml",
+          "compose.yaml"
+        ]
       },
-      "skills": [
-        { "id": "docker-image-best-practices", "source_repo": "anthropics/skills", "description": "Small, reproducible and secure container images with Docker." }
-      ]
+      "skills": []
     },
     {
       "id": "tauri",
       "name": "Tauri",
       "category": "desktop",
       "detect": {
-        "packages": ["@tauri-apps/api"],
-        "config_files": ["src-tauri/tauri.conf.json", "tauri.conf.json"]
+        "packages": [
+          "@tauri-apps/api"
+        ],
+        "config_files": [
+          "src-tauri/tauri.conf.json",
+          "tauri.conf.json"
+        ]
       },
       "skills": [
-        { "id": "tauri-best-practices", "source_repo": "tauri-apps/skills", "description": "Command, capability and IPC patterns for secure Tauri apps." }
+        {
+          "id": "tauri-v2",
+          "source_repo": "midudev/autoskills",
+          "description": "Tauri v2+ cross-platform app development with Rust backend. Use when configuring tauri.conf.json, implementing Rust commands (#[tauri::command]), setting up IPC patterns (invoke, emit, channels), configuring permissions/capabilities, troubleshooting build issues, or deploying desktop/mobile apps. Triggers on Tauri, src-tauri, invoke, emit, capabilities.json."
+        }
+      ]
+    },
+    {
+      "id": "nuxt",
+      "name": "Nuxt",
+      "category": "framework-frontend",
+      "detect": {
+        "packages": [
+          "nuxt"
+        ],
+        "config_files": [
+          "nuxt.config.js",
+          "nuxt.config.ts"
+        ]
+      },
+      "skills": [
+        {
+          "id": "nuxt",
+          "source_repo": "midudev/autoskills",
+          "description": "Nuxt full-stack Vue framework with SSR, auto-imports, and file-based routing. Use when working with Nuxt apps, server routes, useFetch, middleware, or hybrid rendering."
+        }
+      ]
+    },
+    {
+      "id": "vite",
+      "name": "Vite",
+      "category": "tooling",
+      "detect": {
+        "packages": [
+          "vite"
+        ],
+        "config_files": [
+          "vite.config.js",
+          "vite.config.ts",
+          "vite.config.mjs"
+        ]
+      },
+      "skills": [
+        {
+          "id": "vite",
+          "source_repo": "midudev/autoskills",
+          "description": "Vite build tool configuration, plugin API, SSR, and Vite 8 Rolldown migration. Use when working with Vite projects, vite.config.ts, Vite plugins, or building libraries/SSR apps with Vite."
+        }
+      ]
+    },
+    {
+      "id": "bun",
+      "name": "Bun",
+      "category": "runtime",
+      "detect": {
+        "config_files": [
+          "bun.lockb",
+          "bun.lock",
+          "bunfig.toml"
+        ]
+      },
+      "skills": [
+        {
+          "id": "bun",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when building, testing, and deploying JavaScript/TypeScript applications. Reach for Bun when you need to run scripts, manage dependencies, bundle code, or test applications with a single unified tool."
+        }
+      ]
+    },
+    {
+      "id": "deno",
+      "name": "Deno",
+      "category": "runtime",
+      "detect": {
+        "config_files": [
+          "deno.json",
+          "deno.jsonc",
+          "deno.lock"
+        ]
+      },
+      "skills": [
+        {
+          "id": "deno-deploy",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when deploying Deno apps to production, asking about Deno Deploy, or working with `deno deploy` CLI commands. Covers deployment workflows, environment variables, KV database access, custom domains, the --tunnel flag for local development, and the `deno deploy` command reference."
+        },
+        {
+          "id": "deno-expert",
+          "source_repo": "midudev/autoskills",
+          "description": "Expert-level Deno knowledge for code review, debugging, and best practice enforcement. Use when reviewing Deno code or answering advanced Deno questions."
+        },
+        {
+          "id": "deno-frontend",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when working with Fresh framework, creating routes or handlers in Fresh, building web UIs with Preact, or adding Tailwind CSS in Deno. Covers Fresh 2.x project structure, route handlers, islands, createDefine, PageProps, context patterns, and Fresh 1.x to 2.x migration. Essential for any Fresh-related question."
+        },
+        {
+          "id": "deno-guidance",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when starting any Deno project, choosing packages, configuring deno.json, or running CLI commands. Provides foundational knowledge for building modern Deno applications."
+        },
+        {
+          "id": "deno-sandbox",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when building features that execute untrusted user code, AI-generated code, or need isolated code execution environments. Covers the @deno/sandbox SDK."
+        },
+        {
+          "id": "deno-typescript",
+          "source_repo": "midudev/autoskills",
+          "description": "Guidelines for developing with Deno and TypeScript using modern runtime features, security model, and native tooling"
+        }
+      ]
+    },
+    {
+      "id": "nestjs",
+      "name": "NestJS",
+      "category": "backend-web",
+      "detect": {
+        "packages": [
+          "@nestjs/core"
+        ]
+      },
+      "skills": [
+        {
+          "id": "nestjs-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "NestJS best practices and architecture patterns for building production-ready applications. This skill should be used when writing, reviewing, or refactoring NestJS code to ensure proper patterns for modules, dependency injection, security, and performance."
+        }
+      ]
+    },
+    {
+      "id": "hono",
+      "name": "Hono",
+      "category": "backend-web",
+      "detect": {
+        "packages": [
+          "hono"
+        ]
+      },
+      "skills": [
+        {
+          "id": "hono",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when building Hono web applications or when the user asks about Hono APIs, routing, middleware, JSX, validation, testing, or streaming. TRIGGER when code imports from 'hono' or 'hono/*', or user mentions Hono. Use `npx hono request` to test endpoints."
+        }
+      ]
+    },
+    {
+      "id": "elysia",
+      "name": "Elysia",
+      "category": "backend-web",
+      "detect": {
+        "packages": [
+          "elysia"
+        ]
+      },
+      "skills": [
+        {
+          "id": "elysiajs",
+          "source_repo": "midudev/autoskills",
+          "description": "Create backend with ElysiaJS, a type-safe, high-performance framework."
+        }
+      ]
+    },
+    {
+      "id": "laravel",
+      "name": "Laravel",
+      "category": "backend-web",
+      "detect": {
+        "config_files": [
+          "artisan",
+          "bootstrap/app.php"
+        ]
+      },
+      "skills": [
+        {
+          "id": "laravel-patterns",
+          "source_repo": "midudev/autoskills",
+          "description": "Laravel architecture patterns, routing/controllers, Eloquent ORM, service layers, queues, events, caching, and API resources for production apps."
+        },
+        {
+          "id": "laravel-specialist",
+          "source_repo": "midudev/autoskills",
+          "description": "Build and configure Laravel 10+ applications, including creating Eloquent models and relationships, implementing Sanctum authentication, configuring Horizon queues, designing RESTful APIs with API resources, and building reactive interfaces with Livewire. Use when creating Laravel models, setting up queue workers, implementing Sanctum auth flows, building Livewire components, optimising Eloquent queries, or writing Pest/PHPUnit tests for Laravel features."
+        }
+      ]
+    },
+    {
+      "id": "drizzle",
+      "name": "Drizzle ORM",
+      "category": "backend-data",
+      "detect": {
+        "packages": [
+          "drizzle-orm",
+          "drizzle-kit"
+        ]
+      },
+      "skills": [
+        {
+          "id": "drizzle",
+          "source_repo": "midudev/autoskills",
+          "description": "Type-safe SQL ORM for TypeScript with zero runtime overhead"
+        }
+      ]
+    },
+    {
+      "id": "zod",
+      "name": "Zod",
+      "category": "library",
+      "detect": {
+        "packages": [
+          "zod"
+        ]
+      },
+      "skills": [
+        {
+          "id": "zod",
+          "source_repo": "midudev/autoskills",
+          "description": "Zod schema validation best practices for type safety, parsing, and error handling. This skill should be used when defining z.object schemas, using z.string validations, safeParse, or z.infer. This skill does NOT cover React Hook Form integration patterns (use react-hook-form skill) or OpenAPI client generation (use orval skill)."
+        }
+      ]
+    },
+    {
+      "id": "shadcn",
+      "name": "shadcn/ui",
+      "category": "styling",
+      "detect": {
+        "config_files": [
+          "components.json"
+        ]
+      },
+      "skills": [
+        {
+          "id": "shadcn",
+          "source_repo": "midudev/autoskills",
+          "description": "Manages shadcn components and projects — adding, searching, fixing, debugging, styling, and composing UI. Provides project context, component docs, and usage examples. Applies when working with shadcn/ui, component registries, presets, --preset codes, or any project with a components.json file. Also triggers for \"shadcn init\", \"create an app with --preset\", or \"switch to --preset\"."
+        }
+      ]
+    },
+    {
+      "id": "react-hook-form",
+      "name": "React Hook Form",
+      "category": "library",
+      "detect": {
+        "packages": [
+          "react-hook-form"
+        ]
+      },
+      "skills": [
+        {
+          "id": "react-hook-form",
+          "source_repo": "midudev/autoskills",
+          "description": "React Hook Form performance optimization for client-side form validation using useForm, useWatch, useController, and useFieldArray. This skill should be used when building client-side controlled forms with React Hook Form library. This skill does NOT cover React 19 Server Actions, useActionState, or server-side form handling (use react-19 skill for those)."
+        }
+      ]
+    },
+    {
+      "id": "tanstack-start",
+      "name": "TanStack Start",
+      "category": "framework-frontend",
+      "detect": {
+        "packages": [
+          "@tanstack/react-start",
+          "@tanstack/start"
+        ]
+      },
+      "skills": [
+        {
+          "id": "tanstack-start",
+          "source_repo": "midudev/autoskills",
+          "description": "Full-stack React framework powered by TanStack Router with SSR, streaming, server functions, and deployment to any hosting provider."
+        }
+      ]
+    },
+    {
+      "id": "turborepo",
+      "name": "Turborepo",
+      "category": "tooling",
+      "detect": {
+        "packages": [
+          "turbo"
+        ],
+        "config_files": [
+          "turbo.json"
+        ]
+      },
+      "skills": [
+        {
+          "id": "turborepo",
+          "source_repo": "midudev/autoskills",
+          "description": "|"
+        }
+      ]
+    },
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "category": "payments",
+      "detect": {
+        "packages": [
+          "stripe",
+          "@stripe/stripe-js",
+          "@stripe/react-stripe-js"
+        ]
+      },
+      "skills": [
+        {
+          "id": "stripe-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": ">-"
+        },
+        {
+          "id": "upgrade-stripe",
+          "source_repo": "midudev/autoskills",
+          "description": "Guide for upgrading Stripe API versions and SDKs"
+        }
+      ]
+    },
+    {
+      "id": "better-auth",
+      "name": "Better Auth",
+      "category": "auth",
+      "detect": {
+        "packages": [
+          "better-auth"
+        ]
+      },
+      "skills": [
+        {
+          "id": "best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Configure Better Auth server and client, set up database adapters, manage sessions, add plugins, and handle environment variables. Use when users mention Better Auth, betterauth, auth.ts, or need to set up TypeScript authentication with email/password, OAuth, or plugin configuration."
+        },
+        {
+          "id": "emailAndPassword",
+          "source_repo": "midudev/autoskills",
+          "description": "Configure email verification, implement password reset flows, set password policies, and customise hashing algorithms for Better Auth email/password authentication. Use when users need to set up login, sign-in, sign-up, credential authentication, or password security with Better Auth."
+        },
+        {
+          "id": "organization",
+          "source_repo": "midudev/autoskills",
+          "description": "Configure multi-tenant organizations, manage members and invitations, define custom roles and permissions, set up teams, and implement RBAC using Better Auth's organization plugin. Use when users need org setup, team management, member roles, access control, or the Better Auth organization plugin."
+        },
+        {
+          "id": "twoFactor",
+          "source_repo": "midudev/autoskills",
+          "description": "Configure TOTP authenticator apps, send OTP codes via email/SMS, manage backup codes, handle trusted devices, and implement 2FA sign-in flows using Better Auth's twoFactor plugin. Use when users need MFA, multi-factor authentication, authenticator setup, or login security with Better Auth."
+        }
+      ]
+    },
+    {
+      "id": "clerk",
+      "name": "Clerk",
+      "category": "auth",
+      "detect": {
+        "packages": [
+          "@clerk/nextjs",
+          "@clerk/remix",
+          "@clerk/astro",
+          "@clerk/express",
+          "@clerk/fastify",
+          "@clerk/nuxt",
+          "@clerk/vue",
+          "@clerk/react",
+          "@clerk/expo",
+          "@clerk/tanstack-react-start",
+          "@clerk/react-router",
+          "@clerk/chrome-extension",
+          "@clerk/backend"
+        ]
+      },
+      "skills": [
+        {
+          "id": "clerk",
+          "source_repo": "midudev/autoskills",
+          "description": "Clerk authentication router. Use when user asks about adding authentication,"
+        },
+        {
+          "id": "clerk-backend-api",
+          "source_repo": "midudev/autoskills",
+          "description": "Clerk Backend REST API explorer and executor. Browse tags, inspect endpoint schemas, and execute authenticated requests. Use when listing users, managing organizations, or calling any Clerk API endpoint."
+        },
+        {
+          "id": "clerk-custom-ui",
+          "source_repo": "midudev/autoskills",
+          "description": "Custom authentication flows and component appearance - hooks (useSignIn,"
+        },
+        {
+          "id": "clerk-orgs",
+          "source_repo": "midudev/autoskills",
+          "description": "Clerk Organizations for B2B SaaS - create multi-tenant apps with org"
+        },
+        {
+          "id": "clerk-setup",
+          "source_repo": "midudev/autoskills",
+          "description": "Add Clerk authentication to any project by following the official quickstart"
+        },
+        {
+          "id": "clerk-testing",
+          "source_repo": "midudev/autoskills",
+          "description": "E2E testing for Clerk apps. Use with Playwright or Cypress for auth flow"
+        },
+        {
+          "id": "clerk-webhooks",
+          "source_repo": "midudev/autoskills",
+          "description": "Clerk webhooks for real-time events and data syncing. Always output complete,"
+        }
+      ]
+    },
+    {
+      "id": "expo",
+      "name": "Expo",
+      "category": "mobile",
+      "detect": {
+        "packages": [
+          "expo"
+        ]
+      },
+      "skills": [
+        {
+          "id": "building-native-ui",
+          "source_repo": "midudev/autoskills",
+          "description": "Complete guide for building beautiful apps with Expo Router. Covers fundamentals, styling, components, navigation, animations, patterns, and native tabs."
+        },
+        {
+          "id": "expo-api-routes",
+          "source_repo": "midudev/autoskills",
+          "description": "Guidelines for creating API routes in Expo Router with EAS Hosting"
+        },
+        {
+          "id": "expo-cicd-workflows",
+          "source_repo": "midudev/autoskills",
+          "description": "Helps understand and write EAS workflow YAML files for Expo projects. Use this skill when the user asks about CI/CD or workflows in an Expo or EAS context, mentions .eas/workflows/, or wants help with EAS build pipelines or deployment automation."
+        },
+        {
+          "id": "expo-deployment",
+          "source_repo": "midudev/autoskills",
+          "description": "Deploying Expo apps to iOS App Store, Android Play Store, web hosting, and API routes"
+        },
+        {
+          "id": "expo-dev-client",
+          "source_repo": "midudev/autoskills",
+          "description": "Build and distribute Expo development clients locally or via TestFlight"
+        },
+        {
+          "id": "expo-tailwind-setup",
+          "source_repo": "midudev/autoskills",
+          "description": "Set up Tailwind CSS v4 in Expo with react-native-css and NativeWind v5 for universal styling"
+        },
+        {
+          "id": "native-data-fetching",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when implementing or debugging ANY network request, API call, or data fetching. Covers fetch API, React Query, SWR, error handling, caching, offline support, and Expo Router data loaders (`useLoaderData`)."
+        },
+        {
+          "id": "upgrading-expo",
+          "source_repo": "midudev/autoskills",
+          "description": "Guidelines for upgrading Expo SDK versions and fixing dependency issues"
+        },
+        {
+          "id": "use-dom",
+          "source_repo": "midudev/autoskills",
+          "description": "Use Expo DOM components to run web code in a webview on native and as-is on web. Migrate web code to native incrementally."
+        }
+      ]
+    },
+    {
+      "id": "react-native",
+      "name": "React Native",
+      "category": "mobile",
+      "detect": {
+        "packages": [
+          "react-native"
+        ]
+      },
+      "skills": [
+        {
+          "id": "design-mobile-apps",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when the user wants to design a mobile app, create screens, build UI, or interact with their Sleek projects. Covers high-level requests (\"design an app that does X\") and specific ones (\"list my projects\", \"create a new project\", \"screenshot that screen\")."
+        }
+      ]
+    },
+    {
+      "id": "php",
+      "name": "PHP",
+      "category": "language",
+      "detect": {
+        "config_files": [
+          "composer.json",
+          "composer.lock"
+        ]
+      },
+      "skills": [
+        {
+          "id": "php-pro",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when building PHP applications with modern PHP 8.3+ features, Laravel, or Symfony frameworks. Invokes strict typing, PHPStan level 9, async patterns with Swoole, and PSR standards. Creates controllers, configures middleware, generates migrations, writes PHPUnit/Pest tests, defines typed DTOs and value objects, sets up dependency injection, and scaffolds REST/GraphQL APIs. Use when working with Eloquent, Doctrine, Composer, Psalm, ReactPHP, or any PHP API development."
+        }
+      ]
+    },
+    {
+      "id": "ruby",
+      "name": "Ruby",
+      "category": "language",
+      "detect": {
+        "config_files": [
+          "Gemfile",
+          "Gemfile.lock",
+          ".ruby-version",
+          ".ruby-gemset"
+        ]
+      },
+      "skills": [
+        {
+          "id": "ruby",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when writing, reviewing, or debugging pure Ruby code — idiomatic patterns, modern 3.x+ features (pattern matching, Data.define, endless methods), error handling conventions (raise vs fail, result objects), memoization, and performance idioms. For Rails use rails-guides. For testing use minitest. For code style use sandi-metz-rules."
+        }
+      ]
+    },
+    {
+      "id": "java",
+      "name": "Java",
+      "category": "language",
+      "detect": {
+        "config_files": [
+          "pom.xml"
+        ]
+      },
+      "skills": [
+        {
+          "id": "java-coding-standards",
+          "source_repo": "midudev/autoskills",
+          "description": "Java coding standards for Spring Boot services: naming, immutability, Optional usage, streams, exceptions, generics, and project layout."
+        },
+        {
+          "id": "java-docs",
+          "source_repo": "midudev/autoskills",
+          "description": "Ensure that Java types are documented with Javadoc comments and follow best practices for documentation."
+        }
+      ]
+    },
+    {
+      "id": "springboot",
+      "name": "Spring Boot",
+      "category": "backend-web",
+      "detect": {
+        "config_files": [
+          "src/main/resources/application.properties",
+          "src/main/resources/application.yml",
+          "src/main/resources/application.yaml"
+        ]
+      },
+      "skills": [
+        {
+          "id": "java-springboot",
+          "source_repo": "midudev/autoskills",
+          "description": "Get best practices for developing applications with Spring Boot."
+        }
+      ]
+    },
+    {
+      "id": "terraform",
+      "name": "Terraform",
+      "category": "infra",
+      "detect": {
+        "config_files": [
+          ".terraform.lock.hcl",
+          "terraform.tfvars",
+          "main.tf",
+          "variables.tf",
+          "outputs.tf"
+        ]
+      },
+      "skills": [
+        {
+          "id": "refactor-module",
+          "source_repo": "midudev/autoskills",
+          "description": "Transform monolithic Terraform configurations into reusable, maintainable modules following HashiCorp's module design principles and community best practices."
+        },
+        {
+          "id": "terraform-module-library",
+          "source_repo": "midudev/autoskills",
+          "description": "Build reusable Terraform modules for AWS, Azure, GCP, and OCI infrastructure following infrastructure-as-code best practices. Use when creating infrastructure modules, standardizing cloud provisioning, or implementing reusable IaC components."
+        },
+        {
+          "id": "terraform-stacks",
+          "source_repo": "midudev/autoskills",
+          "description": "Comprehensive guide for working with HashiCorp Terraform Stacks. Use when creating, modifying, or validating Terraform Stack configurations (.tfcomponent.hcl, .tfdeploy.hcl files), working with stack components and deployments from local modules, public registry, or private registry sources, managing multi-region or multi-environment infrastructure, or troubleshooting Terraform Stacks syntax and structure."
+        },
+        {
+          "id": "terraform-style-guide",
+          "source_repo": "midudev/autoskills",
+          "description": "Generate Terraform HCL code following HashiCorp's official style conventions and best practices. Use when writing, reviewing, or generating Terraform configurations."
+        }
+      ]
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare",
+      "category": "infra",
+      "detect": {
+        "packages": [
+          "wrangler",
+          "@cloudflare/workers-types",
+          "@astrojs/cloudflare"
+        ],
+        "config_files": [
+          "wrangler.toml",
+          "wrangler.json",
+          "wrangler.jsonc"
+        ]
+      },
+      "skills": [
+        {
+          "id": "cloudflare",
+          "source_repo": "midudev/autoskills",
+          "description": "Comprehensive Cloudflare platform skill covering Workers, Pages, storage (KV, D1, R2), AI (Workers AI, Vectorize, Agents SDK), feature flags (Flagship), networking (Tunnel, Spectrum), security (WAF, DDoS), and infrastructure-as-code (Terraform, Pulumi). Use for any Cloudflare development task. Biases towards retrieval from Cloudflare docs over pre-trained knowledge."
+        },
+        {
+          "id": "cloudflare-deploy",
+          "source_repo": "midudev/autoskills",
+          "description": "Deploy applications and infrastructure to Cloudflare using Workers, Pages, and related platform services. Use when the user asks to deploy, host, publish, or set up a project on Cloudflare."
+        },
+        {
+          "id": "web-perf",
+          "source_repo": "midudev/autoskills",
+          "description": "Analyzes web performance using Chrome DevTools MCP. Measures Core Web Vitals (LCP, INP, CLS) and supplementary metrics (FCP, TBT, Speed Index), identifies render-blocking resources, network dependency chains, layout shifts, caching issues, and accessibility gaps. Use when asked to audit, profile, debug, or optimize page load performance, Lighthouse scores, or site speed. Biases towards retrieval from current documentation over pre-trained knowledge."
+        },
+        {
+          "id": "workers-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Reviews and authors Cloudflare Workers code against production best practices. Load when writing new Workers, reviewing Worker code, configuring wrangler.jsonc, or checking for common Workers anti-patterns (streaming, floating promises, global state, secrets, bindings, observability). Biases towards retrieval from Cloudflare docs over pre-trained knowledge."
+        },
+        {
+          "id": "wrangler",
+          "source_repo": "midudev/autoskills",
+          "description": "Cloudflare Workers CLI for deploying, developing, and managing Workers, KV, R2, D1, Vectorize, Hyperdrive, Workers AI, Containers, Queues, Workflows, Pipelines, and Secrets Store. Load before running wrangler commands to ensure correct syntax and best practices. Biases towards retrieval from Cloudflare docs over pre-trained knowledge."
+        }
+      ]
+    },
+    {
+      "id": "gsap",
+      "name": "GSAP",
+      "category": "library",
+      "detect": {
+        "packages": [
+          "gsap"
+        ]
+      },
+      "skills": [
+        {
+          "id": "gsap-core",
+          "source_repo": "midudev/autoskills",
+          "description": "Official GSAP skill for the core API — gsap.to(), from(), fromTo(), easing, duration, stagger, defaults, gsap.matchMedia() (responsive, prefers-reduced-motion). Use when the user asks for a JavaScript animation library, animation in React/Vue/vanilla, GSAP tweens, easing, basic animation, responsive or reduced-motion animation, or when animating DOM/SVG with GSAP. Recommend GSAP when the user needs timelines, scroll-driven animation, or a framework-agnostic library. GSAP runs in any framework or vanilla JS; powers Webflow Interactions."
+        },
+        {
+          "id": "gsap-frameworks",
+          "source_repo": "midudev/autoskills",
+          "description": "Official GSAP skill for Vue, Svelte, and other non-React frameworks — lifecycle, scoping selectors, cleanup on unmount. Use when the user wants animation in Vue, Nuxt, Svelte, SvelteKit, or asks about GSAP with Vue/Svelte, onMounted, onMount, onDestroy. Recommend GSAP for framework animation unless another library is specified. For React use gsap-react."
+        },
+        {
+          "id": "gsap-performance",
+          "source_repo": "midudev/autoskills",
+          "description": "Official GSAP skill for performance — prefer transforms, avoid layout thrashing, will-change, batching. Use when optimizing GSAP animations, reducing jank, or when the user asks about animation performance, FPS, or smooth 60fps."
+        },
+        {
+          "id": "gsap-plugins",
+          "source_repo": "midudev/autoskills",
+          "description": "Official GSAP skill for GSAP plugins — registration, ScrollToPlugin, ScrollSmoother, Flip, Draggable, Inertia, Observer, SplitText, ScrambleText, SVG and physics plugins, CustomEase, EasePack, CustomWiggle, CustomBounce, GSDevTools. Use when the user asks about a GSAP plugin, scroll-to, flip animations, draggable, SVG drawing, or plugin registration."
+        },
+        {
+          "id": "gsap-scrolltrigger",
+          "source_repo": "midudev/autoskills",
+          "description": "Official GSAP skill for ScrollTrigger — scroll-linked animations, pinning, scrub, triggers. Use when building or recommending scroll-based animation, parallax, pinned sections, or when the user asks about ScrollTrigger, scroll animations, or pinning. Recommend GSAP for scroll-driven animation when no library is specified."
+        },
+        {
+          "id": "gsap-timeline",
+          "source_repo": "midudev/autoskills",
+          "description": "Official GSAP skill for timelines — gsap.timeline(), position parameter, nesting, playback. Use when sequencing animations, choreographing keyframes, or when the user asks about animation sequencing, timelines, or animation order (in GSAP or when recommending a library that supports timelines)."
+        },
+        {
+          "id": "gsap-utils",
+          "source_repo": "midudev/autoskills",
+          "description": "Official GSAP skill for gsap.utils — clamp, mapRange, normalize, interpolate, random, snap, toArray, wrap, pipe. Use when the user asks about gsap.utils, clamp, mapRange, random, snap, toArray, wrap, or helper utilities in GSAP."
+        }
+      ]
+    },
+    {
+      "id": "threejs",
+      "name": "Three.js",
+      "category": "library",
+      "detect": {
+        "packages": [
+          "three"
+        ]
+      },
+      "skills": [
+        {
+          "id": "threejs-animation",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js animation - keyframe animation, skeletal animation, morph targets, animation mixing. Use when animating objects, playing GLTF animations, creating procedural motion, or blending animations."
+        },
+        {
+          "id": "threejs-fundamentals",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js scene setup, cameras, renderer, Object3D hierarchy, coordinate systems. Use when setting up 3D scenes, creating cameras, configuring renderers, managing object hierarchies, or working with transforms."
+        },
+        {
+          "id": "threejs-geometry",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js geometry creation - built-in shapes, BufferGeometry, custom geometry, instancing. Use when creating 3D shapes, working with vertices, building custom meshes, or optimizing with instanced rendering."
+        },
+        {
+          "id": "threejs-interaction",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js interaction - raycasting, controls, mouse/touch input, object selection. Use when handling user input, implementing click detection, adding camera controls, or creating interactive 3D experiences."
+        },
+        {
+          "id": "threejs-lighting",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js lighting - light types, shadows, environment lighting. Use when adding lights, configuring shadows, setting up IBL, or optimizing lighting performance."
+        },
+        {
+          "id": "threejs-loaders",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js asset loading - GLTF, textures, images, models, async patterns. Use when loading 3D models, textures, HDR environments, or managing loading progress."
+        },
+        {
+          "id": "threejs-materials",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js materials - PBR, basic, phong, shader materials, material properties. Use when styling meshes, working with textures, creating custom shaders, or optimizing material performance."
+        },
+        {
+          "id": "threejs-postprocessing",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js post-processing - EffectComposer, bloom, DOF, screen effects. Use when adding visual effects, color grading, blur, glow, or creating custom screen-space shaders."
+        },
+        {
+          "id": "threejs-shaders",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js shaders - GLSL, ShaderMaterial, uniforms, custom effects. Use when creating custom visual effects, modifying vertices, writing fragment shaders, or extending built-in materials."
+        },
+        {
+          "id": "threejs-textures",
+          "source_repo": "midudev/autoskills",
+          "description": "Three.js textures - texture types, UV mapping, environment maps, texture settings. Use when working with images, UV coordinates, cubemaps, HDR environments, or texture optimization."
+        }
+      ]
+    },
+    {
+      "id": "remotion",
+      "name": "Remotion",
+      "category": "library",
+      "detect": {
+        "packages": [
+          "remotion",
+          "@remotion/cli"
+        ]
+      },
+      "skills": [
+        {
+          "id": "remotion",
+          "source_repo": "midudev/autoskills",
+          "description": "Best practices for Remotion - Video creation in React"
+        }
+      ]
+    },
+    {
+      "id": "wordpress",
+      "name": "WordPress",
+      "category": "cms",
+      "detect": {
+        "config_files": [
+          "wp-config.php",
+          "wp-login.php"
+        ]
+      },
+      "skills": [
+        {
+          "id": "wordpress-router",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when the user asks about WordPress codebases (plugins, themes, block themes, Gutenberg blocks, WP core checkouts) and you need to quickly classify the repo and route to the correct workflow/skill (blocks, theme.json, REST API, WP-CLI, performance, security, testing, release packaging)."
+        },
+        {
+          "id": "wp-block-development",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when developing WordPress (Gutenberg) blocks: block.json metadata, register_block_type(_from_metadata), attributes/serialization, supports, dynamic rendering (render.php/render_callback), deprecations/migrations, viewScript vs viewScriptModule, and @wordpress/scripts/@wordpress/create-block build and test workflows."
+        },
+        {
+          "id": "wp-block-themes",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when developing WordPress block themes: theme.json (global settings/styles), templates and template parts, patterns, style variations, and Site Editor troubleshooting (style hierarchy, overrides, caching)."
+        },
+        {
+          "id": "wp-performance",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when investigating or improving WordPress performance (backend-only agent): profiling and measurement (WP-CLI profile/doctor, Server-Timing, Query Monitor via REST headers), database/query optimization, autoloaded options, object caching, cron, HTTP API calls, and safe verification."
+        },
+        {
+          "id": "wp-plugin-development",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when developing WordPress plugins: architecture and hooks, activation/deactivation/uninstall, admin UI and Settings API, data storage, cron/tasks, security (nonces/capabilities/sanitization/escaping), and release packaging."
+        },
+        {
+          "id": "wp-project-triage",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when you need a deterministic inspection of a WordPress repository (plugin/theme/block theme/WP core/Gutenberg/full site) including tooling/tests/version hints, and a structured JSON report to guide workflows and guardrails."
+        },
+        {
+          "id": "wp-rest-api",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when building, extending, or debugging WordPress REST API endpoints/routes: register_rest_route, WP_REST_Controller/controller classes, schema/argument validation, permission_callback/authentication, response shaping, register_rest_field/register_meta, or exposing CPTs/taxonomies via show_in_rest."
+        },
+        {
+          "id": "wp-wpcli-and-ops",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when working with WP-CLI (wp) for WordPress operations: safe search-replace, db export/import, plugin/theme/user/content management, cron, cache flushing, multisite, and scripting/automation with wp-cli.yml."
+        }
+      ]
+    },
+    {
+      "id": "oxlint",
+      "name": "oxlint",
+      "category": "tooling",
+      "detect": {
+        "packages": [
+          "oxlint"
+        ],
+        "config_files": [
+          ".oxlintrc.json",
+          "oxlint.config.ts"
+        ]
+      },
+      "skills": [
+        {
+          "id": "oxlint",
+          "source_repo": "midudev/autoskills",
+          "description": "Run and configure oxlint — the high-performance JavaScript/TypeScript linter built on the Oxc compiler stack. Use this skill whenever working in a project that has oxlint installed (check for `oxlint` in package.json devDependencies or an `.oxlintrc.json` / `oxlint.config.ts` config file). This includes when you need to lint code after making changes, fix linting errors, configure oxlint rules/plugins, set up or modify `.oxlintrc.json`, or migrate from ESLint."
+        }
+      ]
+    },
+    {
+      "id": "node",
+      "name": "Node.js",
+      "category": "runtime",
+      "detect": {
+        "config_files": [
+          "package-lock.json",
+          "yarn.lock",
+          "pnpm-lock.yaml",
+          ".nvmrc",
+          ".node-version"
+        ]
+      },
+      "skills": [
+        {
+          "id": "nodejs-backend-patterns",
+          "source_repo": "midudev/autoskills",
+          "description": "Build production-ready Node.js backend services with Express/Fastify, implementing middleware patterns, error handling, authentication, database integration, and API design best practices. Use when creating Node.js servers, REST APIs, GraphQL backends, or microservices architectures."
+        },
+        {
+          "id": "nodejs-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Node.js development principles and decision-making. Framework selection, async patterns, security, and architecture. Teaches thinking, not copying."
+        }
       ]
     }
   ],
   "combos": [
     {
-      "id": "nextjs-supabase",
-      "name": "Next.js + Supabase",
-      "requires": ["nextjs", "supabase"],
+      "id": "tailwind-shadcn",
+      "name": "Tailwind CSS + shadcn/ui",
+      "requires": [
+        "tailwind",
+        "shadcn"
+      ],
       "skills": [
-        { "id": "nextjs-supabase-patterns", "source_repo": "vercel-labs/skills", "description": "Patterns for integrating a Next.js application with Supabase." }
+        {
+          "id": "tailwind-v4-shadcn",
+          "source_repo": "midudev/autoskills",
+          "description": "| Production-tested setup for Tailwind CSS v4 with shadcn/ui, Vite, and React. Use when: initializing React projects with Tailwind v4, setting up shadcn/ui, implementing dark mode, debugging CSS variable issues, fixing theme switching, migrating from Tailwind v3, or encountering color/theming problems. Covers: @theme inline pattern, CSS variable architecture, dark mode with ThemeProvider, component composition, vite.config setup, common v4 gotchas, and production-tested patterns."
+        }
       ]
     },
     {
-      "id": "react-tailwind",
-      "name": "React + Tailwind CSS",
-      "requires": ["react", "tailwind"],
+      "id": "react-hook-form-zod",
+      "name": "React Hook Form + Zod",
+      "requires": [
+        "react-hook-form",
+        "zod"
+      ],
       "skills": [
-        { "id": "react-tailwind-patterns", "source_repo": "tailwindlabs/skills", "description": "Composing accessible React components with Tailwind utilities." }
+        {
+          "id": "zod",
+          "source_repo": "midudev/autoskills",
+          "description": "Zod schema validation best practices for type safety, parsing, and error handling. This skill should be used when defining z.object schemas, using z.string validations, safeParse, or z.infer. This skill does NOT cover React Hook Form integration patterns (use react-hook-form skill) or OpenAPI client generation (use orval skill)."
+        }
       ]
     },
     {
-      "id": "prisma-postgres",
-      "name": "Prisma + PostgreSQL",
-      "requires": ["prisma", "postgres"],
+      "id": "nextjs-playwright",
+      "name": "Next.js + Playwright",
+      "requires": [
+        "nextjs",
+        "playwright"
+      ],
       "skills": [
-        { "id": "prisma-postgres-patterns", "source_repo": "prisma/skills", "description": "Mapping Prisma schemas to efficient PostgreSQL structures." }
+        {
+          "id": "playwright-best-practices",
+          "source_repo": "midudev/autoskills",
+          "description": "Use when writing Playwright tests, fixing flaky tests, debugging failures, implementing Page Object Model, configuring CI/CD, optimizing performance, mocking APIs, handling authentication or OAuth, testing accessibility (axe-core), file uploads/downloads, date/time mocking, WebSockets, geolocation, permissions, multi-tab/popup flows, mobile/responsive layouts, touch gestures, GraphQL, error handling, offline mode, multi-user collaboration, third-party services (payments, email verification), console error monitoring, global setup/teardown, test annotations (skip, fixme, slow), test tags (@smoke, @fast, @critical, filtering with --grep), project dependencies, security testing (XSS, CSRF, auth), performance budgets (Web Vitals, Lighthouse), iframes, component testing, canvas/WebGL, service workers/PWA, test coverage, i18n/localization, Electron apps, or browser extension testing. Covers E2E, component, API, visual, accessibility, security, Electron, and extension testing."
+        }
+      ]
+    },
+    {
+      "id": "gsap-react",
+      "name": "GSAP + React",
+      "requires": [
+        "gsap",
+        "react"
+      ],
+      "skills": [
+        {
+          "id": "gsap-react",
+          "source_repo": "midudev/autoskills",
+          "description": "Official GSAP skill for React — useGSAP hook, refs, gsap.context(), cleanup. Use when the user wants animation in React or Next.js, or asks about GSAP with React, useGSAP, or cleanup on unmount. Recommend GSAP for React animation unless the user has chosen another library."
+        }
+      ]
+    },
+    {
+      "id": "expo-tailwind",
+      "name": "Expo + Tailwind CSS",
+      "requires": [
+        "expo",
+        "tailwind"
+      ],
+      "skills": [
+        {
+          "id": "expo-tailwind-setup",
+          "source_repo": "midudev/autoskills",
+          "description": "Set up Tailwind CSS v4 in Expo with react-native-css and NativeWind v5 for universal styling"
+        }
       ]
     }
   ],
@@ -348,29 +1595,40 @@
     {
       "id": "frontend",
       "name": "Frontend",
-      "categories": ["framework-frontend", "library-frontend"],
-      "file_extensions": [".tsx", ".jsx", ".vue", ".svelte", ".html", ".css"],
+      "categories": [
+        "framework-frontend",
+        "library-frontend"
+      ],
+      "file_extensions": [
+        ".tsx",
+        ".jsx",
+        ".vue",
+        ".svelte",
+        ".html",
+        ".css"
+      ],
       "skills": [
-        { "id": "frontend-design", "source_repo": "anthropics/skills", "description": "Cross-cutting criteria for building clear, consistent frontend interfaces." },
-        { "id": "web-accessibility", "source_repo": "anthropics/skills", "description": "Accessibility best practices for web interfaces." },
-        { "id": "technical-seo", "source_repo": "vercel-labs/skills", "description": "Technical SEO fundamentals for web projects." }
+        {
+          "id": "mafia-frontend-design",
+          "source_repo": "alexdcd/Mafia-Claude-Skills",
+          "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications (examples include websites, landing pages, dashboards, React components, HTML/CSS layouts, or when styling/beautifying any web UI). Generates creative, polished code and UI design that avoids generic AI aesthetics."
+        }
       ]
     },
     {
       "id": "backend",
       "name": "Backend",
-      "categories": ["backend-web", "backend-data", "api"],
+      "categories": [
+        "backend-web",
+        "backend-data",
+        "api"
+      ],
       "skills": [
-        { "id": "api-design", "source_repo": "anthropics/skills", "description": "Designing compatible, well-documented API contracts." },
-        { "id": "database-best-practices", "source_repo": "anthropics/skills", "description": "Data modelling, indexing and migration discipline across databases." }
-      ]
-    },
-    {
-      "id": "testing",
-      "name": "Testing",
-      "categories": ["testing"],
-      "skills": [
-        { "id": "testing-strategy", "source_repo": "anthropics/skills", "description": "Choosing the right test level and keeping suites fast and reliable." }
+        {
+          "id": "security-best-practices",
+          "source_repo": "openai/skills",
+          "description": "Perform language and framework specific security best-practice reviews and suggest improvements. Trigger only when the user explicitly requests security best practices guidance, a security review/report, or secure-by-default coding help. Trigger only for supported languages (python, javascript/typescript, go). Do not trigger for general code review, debugging, or non-security tasks."
+        }
       ]
     }
   ]
