@@ -38,7 +38,7 @@ export function TopBar({ view, search, onSearch, onScan, onAddProject, projectCo
     <div className="top-actions">
       <label className="search"><span>⌕</span><input value={search} onChange={(event: ChangeEvent<HTMLInputElement>) => onSearch(event.target.value)} placeholder="Search skills" aria-label="Search skills" /></label>
       <button className="secondary-button project-button" onClick={onAddProject}>Add folders</button>
-      <button className="secondary-button" onClick={onScan} disabled={isScanning}>{isScanning ? 'Scanning…' : 'Scan again'}</button>
+      <button className="secondary-button" onClick={onScan} disabled={isScanning}>{isScanning ? <><span className="console-spinner" aria-hidden />Scanning…</> : 'Scan again'}</button>
     </div>
   </header>
 }

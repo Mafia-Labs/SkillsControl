@@ -47,7 +47,7 @@
 
 .skill-table { display: grid; }
 .skill-table-row { display: grid; grid-template-columns: minmax(150px, 1.4fr) minmax(120px, .9fr) minmax(180px, 1.6fr) minmax(120px, .8fr) minmax(150px, 1fr); gap: 12px; align-items: center; padding: 11px 6px; border-top: 1px solid #1c1f26; }
-.skill-table-row.table-head { border-top: 0; color: #777e8b; font-size: 10px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; }
+.skill-table-row.table-head { border-top: 0; color: #777e8b; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
 .skill-table-row .skill-cell { display: grid; gap: 3px; }
 .skill-table-row .skill-cell strong { color: #eef0f4; font-size: 13px; }
 .divergent-flag { color: #e0a855; font-size: 10px; }
