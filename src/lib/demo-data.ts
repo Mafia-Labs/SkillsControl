@@ -4,7 +4,8 @@ export const demoReport: ScanReport = {
   scannedAt: new Date().toISOString(),
   scannedPaths: ['~/.agents/skills', '~/.claude/skills', '/workspace/demo/.agents/skills', '/workspace/demo/.claude/skills'],
   projects: [
-    { path: '/workspace/demo', name: 'demo', agents: ['codex', 'claude'] },
+    { path: '/workspace/demo', name: 'demo', agents: ['codex', 'claude'], relativePath: '.', kind: 'package' },
+    { path: '/workspace/demo/src-tauri', name: 'src-tauri', agents: ['codex'], parentPath: '/workspace/demo', relativePath: 'src-tauri', kind: 'package' },
     { path: '/workspace/newsletter', name: 'newsletter', agents: ['claude'] },
     { path: '/workspace/landing-web', name: 'landing-web', agents: [] }
   ],

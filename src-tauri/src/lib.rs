@@ -140,6 +140,9 @@ struct ProjectSummary {
     path: String,
     name: String,
     agents: Vec<String>,
+    parent_path: Option<String>,
+    relative_path: String,
+    kind: String,
 }
 
 #[derive(Serialize)]
@@ -231,6 +234,18 @@ fn has_skill_root(path: &Path) -> bool {
     AGENT_SKILL_PATHS
         .iter()
         .any(|(_, relative)| path.join(relative).is_dir())
+}
+
+fn project_kind(path: &Path) -> &'static str {
+    if path.join(".git").exists() {
+        "repository"
+    } else if has_project_marker(path) {
+        "package"
+    } else if has_skill_root(path) {
+        "scope"
+    } else {
+        "workspace"
+    }
 }
 
 fn should_skip_directory(path: &Path) -> bool {
@@ -356,7 +371,41 @@ fn agent_paths(workspace_roots: &[String]) -> Vec<CandidatePath> {
 }
 
 fn project_summaries(candidates: &[CandidatePath]) -> Vec<ProjectSummary> {
+    let mut paths: HashMap<String, PathBuf> = HashMap::new();
+    for candidate in candidates {
+        let Some(project_path) = candidate.project_path.as_ref() else {
+            continue;
+        };
+        let normalized = normalize_path(project_path);
+        paths.entry(path_key(&normalized)).or_insert(normalized);
+    }
+
+    let project_paths: Vec<PathBuf> = paths.into_values().collect();
     let mut projects: HashMap<String, ProjectSummary> = HashMap::new();
+    for normalized in &project_paths {
+        let parent = project_paths
+            .iter()
+            .filter(|candidate| {
+                *candidate != normalized && normalized.starts_with(candidate)
+            })
+            .max_by_key(|candidate| candidate.components().count())
+            .cloned();
+        let relative_path = parent
+            .as_ref()
+            .and_then(|parent| normalized.strip_prefix(parent).ok())
+            .map(|relative| relative.to_string_lossy().trim_matches(['/', '\\']).to_string())
+            .filter(|relative| !relative.is_empty())
+            .unwrap_or_else(|| ".".to_string());
+        let key = path_key(normalized);
+        projects.insert(key, ProjectSummary {
+            path: normalized.to_string_lossy().to_string(),
+            name: project_name(normalized),
+            agents: Vec::new(),
+            parent_path: parent.map(|parent| parent.to_string_lossy().to_string()),
+            relative_path,
+            kind: project_kind(normalized).to_string(),
+        });
+    }
 
     for candidate in candidates {
         let Some(project_path) = candidate.project_path.as_ref() else {
@@ -364,11 +413,9 @@ fn project_summaries(candidates: &[CandidatePath]) -> Vec<ProjectSummary> {
         };
         let normalized = normalize_path(project_path);
         let key = path_key(&normalized);
-        let summary = projects.entry(key).or_insert_with(|| ProjectSummary {
-            path: normalized.to_string_lossy().to_string(),
-            name: project_name(&normalized),
-            agents: Vec::new(),
-        });
+        let Some(summary) = projects.get_mut(&key) else {
+            continue;
+        };
         if candidate.path.is_dir() && !summary.agents.contains(&candidate.agent) {
             summary.agents.push(candidate.agent.clone());
         }
@@ -2599,6 +2646,37 @@ mod tests {
             candidate.project_path.as_deref() == Some(super::normalize_path(&project).as_path())
                 && candidate.path == super::normalize_path(&project).join(".agents/skills")
         }));
+
+        fs::remove_dir_all(workspace).expect("workspace should clean up");
+    }
+
+    #[test]
+    fn summarizes_nested_scopes_under_their_nearest_project() {
+        let workspace = temporary_directory("hierarchy");
+        let nested = workspace.join("src-tauri");
+        fs::create_dir_all(&nested).expect("nested scope should be created");
+        fs::write(workspace.join("package.json"), "{}").expect("workspace marker should be created");
+        fs::write(nested.join("Cargo.toml"), "[package]\nname = \"demo\"\n").expect("nested marker should be created");
+
+        let candidates = agent_paths(&[workspace.to_string_lossy().to_string()]);
+        let summaries = super::project_summaries(&candidates);
+        let normalized_workspace = super::normalize_path(&workspace);
+        let normalized_nested = super::normalize_path(&nested);
+        let root = summaries
+            .iter()
+            .find(|summary| summary.path == normalized_workspace.to_string_lossy())
+            .expect("workspace should be summarized");
+        let child = summaries
+            .iter()
+            .find(|summary| summary.path == normalized_nested.to_string_lossy())
+            .expect("nested scope should be summarized");
+
+        assert_eq!(root.parent_path, None);
+        assert_eq!(root.relative_path, ".");
+        assert_eq!(root.kind, "package");
+        assert_eq!(child.parent_path.as_deref(), Some(normalized_workspace.to_string_lossy().as_ref()));
+        assert_eq!(child.relative_path, "src-tauri");
+        assert_eq!(child.kind, "package");
 
         fs::remove_dir_all(workspace).expect("workspace should clean up");
     }

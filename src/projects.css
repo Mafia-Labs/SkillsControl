@@ -31,6 +31,14 @@
 .skill-chip.muted { color: #9298a4; background: #1a1d24; }
 .project-empty { display: grid; gap: 9px; padding: 4px 0 2px; }
 .project-empty p { margin: 0; color: #9298a4; font-size: 12px; }
+.scope-tree { display: grid; gap: 7px; padding-top: 10px; border-top: 1px solid #1e222a; }
+.scope-tree-label { color: #777e8b; font-size: 10px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; }
+.scope-list { display: flex; flex-wrap: wrap; gap: 7px; }
+.scope-chip { display: inline-flex; align-items: center; gap: 7px; min-width: 0; padding: 6px 9px; border: 1px solid #2b3040; border-radius: 7px; color: #d4d1ff; background: #171923; text-align: left; }
+.scope-chip:hover { border-color: #5b51a4; background: #211f33; }
+.scope-chip:focus-visible { outline: 2px solid #8d7dff; outline-offset: 2px; }
+.scope-chip strong { overflow: hidden; max-width: 150px; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.scope-chip code { overflow: hidden; max-width: 130px; color: #9298a4; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .skill-name-button { display: inline-flex; width: fit-content; padding: 0; color: inherit; background: transparent; text-align: left; }
 .skill-name-button:hover strong { color: #c8c2ff; text-decoration: underline; text-underline-offset: 3px; }
 .skill-name-button:focus-visible { border-radius: 4px; outline: 2px solid #8d7dff; outline-offset: 3px; }
@@ -70,6 +78,7 @@
 .location .danger-button { justify-self: start; margin-top: 2px; }
 
 .detail-head-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.scope-panel { min-height: 0; border-color: #2b2a45 !important; }
 
 /* Global skills panel (Projects view) */
 .projects .global-panel { min-height: 0; margin-top: 26px; padding: 18px; border: 1px solid #21252c; border-radius: 11px; background: #101216; }

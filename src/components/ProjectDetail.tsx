@@ -43,13 +43,15 @@ const localRoot = (path: string, projectPath: string) => {
   return cut >= 0 ? normalized.slice(cut + 1) : normalized.replace(`${projectPath.replace(/\\/g, '/')}/`, '')
 }
 
-export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnalyze, onBack, onInspect, onQuarantine, onLocalize, onInstallRecommendation }: {
+export function ProjectDetail({ inventory, childScopes, findings, analysis, analyzing, onAnalyze, onBack, onOpenScope, onInspect, onQuarantine, onLocalize, onInstallRecommendation }: {
   inventory: ProjectInventory
+  childScopes: ProjectInventory[]
   findings: Finding[]
   analysis: { result: StackDetection, at: string } | null
   analyzing: boolean
   onAnalyze: () => void
   onBack: () => void
+  onOpenScope: (path: string) => void
   onInspect: (skillId: string) => void
   onQuarantine: (installation: Installation) => void
   onLocalize: (skill: Skill, installation: Installation) => void
@@ -86,6 +88,14 @@ export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnal
         <button className="primary-button compact" disabled={analyzing} onClick={onAnalyze}>{analyzing ? t('projectDetail.analyzing') : analysis ? t('projectDetail.reanalyze') : t('projectDetail.analyzeProject')}</button>
       </div>
     </div>
+
+    {childScopes.length > 0 && <div className="panel scope-panel">
+      <div className="panel-heading"><h3>{t('projects.nestedScopes')}</h3><span className="count-chip">{childScopes.length}</span></div>
+      <p className="muted-copy">{t('projectDetail.nestedScopesDescription')}</p>
+      <div className="scope-list">{childScopes.map((child) => <button className="scope-chip" key={child.path} onClick={() => onOpenScope(child.path)} aria-label={t('projects.openScope', { name: child.name })}>
+        <strong>{child.name}</strong><code>{child.relativePath ?? child.path}</code>
+      </button>)}</div>
+    </div>}
 
     {detectConsole
       ? <div className="console-inline"><ProcessConsole title={t('projectDetail.consoleTitle', { name: inventory.name })} lines={detectConsole.lines} done={detectConsole.done} onSettled={() => setTimeout(() => setDetectConsole(null), 1000)} /></div>

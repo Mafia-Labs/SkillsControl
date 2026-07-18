@@ -1,4 +1,4 @@
-import type { Agent, Finding, Installation, ProjectInventory, ScanReport, Skill } from './types'
+import type { Agent, Finding, Installation, ProjectInventory, ProjectSummary, ScanReport, Skill } from './types'
 
 export const agentLabels: Record<Agent, string> = {
   codex: 'Codex / Agent Skills',
@@ -57,19 +57,34 @@ const agentsFromInstallations = (installations: Installation[]): Agent[] =>
 // working inside a project can also resolve them.
 export const groupInstallationsByProject = (report: ScanReport): ProjectInventory[] => {
   const byPath = new Map<string, ProjectInventory>()
-  const ensure = (path: string, name: string, agents: Agent[]): ProjectInventory => {
+  const summaries = new Map(report.projects.map((project) => [normalizeProjectPath(project.path), project]))
+  const ensure = (path: string, name: string, agents: Agent[], summary?: ProjectSummary): ProjectInventory => {
     const key = normalizeProjectPath(path)
     const existing = byPath.get(key)
     if (existing) {
       existing.agents = [...new Set([...existing.agents, ...agents])].sort()
+      if (summary) {
+        existing.parentPath = summary.parentPath
+        existing.relativePath = summary.relativePath
+        existing.kind = summary.kind
+      }
       return existing
     }
-    const inventory: ProjectInventory = { path, name, agents: [...agents].sort(), skills: [], globalSkills: [] }
+    const inventory: ProjectInventory = {
+      path,
+      name,
+      agents: [...agents].sort(),
+      parentPath: summary?.parentPath,
+      relativePath: summary?.relativePath,
+      kind: summary?.kind,
+      skills: [],
+      globalSkills: []
+    }
     byPath.set(key, inventory)
     return inventory
   }
 
-  for (const project of report.projects) ensure(project.path, project.name, project.agents)
+  for (const project of report.projects) ensure(project.path, project.name, project.agents, project)
 
   const globalSkills: Skill[] = []
   for (const skill of report.skills) {
@@ -83,7 +98,7 @@ export const groupInstallationsByProject = (report: ScanReport): ProjectInventor
     }
     for (const [, installations] of grouped) {
       const path = installations[0].projectPath ?? installations[0].path
-      const inventory = ensure(path, projectName(path), agentsFromInstallations(installations))
+      const inventory = ensure(path, projectName(path), agentsFromInstallations(installations), summaries.get(normalizeProjectPath(path)))
       inventory.skills.push({ skill, installations })
     }
   }

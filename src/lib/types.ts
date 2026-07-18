@@ -1,6 +1,7 @@
 export type Scope = 'user' | 'project'
 export type Agent = 'codex' | 'claude'
 export type InstallTarget = Agent | 'all'
+export type ProjectKind = 'workspace' | 'repository' | 'package' | 'scope'
 export type Severity = 'info' | 'warning' | 'error' | 'critical'
 export type SecurityStatus = 'Reviewed' | 'Low risk' | 'Review required' | 'Blocked' | 'Unknown' | 'Stale'
 export type Capability = 'Read project files' | 'Execute shell commands' | 'Access network' | 'Access credentials' | 'Write outside project' | 'Hooks or MCP' | 'Binary content' | 'External content'
@@ -82,6 +83,9 @@ export type ProjectSummary = {
   path: string
   name: string
   agents: Agent[]
+  parentPath?: string
+  relativePath?: string
+  kind?: ProjectKind
 }
 
 export type ProjectSkillEntry = {
@@ -93,6 +97,9 @@ export type ProjectInventory = {
   path: string
   name: string
   agents: Agent[]
+  parentPath?: string
+  relativePath?: string
+  kind?: ProjectKind
   skills: ProjectSkillEntry[]
   globalSkills: Skill[]
 }

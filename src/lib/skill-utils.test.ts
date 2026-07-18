@@ -126,4 +126,13 @@ describe('groupInstallationsByProject', () => {
     expect(inventories.map((inventory) => inventory.name)).toEqual(['ghost'])
     expect(inventories[0].agents).toEqual(['claude'])
   })
+
+  it('preserves nested project metadata for the hierarchy view', () => {
+    const report = { ...emptyReport([]), projects: [
+      { path: '/work/app', name: 'app', agents: ['codex'] as const, relativePath: '.', kind: 'package' as const },
+      { path: '/work/app/src-tauri', name: 'src-tauri', agents: ['codex'] as const, parentPath: '/work/app', relativePath: 'src-tauri', kind: 'package' as const }
+    ] } satisfies ScanReport
+    const inventories = groupInstallationsByProject(report)
+    expect(inventories.find((inventory) => inventory.name === 'src-tauri')).toMatchObject({ parentPath: '/work/app', relativePath: 'src-tauri', kind: 'package' })
+  })
 })

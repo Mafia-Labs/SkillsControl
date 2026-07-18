@@ -28,6 +28,7 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
   onQuarantine: (installation: Installation) => void
 }) {
   const { t } = useTranslation()
+  const rootInventories = inventories.filter((inventory) => !inventory.parentPath || !inventories.some((candidate) => candidate.path === inventory.parentPath))
   return <section className="projects">
     <div className="projects-heading">
       <div><p className="eyebrow">{t('projects.yourFolders')}</p><h2>{t('projects.title')}</h2><p>{t('projects.description')}</p></div>
@@ -43,11 +44,12 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
 
     {isDemo && <p className="demo-hint">{t('projects.demoHint')}</p>}
 
-    {inventories.length ? <div className="project-grid">
-      {inventories.map((inventory) => {
+    {rootInventories.length ? <div className="project-grid">
+      {rootInventories.map((inventory) => {
         const health = aggregateHealth(inventory, findings)
         const preview = inventory.skills.slice(0, 4)
         const remaining = inventory.skills.length - preview.length
+        const childScopes = inventories.filter((candidate) => candidate.parentPath === inventory.path)
         return <article className="project-card" key={inventory.path}>
           <button className="project-card-open" onClick={() => onOpen(inventory.path)} aria-label={t('projects.openProject', { name: inventory.name })}>
             <div className="project-card-head">
@@ -63,6 +65,12 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
               <span className="primary-button compact">{t('projects.analyzeRecommend')} <span>→</span></span>
             </div>}
           </button>
+          {childScopes.length > 0 && <div className="scope-tree" aria-label={t('projects.nestedScopes')}>
+            <span className="scope-tree-label">{t('projects.nestedScopes')}</span>
+            <div className="scope-list">{childScopes.map((child) => <button className="scope-chip" key={child.path} onClick={() => onOpen(child.path)} aria-label={t('projects.openScope', { name: child.name })}>
+              <strong>{child.name}</strong><code>{child.relativePath ?? child.path}</code>
+            </button>)}</div>
+          </div>}
         </article>
       })}
     </div> : <Empty icon="◇" title={t('projects.noProjects')} detail={t('projects.noProjectsDetail')} />}
