@@ -75,7 +75,8 @@
     "french": "Français",
     "chinese": "Chinois",
     "japanese": "日本語",
-    "german": "Deutsch"
+    "german": "Deutsch",
+    "portuguese": "Português"
   },
   "common": {
     "addFolder": "Ajouter un dossier",

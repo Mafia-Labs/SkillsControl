@@ -3,7 +3,7 @@ import path from 'node:path'
 import process from 'node:process'
 
 const root = process.cwd()
-const locales = ['en', 'es', 'fr', 'zh', 'ja', 'de']
+const locales = ['en', 'es', 'fr', 'zh', 'ja', 'de', 'pt']
 
 const readLocale = (locale) => {
   const file = path.join(root, 'src', 'locales', locale, 'translation.json')

@@ -75,7 +75,8 @@
     "french": "Français",
     "chinese": "中文",
     "japanese": "日本語",
-    "german": "Deutsch"
+    "german": "Deutsch",
+    "portuguese": "Português"
   },
   "common": {
     "addFolder": "フォルダを追加",
