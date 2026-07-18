@@ -1,6 +1,7 @@
-import { useState, type ChangeEvent } from 'react'
+import { useMemo, useState, type ChangeEvent } from 'react'
 import { agentLabels } from '../lib/skill-utils'
 import type { Agent, CatalogSkill, ChangePreview, Installation, InstallTarget, ProjectSummary, Scope, Skill, SkillRecommendation } from '../lib/types'
+import { ProcessConsole, type ConsoleLine } from './ProcessConsole'
 
 type ModalState =
   | { kind: 'disable', installation: Installation, preview: ChangePreview }
@@ -8,9 +9,37 @@ type ModalState =
   | { kind: 'install-listed', recommendation: SkillRecommendation, projectPath: string }
   | { kind: 'localize', skill: Skill, source: Installation }
 
-export function ChangeModal({ modal, projects, onCancel, onApply }: {
+const applyScript = (modal: ModalState, paths: string[]): ConsoleLine[] => {
+  if (modal.kind === 'disable') {
+    const name = modal.installation.path.replace(/\\/g, '/').split('/').filter(Boolean).slice(-1)[0] ?? 'skill'
+    return [
+      { id: 'cmd', text: `skillctl quarantine ${name}`, tone: 'cmd', delay: 120 },
+      { id: 'backup', text: 'Creating reversible backup in the local archive', tone: 'step', delay: 620 },
+      { id: 'move', text: 'Moving the copy out of the agent load path', tone: 'step', delay: 560 },
+      { id: 'verify', text: 'Confirming the original location is clean', tone: 'step', delay: 540 }
+    ]
+  }
+  if (modal.kind === 'localize') return [
+    { id: 'cmd', text: `skillctl copy ${modal.skill.name} --to project`, tone: 'cmd', delay: 120 },
+    { id: 'read', text: 'Reading the global skill folder', tone: 'step', delay: 620 },
+    { id: 'copy', text: `Writing ${paths[0] ?? 'the local copy'}`, tone: 'step', delay: 560 },
+    { id: 'hash', text: 'Re-hashing the copy · SHA-256', tone: 'step', delay: 540 }
+  ]
+  const listed = modal.kind === 'install-listed'
+  const skillId = listed ? modal.recommendation.skillId : modal.skill.id
+  return [
+    { id: 'cmd', text: `skillctl install ${skillId} --verify`, tone: 'cmd', delay: 120 },
+    { id: 'resolve', text: listed ? 'Resolving in the MafiaIA Skill List · pinned commit' : 'Resolving in the curated catalog', tone: 'step', delay: 520 },
+    { id: 'download', text: listed ? `Downloading pinned files · ${modal.recommendation.sourceRepo}` : 'Downloading skill files', tone: 'step', delay: 480 },
+    { id: 'verify', text: 'Verifying SHA-256 against the curated hash', tone: 'step', delay: 500 },
+    ...paths.slice(0, 2).map((path, index) => ({ id: `write-${index}`, text: `Writing ${path}`, tone: 'step' as const, delay: 380 }))
+  ]
+}
+
+export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
   modal: ModalState
   projects: ProjectSummary[]
+  applying: boolean
   onCancel: () => void
   onApply: (scope?: Scope, target?: InstallTarget, projectPath?: string) => void
 }) {
@@ -26,6 +55,16 @@ export function ChangeModal({ modal, projects, onCancel, onApply }: {
   const effectiveTarget: InstallTarget = localize ? modal.source.agent : target
   const installPaths = modal.kind !== 'disable' ? previewPaths(effectiveScope, effectiveTarget, skillId, projectPath) : []
   const projectRequired = modal.kind !== 'disable' && effectiveScope === 'project' && !projectPath
+  const script = useMemo(() => applying ? applyScript(modal, installPaths) : null, [applying]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (applying && script) return <div className="modal-backdrop" role="presentation">
+    <section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title">
+      <div className="modal-icon">{modal.kind === 'disable' ? '⊘' : '↓'}</div>
+      <p className="eyebrow">Applying change</p>
+      <h2 id="change-title">{install ? `Install ${modal.skill.name}` : listed ? `Install ${modal.recommendation.skillId}` : localize ? `Install ${modal.skill.name} in a project` : modal.preview.title}</h2>
+      <div className="console-modal"><ProcessConsole title="skill-control — apply" lines={script} done={false} /></div>
+    </section>
+  </div>
 
   return <div className="modal-backdrop" role="presentation">
     <section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title">

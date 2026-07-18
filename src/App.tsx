@@ -65,19 +65,22 @@ export default function App() {
   const [analyses, setAnalyses] = useState<Record<string, { result: StackDetection, at: string }>>({})
   const [analyzingPath, setAnalyzingPath] = useState<string | null>(null)
   const [scanConsole, setScanConsole] = useState<{ lines: ConsoleLine[], done: boolean } | null>(null)
+  const [applying, setApplying] = useState(false)
 
   const applyReport = (next: ScanReport) => {
     setReport(next)
     setSelectedId((current) => current && next.skills.some((skill) => skill.id === current) ? current : next.skills[0]?.id ?? null)
   }
 
-  const refresh = async (roots = workspaceRoots) => {
+  // showConsole plays the animated scan sequence; silent refreshes (after an
+  // install or quarantine) skip it so the app stays snappy.
+  const refresh = async (roots = workspaceRoots, { showConsole = false } = {}) => {
     setIsScanning(true)
     setError(null)
-    setScanConsole({ lines: scanScript(roots.length), done: false })
+    if (showConsole) setScanConsole({ lines: scanScript(roots.length), done: false })
     try {
       // Keep the console sequence on screen long enough to read even when the scan is instant.
-      const [[nextReport, nextArchives]] = await Promise.all([Promise.all([scanSkills(roots), listArchives()]), wait(2100)])
+      const [[nextReport, nextArchives]] = await Promise.all([Promise.all([scanSkills(roots), listArchives()]), wait(showConsole ? 2100 : 0)])
       applyReport(nextReport)
       setArchives(nextArchives)
       setScanConsole((current) => current ? { lines: appendConsoleLines(current.lines, scanResultLines(nextReport)), done: true } : current)
@@ -96,13 +99,13 @@ export default function App() {
   useEffect(() => {
     void (async () => {
       const stored = await getWorkspaceRoots()
-      if (stored === null) { void refresh(); return }
+      if (stored === null) { void refresh(undefined, { showConsole: true }); return }
       if (stored.length === 0 && workspaceRoots.length > 0) {
         await saveWorkspaceRoots(workspaceRoots)
-        void refresh(workspaceRoots)
+        void refresh(workspaceRoots, { showConsole: true })
       } else {
         setWorkspaceRoots(stored)
-        void refresh(stored)
+        void refresh(stored, { showConsole: true })
       }
     })()
   }, [])
@@ -111,7 +114,7 @@ export default function App() {
   const persistRoots = async (nextRoots: string[]) => {
     setWorkspaceRoots(nextRoots)
     await saveWorkspaceRoots(nextRoots)
-    await refresh(nextRoots)
+    await refresh(nextRoots, { showConsole: true })
   }
 
   const filteredSkills = useMemo(() => (report?.skills ?? []).filter((skill) => `${skill.name} ${skill.description}`.toLowerCase().includes(search.toLowerCase())), [report, search])
@@ -160,16 +163,22 @@ export default function App() {
 
   const applyModal = async (scope: Scope = 'user', target: InstallTarget = 'all', projectPath?: string) => {
     if (!modal) return
+    setApplying(true)
+    // Let the in-modal console play its verification sequence before closing.
+    const minWait = wait(3000)
     try {
       if (modal.kind === 'disable') {
         const archive = await quarantineSkill(modal.installation)
+        await minWait
         setRecentArchive(archive)
         setNotice('Skill quarantined and retained in the local archive.')
       } else if (modal.kind === 'localize') {
         const destination = await copySkillToProject(modal.source, projectPath ?? '')
+        await minWait
         setNotice(`${modal.skill.name} copied to ${destination}. Verify it, then quarantine the global copy if it is no longer needed.`)
       } else if (modal.kind === 'install-listed') {
         const installedPaths = await installListedSkill(modal.recommendation.skillId, scope, target, projectPath)
+        await minWait
         setNotice(`${modal.recommendation.skillId} installed and verified against the curated list${installedPaths.length > 1 ? ` (${installedPaths.length} copies)` : ''}.`)
         setModal(null)
         await refresh()
@@ -192,6 +201,7 @@ export default function App() {
         return
       } else {
         const installedPaths = await installCatalogSkill(modal.skill.id, scope, target, projectPath)
+        await minWait
         const location = scope === 'project' ? projects.find((project) => project.path === projectPath)?.name ?? 'project' : 'global scope'
         const coverage = target === 'all' ? 'all compatible agents' : target
         setNotice(`${modal.skill.name} installed for ${coverage} in ${location}${installedPaths.length > 1 ? ` (${installedPaths.length} copies)` : ''}.`)
@@ -200,6 +210,8 @@ export default function App() {
       await refresh()
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'The change could not be applied.')
+    } finally {
+      setApplying(false)
     }
   }
 
@@ -268,7 +280,7 @@ export default function App() {
   return <main className="app-shell">
     <Sidebar view={view} onChange={setView} />
     <section className="workspace">
-      <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh()} onAddProject={() => void addWorkspaceRoots()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
+      <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh(undefined, { showConsole: true })} onAddProject={() => void addWorkspaceRoots()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
       {isDemo && <div className="demo-banner" role="status"><span>◒</span>Demo mode — you're seeing example data, not your real skills.</div>}
       {error && <Banner tone="error" message={error} onDismiss={() => setError(null)} />}
       {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: 'Undo', onClick: () => void restoreArchive(recentArchive) } : undefined} onDismiss={() => setNotice(null)} />}
@@ -284,7 +296,7 @@ export default function App() {
       </div>}
     </section>
     {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
-    {modal && <ChangeModal modal={modal} projects={projects} onCancel={() => setModal(null)} onApply={applyModal} />}
+    {modal && <ChangeModal modal={modal} projects={projects} applying={applying} onCancel={() => setModal(null)} onApply={applyModal} />}
     {scanConsole && <div className="console-overlay" role="presentation">
       <ProcessConsole title="skill-control — scan" lines={scanConsole.lines} done={scanConsole.done} onSettled={() => setTimeout(() => setScanConsole(null), 900)} />
     </div>}
