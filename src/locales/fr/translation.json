@@ -73,7 +73,8 @@
     "english": "Anglais",
     "spanish": "Espagnol",
     "french": "Français",
-    "chinese": "Chinois"
+    "chinese": "Chinois",
+    "japanese": "日本語"
   },
   "common": {
     "addFolder": "Ajouter un dossier",

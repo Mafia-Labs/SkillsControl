@@ -47,6 +47,7 @@ export function TopBar({ view, search, onSearch, onScan, onAddProject, projectCo
         <option value="es">{t('language.spanish')}</option>
         <option value="fr">{t('language.french')}</option>
         <option value="zh">{t('language.chinese')}</option>
+        <option value="ja">{t('language.japanese')}</option>
       </select></label>
       <label className="search"><span>⌕</span><input value={search} onChange={(event: ChangeEvent<HTMLInputElement>) => onSearch(event.target.value)} placeholder={t('topbar.searchPlaceholder')} aria-label={t('topbar.searchLabel')} /></label>
       <button className="secondary-button project-button" onClick={onAddProject}>{t('topbar.addFolders')}</button>

@@ -73,7 +73,8 @@
     "english": "English",
     "spanish": "Español",
     "french": "Français",
-    "chinese": "中文"
+    "chinese": "中文",
+    "japanese": "日本語"
   },
   "common": {
     "addFolder": "添加文件夹",

@@ -4,8 +4,9 @@ import en from './locales/en/translation.json'
 import es from './locales/es/translation.json'
 import fr from './locales/fr/translation.json'
 import zh from './locales/zh/translation.json'
+import ja from './locales/ja/translation.json'
 
-export const supportedLanguages = ['en', 'es', 'fr', 'zh'] as const
+export const supportedLanguages = ['en', 'es', 'fr', 'zh', 'ja'] as const
 export type SupportedLanguage = typeof supportedLanguages[number]
 
 const languageStorageKey = 'skill-control-language'
@@ -30,7 +31,8 @@ void i18n
       en: { translation: en },
       es: { translation: es },
       fr: { translation: fr },
-      zh: { translation: zh }
+      zh: { translation: zh },
+      ja: { translation: ja }
     },
     lng: detectLanguage(),
     fallbackLng: 'en',
