@@ -285,6 +285,33 @@ mod tests {
         assert!(parse_list(json).is_err());
     }
 
+    // Network test: run manually with `cargo test -- --ignored` to exercise the
+    // full download → extract → verify path against the published list.
+    #[test]
+    #[ignore]
+    fn downloads_and_verifies_a_real_listed_skill() {
+        let list = bundled_skill_list().expect("bundled list should be valid");
+        let skill = list
+            .skills
+            .iter()
+            .find(|skill| skill.id == "mafia-prompt-master")
+            .expect("seed skill should exist");
+        let destination = env::temp_dir().join(format!("listed-download-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&destination);
+        let runtime = tokio::runtime::Runtime::new().expect("runtime");
+        runtime
+            .block_on(super::download_skill_folder(
+                &skill.source.repo,
+                &skill.source.commit,
+                &skill.source.path,
+                &destination,
+            ))
+            .expect("download should succeed");
+        let hash = bundle_hash(&destination).expect("hash should compute");
+        fs::remove_dir_all(&destination).unwrap();
+        assert_eq!(hash, skill.source.sha256, "downloaded content must match the pinned hash");
+    }
+
     #[test]
     fn bundle_hash_matches_reference_algorithm() {
         let dir = env::temp_dir().join(format!("bundle-hash-{}", std::process::id()));
