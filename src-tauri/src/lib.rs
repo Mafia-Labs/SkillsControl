@@ -10,6 +10,7 @@ use std::{
 };
 
 mod detection;
+mod skill_list;
 
 const MAX_PROJECT_SCAN_DEPTH: usize = 32;
 // The bundled catalog is reviewed with the source revision that introduced its
@@ -2014,6 +2015,142 @@ fn install_catalog_skill(
         .collect())
 }
 
+/// Records provenance for an installed skill in the lockfile the scanner
+/// already reads: `<project>/skills-lock.json` for project scope and
+/// `~/.agents/.skill-lock.json` for user scope. Best effort by design — a
+/// lockfile problem must not roll back a completed installation.
+fn record_lock_entry(
+    scope: &str,
+    project_path: Option<&str>,
+    skill: &skill_list::ListedSkill,
+) -> Result<(), String> {
+    let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
+    let lock_path = match scope {
+        "project" => PathBuf::from(project_path.ok_or("Missing project path")?)
+            .join("skills-lock.json"),
+        _ => home.join(".agents/.skill-lock.json"),
+    };
+    let mut lock: Value = fs::read_to_string(&lock_path)
+        .ok()
+        .and_then(|content| serde_json::from_str(&content).ok())
+        .unwrap_or_else(|| serde_json::json!({ "version": 1, "skills": {} }));
+    if !lock.get("skills").map(Value::is_object).unwrap_or(false) {
+        lock["skills"] = serde_json::json!({});
+    }
+    let mut entry = serde_json::json!({
+        "source": skill.source.repo,
+        "sourceType": "github",
+        "sourceRepository": skill.source.repo,
+        "sourceUrl": format!("https://github.com/{}", skill.source.repo),
+        "skillPath": skill.source.path,
+        "commit": skill.source.commit,
+        "sha256": skill.source.sha256,
+        "installedAt": unix_seconds(),
+        "installedBy": "skill-control",
+        "list": "mafiaia-skill-list",
+    });
+    if let Some(upstream) = &skill.upstream {
+        entry["upstreamRepository"] = Value::String(upstream.repo.clone());
+    }
+    lock["skills"][&skill.id] = entry;
+    if let Some(parent) = lock_path.parent() {
+        fs::create_dir_all(parent).map_err(|error| error.to_string())?;
+    }
+    fs::write(
+        &lock_path,
+        serde_json::to_string_pretty(&lock).map_err(|error| error.to_string())? + "\n",
+    )
+    .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+async fn install_listed_skill(
+    skill_id: String,
+    scope: String,
+    target: String,
+    project_path: Option<String>,
+) -> Result<Vec<String>, String> {
+    let list = skill_list::load_skill_list().await?;
+    let skill = list
+        .skills
+        .iter()
+        .find(|candidate| candidate.id == skill_id)
+        .ok_or("This skill is not in the curated list.")?
+        .clone();
+
+    let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
+    let agents = target_agents(&target)?;
+    let destinations: Vec<PathBuf> = agents
+        .iter()
+        .map(|agent| {
+            skill_root(&home, &scope, agent, project_path.as_deref())
+                .map(|root| root.join(&skill.id))
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    if let Some(existing) = destinations.iter().find(|destination| destination.exists()) {
+        return Err(format!(
+            "This skill already exists at {}. Inspect or disable that copy first.",
+            existing.to_string_lossy()
+        ));
+    }
+
+    // Download into a staging folder, then verify the content hash against the
+    // list's pin before anything touches an agent directory.
+    let staging = std::env::temp_dir().join(format!(
+        "skill-control-download-{}-{}",
+        skill.id,
+        unix_millis()
+    ));
+    let _ = fs::remove_dir_all(&staging);
+    let result = skill_list::download_skill_folder(
+        &skill.source.repo,
+        &skill.source.commit,
+        &skill.source.path,
+        &staging,
+    )
+    .await;
+    if let Err(error) = result {
+        let _ = fs::remove_dir_all(&staging);
+        return Err(error);
+    }
+    let actual_hash = match skill_list::bundle_hash(&staging) {
+        Ok(hash) => hash,
+        Err(error) => {
+            let _ = fs::remove_dir_all(&staging);
+            return Err(error);
+        }
+    };
+    if actual_hash != skill.source.sha256 {
+        let _ = fs::remove_dir_all(&staging);
+        return Err(format!(
+            "Content verification failed for {}: the download does not match the hash pinned in the list. Nothing was installed.",
+            skill.id
+        ));
+    }
+
+    let mut created = Vec::new();
+    for destination in &destinations {
+        if let Err(error) = copy_skill_atomically(&staging, destination) {
+            for created_destination in &created {
+                let _ = fs::remove_dir_all(created_destination);
+            }
+            let _ = fs::remove_dir_all(&staging);
+            return Err(format!("Could not install skill: {error}"));
+        }
+        created.push(destination.clone());
+    }
+    let _ = fs::remove_dir_all(&staging);
+
+    if let Err(error) = record_lock_entry(&scope, project_path.as_deref(), &skill) {
+        eprintln!("skill-control: could not update the lockfile: {error}");
+    }
+
+    Ok(created
+        .iter()
+        .map(|path| path.to_string_lossy().to_string())
+        .collect())
+}
+
 fn github_source(source_repository: &str) -> Result<String, String> {
     let normalized = source_repository
         .trim()
@@ -2251,6 +2388,7 @@ pub fn run() {
             list_archives,
             copy_skill_to_project,
             install_catalog_skill,
+            install_listed_skill,
             check_online_reputation,
             get_workspace_roots,
             set_workspace_roots,
