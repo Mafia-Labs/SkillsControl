@@ -59,6 +59,11 @@ export const installCatalogSkill = async (skillId: string, scope: Scope, target:
   return invoke<string[]>('install_catalog_skill', { skillId, scope, target, projectPath })
 }
 
+export const installListedSkill = async (skillId: string, scope: Scope, target: InstallTarget, projectPath?: string): Promise<string[]> => {
+  if (!isTauri()) throw new Error('Installing from the curated list requires the desktop build.')
+  return invoke<string[]>('install_listed_skill', { skillId, scope, target, projectPath })
+}
+
 export const checkOnlineReputation = async (skill: Skill): Promise<ExternalReputation> => {
   if (!isTauri()) throw new Error('Online reputation checks are available in the desktop build.')
   const sourceRepository = skill.provenance.sourceRepository

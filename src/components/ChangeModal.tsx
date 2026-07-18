@@ -1,10 +1,11 @@
 import { useState, type ChangeEvent } from 'react'
 import { agentLabels } from '../lib/skill-utils'
-import type { Agent, CatalogSkill, ChangePreview, Installation, InstallTarget, ProjectSummary, Scope, Skill } from '../lib/types'
+import type { Agent, CatalogSkill, ChangePreview, Installation, InstallTarget, ProjectSummary, Scope, Skill, SkillRecommendation } from '../lib/types'
 
 type ModalState =
   | { kind: 'disable', installation: Installation, preview: ChangePreview }
   | { kind: 'install', skill: CatalogSkill }
+  | { kind: 'install-listed', recommendation: SkillRecommendation, projectPath: string }
   | { kind: 'localize', skill: Skill, source: Installation }
 
 export function ChangeModal({ modal, projects, onCancel, onApply }: {
@@ -14,12 +15,13 @@ export function ChangeModal({ modal, projects, onCancel, onApply }: {
   onApply: (scope?: Scope, target?: InstallTarget, projectPath?: string) => void
 }) {
   const install = modal.kind === 'install'
+  const listed = modal.kind === 'install-listed'
   const localize = modal.kind === 'localize'
-  const compatibleAgents = install ? modal.skill.compatibility : localize ? [modal.source.agent] : []
-  const [scope, setScope] = useState<Scope>(projects.length ? 'project' : 'user')
+  const compatibleAgents: Agent[] = install ? modal.skill.compatibility : listed ? ['codex', 'claude'] : localize ? [modal.source.agent] : []
+  const [scope, setScope] = useState<Scope>(listed || projects.length ? 'project' : 'user')
   const [target, setTarget] = useState<InstallTarget>(compatibleAgents.length > 1 ? 'all' : compatibleAgents[0] ?? 'codex')
-  const [projectPath, setProjectPath] = useState(projects[0]?.path ?? '')
-  const skillId = modal.kind === 'disable' ? '' : modal.skill.id
+  const [projectPath, setProjectPath] = useState(listed ? modal.projectPath : projects[0]?.path ?? '')
+  const skillId = modal.kind === 'disable' ? '' : listed ? modal.recommendation.skillId : modal.skill.id
   const effectiveScope: Scope = localize ? 'project' : scope
   const effectiveTarget: InstallTarget = localize ? modal.source.agent : target
   const installPaths = modal.kind !== 'disable' ? previewPaths(effectiveScope, effectiveTarget, skillId, projectPath) : []
@@ -29,7 +31,29 @@ export function ChangeModal({ modal, projects, onCancel, onApply }: {
     <section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title">
       <div className="modal-icon">{modal.kind === 'disable' ? '⊘' : '↓'}</div>
       <p className="eyebrow">Review change</p>
-      <h2 id="change-title">{install ? `Install ${modal.skill.name}` : localize ? `Install ${modal.skill.name} in a project` : modal.preview.title}</h2>
+      <h2 id="change-title">{install ? `Install ${modal.skill.name}` : listed ? `Install ${modal.recommendation.skillId}` : localize ? `Install ${modal.skill.name} in a project` : modal.preview.title}</h2>
+      {listed && <>
+        <p>{modal.recommendation.description || 'Curated skill from the MafiaIA Skill List.'}</p>
+        <div className="change-list">
+          <strong>Verified source</strong>
+          <span>• From the curated list, pinned to an exact commit of <code>{modal.recommendation.sourceRepo}</code></span>
+          <span>• Content is downloaded and its SHA-256 verified before anything is written</span>
+        </div>
+        <label className="select-label">Scope
+          <select value={scope} onChange={(event: ChangeEvent<HTMLSelectElement>) => setScope(event.target.value as Scope)}>
+            {projects.length > 0 && <option value="project">Project or folder · recommended</option>}
+            <option value="user">Global · every project</option>
+          </select>
+        </label>
+        <label className="select-label">Available to
+          <select value={target} onChange={(event: ChangeEvent<HTMLSelectElement>) => setTarget(event.target.value as InstallTarget)}>
+            <option value="all">All compatible agents · recommended</option>
+            {compatibleAgents.map((agent) => <option value={agent} key={agent}>{agentLabels[agent]}</option>)}
+          </select>
+        </label>
+        {scope === 'project' && <ProjectSelector projects={projects} value={projectPath} onChange={setProjectPath} />}
+        <InstallPlan paths={installPaths} multiple={installPaths.length > 1} />
+      </>}
       {install ? <>
         <p>Project scope is recommended: the skill stays available to agents working in this folder without affecting unrelated projects.</p>
         <label className="select-label">Scope
@@ -51,11 +75,11 @@ export function ChangeModal({ modal, projects, onCancel, onApply }: {
         <div className="change-list"><strong>Source</strong><span><code>{modal.source.path}</code></span><span>• Runtime: {agentLabels[modal.source.agent]}</span></div>
         <ProjectSelector projects={projects} value={projectPath} onChange={setProjectPath} />
         <InstallPlan paths={installPaths} multiple={false} />
-      </> : <>
+      </> : modal.kind === 'disable' ? <>
         <div className="change-list"><strong>Changes</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div>
         <div className="warning-box"><strong>Heads up</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div>
-      </>}
-      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>Cancel</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath)}>{modal.kind === 'disable' ? 'Quarantine skill' : localize ? 'Copy to project' : 'Install skill'}</button></div>
+      </> : null}
+      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>Cancel</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath)}>{modal.kind === 'disable' ? 'Quarantine skill' : localize ? 'Copy to project' : listed ? 'Install verified skill' : 'Install skill'}</button></div>
     </section>
   </div>
 }

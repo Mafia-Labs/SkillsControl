@@ -1,5 +1,5 @@
 import { agentLabels, healthClass, healthLabel } from '../lib/skill-utils'
-import type { Finding, Installation, ProjectInventory, Skill, StackDetection } from '../lib/types'
+import type { Finding, Installation, ProjectInventory, Skill, SkillRecommendation, StackDetection } from '../lib/types'
 import { Empty } from './shared'
 
 const analyzedLabel = (iso: string) => {
@@ -20,7 +20,7 @@ const localRoot = (path: string, projectPath: string) => {
   return cut >= 0 ? normalized.slice(cut + 1) : normalized.replace(`${projectPath.replace(/\\/g, '/')}/`, '')
 }
 
-export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnalyze, onBack, onInspect, onQuarantine, onLocalize }: {
+export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnalyze, onBack, onInspect, onQuarantine, onLocalize, onInstallRecommendation }: {
   inventory: ProjectInventory
   findings: Finding[]
   analysis: { result: StackDetection, at: string } | null
@@ -30,6 +30,7 @@ export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnal
   onInspect: (skillId: string) => void
   onQuarantine: (installation: Installation) => void
   onLocalize: (skill: Skill, installation: Installation) => void
+  onInstallRecommendation: (recommendation: SkillRecommendation) => void
 }) {
   const installedIds = new Set(inventory.skills.map((entry) => entry.skill.id))
   const applicableGlobals = inventory.globalSkills.filter((skill) => !installedIds.has(skill.id))
@@ -48,7 +49,7 @@ export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnal
       </div>
     </div>
 
-    {analysis && !analyzing && <AnalysisPanel result={analysis.result} at={analysis.at} onInspect={onInspect} />}
+    {analysis && !analyzing && <AnalysisPanel result={analysis.result} at={analysis.at} onInspect={onInspect} onInstall={onInstallRecommendation} />}
 
     <div className="panel">
       <div className="panel-heading"><h3>Skills installed here</h3><span className="count-chip">{inventory.skills.length}</span></div>
@@ -87,10 +88,11 @@ export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnal
   </section>
 }
 
-function AnalysisPanel({ result, at, onInspect }: {
+function AnalysisPanel({ result, at, onInspect, onInstall }: {
   result: StackDetection
   at: string
   onInspect: (skillId: string) => void
+  onInstall: (recommendation: SkillRecommendation) => void
 }) {
   const pending = result.recommendations.filter((recommendation) => !recommendation.installed)
   const installed = result.recommendations.filter((recommendation) => recommendation.installed)
@@ -108,7 +110,7 @@ function AnalysisPanel({ result, at, onInspect }: {
           <div className="recommend-reasons">{recommendation.reasons.map((reason) => <span className="recommend-reason" key={reason.techName}>{reason.evidenceText}</span>)}</div>
           <code className="recommend-source">{recommendation.sourceRepo}</code>
         </div>
-        <button className="secondary-button compact" disabled title="Installing from the verified directory arrives in Phase 3">Install</button>
+        <button className="primary-button compact" title="Install from the curated list with hash verification" onClick={() => onInstall(recommendation)}>Install</button>
       </div>)}</div>
     </>}
 
