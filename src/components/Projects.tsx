@@ -1,5 +1,5 @@
-import { agentLabels, healthLabel } from '../lib/skill-utils'
-import type { Finding, ProjectInventory } from '../lib/types'
+import { agentLabels, formatTokenCount, healthClass, healthLabel } from '../lib/skill-utils'
+import type { Finding, Installation, ProjectInventory, Skill } from '../lib/types'
 import { Empty } from './shared'
 
 const abbreviate = (path: string) => path.replace(/^\/Users\/[^/]+/, '~').replace(/^\/home\/[^/]+/, '~')
@@ -13,14 +13,18 @@ const aggregateHealth = (inventory: ProjectInventory, findings: Finding[]): Proj
   return { label: 'Healthy', tone: 'info' }
 }
 
-export function Projects({ inventories, findings, workspaceRoots, isDemo, onAddFolder, onRemoveFolder, onOpen }: {
+export function Projects({ inventories, findings, globalSkills, workspaceRoots, isDemo, onAddFolder, onRemoveFolder, onOpen, onInspect, onLocalize, onQuarantine }: {
   inventories: ProjectInventory[]
   findings: Finding[]
+  globalSkills: Skill[]
   workspaceRoots: string[]
   isDemo: boolean
   onAddFolder: () => void
   onRemoveFolder: (root: string) => void
   onOpen: (path: string) => void
+  onInspect: (skillId: string) => void
+  onLocalize: (skill: Skill, installation: Installation) => void
+  onQuarantine: (installation: Installation) => void
 }) {
   return <section className="projects">
     <div className="projects-heading">
@@ -60,5 +64,32 @@ export function Projects({ inventories, findings, workspaceRoots, isDemo, onAddF
         </article>
       })}
     </div> : <Empty icon="◇" title="No projects yet" detail="Add a folder that contains Codex or Claude Code skills to get started." />}
+
+    <div className="panel global-panel" aria-label="Globally installed skills">
+      <div className="panel-heading-row">
+        <div className="panel-heading"><h3>Global skills</h3><span className="count-chip">{globalSkills.length}</span></div>
+        {globalSkills.length > 0 && <span className="global-caution">⚠ Loaded in every project</span>}
+      </div>
+      <p className="muted-copy global-intro">These live in <code>~/.claude/skills</code> or <code>~/.agents/skills</code>, so every agent loads them in <em>every</em> project. Keep only skills that are genuinely universal — move the rest into the project that actually uses them, or quarantine what you no longer need.</p>
+      {globalSkills.length ? <div className="global-list">{globalSkills.map((skill) => {
+        const userInstallations = skill.installations.filter((installation) => installation.scope === 'user')
+        const source = userInstallations[0] ?? skill.installations[0]
+        return <div className="global-row" key={skill.id}>
+          <span className="global-main">
+            <strong>{skill.name}</strong>
+            <small>{skill.description || 'No description.'}</small>
+            {userInstallations.map((installation) => <code className="global-path" key={installation.id} title={installation.path}>{abbreviate(installation.path)}</code>)}
+          </span>
+          <span className="agent-cell">{[...new Set(userInstallations.map((installation) => installation.agent))].map((agent) => <span className="agent-badge sm" key={agent}>{agentLabels[agent]}</span>)}</span>
+          <span className="global-tokens" title="Approximate context cost">{formatTokenCount(skill.contextTokens)} tokens</span>
+          <span className={`health-pill ${healthClass(skill, findings)}`}>{healthLabel(skill, findings)}</span>
+          <div className="row-actions">
+            <button className="secondary-button compact" onClick={() => onInspect(skill.id)}>Inspect</button>
+            {source && <button className="secondary-button compact" title="Copy into a project folder, then quarantine the global copy" onClick={() => onLocalize(skill, source)}>Move to project</button>}
+            {userInstallations.map((installation) => <button className="icon-button" key={installation.id} aria-label={`Quarantine the global copy of ${skill.name} (${agentLabels[installation.agent]})`} title="Quarantine this global copy" onClick={() => onQuarantine(installation)}>⊘</button>)}
+          </div>
+        </div>
+      })}</div> : <p className="global-empty-copy">No skills installed globally — everything is scoped to a project. That is the recommended setup.</p>}
+    </div>
   </section>
 }

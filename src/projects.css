@@ -66,6 +66,21 @@
 
 .detail-head-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 
+/* Global skills panel (Projects view) */
+.projects .global-panel { min-height: 0; margin-top: 26px; padding: 18px; border: 1px solid #21252c; border-radius: 11px; background: #101216; }
+.panel-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.global-panel .panel-heading { display: flex; align-items: center; gap: 10px; }
+.global-panel .panel-heading h3 { margin-bottom: 0; }
+.global-caution { color: #e0a855; font-size: 11px; font-weight: 600; }
+.global-intro { margin: 10px 0 14px; max-width: 640px; }
+.global-intro code { color: #b9bdc6; }
+.global-main { flex: 1; min-width: 0; }
+.global-row .agent-cell { display: flex; gap: 5px; }
+.global-path { overflow: hidden; color: #7f8794; font-family: var(--mono); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+.global-tokens { color: #8b919c; font-family: var(--mono); font-size: 11px; white-space: nowrap; }
+.global-row .health-pill { flex: 0 0 auto; }
+.global-empty-copy { margin: 0; color: #82cda8; font-size: 12px; }
+
 /* Auto Skills analysis panel */
 .analysis-panel { border-color: #2b2a45; background: linear-gradient(180deg, #14131f, #101216); animation: panel-reveal .32s ease; }
 @keyframes panel-reveal { from { opacity: 0; transform: translateY(6px); } }
