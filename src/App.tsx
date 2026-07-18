@@ -289,7 +289,7 @@ export default function App() {
           ? <ProjectDetail inventory={selectedInventory} findings={report?.findings ?? []} analysis={analyses[selectedInventory.path] ?? null} analyzing={analyzingPath === selectedInventory.path} onAnalyze={() => void analyzeProject(selectedInventory)} onBack={() => setSelectedProjectPath(null)} onInspect={inspectSkill} onQuarantine={(installation) => void requestDisable(installation)} onLocalize={requestLocalize} onInstallRecommendation={(recommendation) => setModal({ kind: 'install-listed', recommendation, projectPath: selectedInventory.path })} />
           : <Projects inventories={filteredInventories} findings={report?.findings ?? []} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} />)}
         {view === 'overview' && report && <Overview report={report} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} />}
-        {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} selectedId={selectedId} onSelect={setSelectedId} />}
+        {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} projects={projects} selectedId={selectedId} onSelect={setSelectedId} />}
         {view === 'discover' && <Discover query={search} onInstall={(skill) => setModal({ kind: 'install', skill })} />}
         {view === 'health' && report && <Health query={search} report={report} archives={archives} onRestore={(archive) => void restoreArchive(archive)} onSelect={(id) => { setSelectedId(id); setView('map') }} />}
         {!report && <Empty icon="!" title="No report available" detail="Run another scan to inspect your local skills." />}
