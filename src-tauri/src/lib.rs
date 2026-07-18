@@ -386,26 +386,32 @@ fn project_summaries(candidates: &[CandidatePath]) -> Vec<ProjectSummary> {
     for normalized in &project_paths {
         let parent = project_paths
             .iter()
-            .filter(|candidate| {
-                *candidate != normalized && normalized.starts_with(candidate)
-            })
+            .filter(|candidate| *candidate != normalized && normalized.starts_with(candidate))
             .max_by_key(|candidate| candidate.components().count())
             .cloned();
         let relative_path = parent
             .as_ref()
             .and_then(|parent| normalized.strip_prefix(parent).ok())
-            .map(|relative| relative.to_string_lossy().trim_matches(['/', '\\']).to_string())
+            .map(|relative| {
+                relative
+                    .to_string_lossy()
+                    .trim_matches(['/', '\\'])
+                    .to_string()
+            })
             .filter(|relative| !relative.is_empty())
             .unwrap_or_else(|| ".".to_string());
         let key = path_key(normalized);
-        projects.insert(key, ProjectSummary {
-            path: normalized.to_string_lossy().to_string(),
-            name: project_name(normalized),
-            agents: Vec::new(),
-            parent_path: parent.map(|parent| parent.to_string_lossy().to_string()),
-            relative_path,
-            kind: project_kind(normalized).to_string(),
-        });
+        projects.insert(
+            key,
+            ProjectSummary {
+                path: normalized.to_string_lossy().to_string(),
+                name: project_name(normalized),
+                agents: Vec::new(),
+                parent_path: parent.map(|parent| parent.to_string_lossy().to_string()),
+                relative_path,
+                kind: project_kind(normalized).to_string(),
+            },
+        );
     }
 
     for candidate in candidates {
@@ -1998,12 +2004,7 @@ fn copy_skill_to_project_path(
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or("Could not determine the skill name")?;
-    let target_root = skill_root(
-        home,
-        "project",
-        &installation.agent,
-        Some(project_path),
-    )?;
+    let target_root = skill_root(home, "project", &installation.agent, Some(project_path))?;
     let destination = target_root.join(skill_name);
     if normalize_path(&source) == normalize_path(&destination) {
         return Err("This skill is already installed in the selected project.".into());
@@ -2186,8 +2187,9 @@ fn record_lock_entry(
 ) -> Result<(), String> {
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
     let lock_path = match scope {
-        "project" => PathBuf::from(project_path.ok_or("Missing project path")?)
-            .join("skills-lock.json"),
+        "project" => {
+            PathBuf::from(project_path.ok_or("Missing project path")?).join("skills-lock.json")
+        }
         _ => home.join(".agents/.skill-lock.json"),
     };
     let mut lock: Value = fs::read_to_string(&lock_path)
@@ -2580,11 +2582,7 @@ mod tests {
 
     #[test]
     fn deduplicates_workspace_roots_preserving_order() {
-        let roots = dedupe_roots(vec![
-            "/work/a".into(),
-            "/work/b".into(),
-            "/work/a".into(),
-        ]);
+        let roots = dedupe_roots(vec!["/work/a".into(), "/work/b".into(), "/work/a".into()]);
         assert_eq!(roots, vec!["/work/a".to_string(), "/work/b".to_string()]);
     }
 
@@ -2716,8 +2714,10 @@ mod tests {
         let workspace = temporary_directory("hierarchy");
         let nested = workspace.join("src-tauri");
         fs::create_dir_all(&nested).expect("nested scope should be created");
-        fs::write(workspace.join("package.json"), "{}").expect("workspace marker should be created");
-        fs::write(nested.join("Cargo.toml"), "[package]\nname = \"demo\"\n").expect("nested marker should be created");
+        fs::write(workspace.join("package.json"), "{}")
+            .expect("workspace marker should be created");
+        fs::write(nested.join("Cargo.toml"), "[package]\nname = \"demo\"\n")
+            .expect("nested marker should be created");
 
         let candidates = agent_paths(&[workspace.to_string_lossy().to_string()]);
         let summaries = super::project_summaries(&candidates);
@@ -2735,7 +2735,10 @@ mod tests {
         assert_eq!(root.parent_path, None);
         assert_eq!(root.relative_path, ".");
         assert_eq!(root.kind, "package");
-        assert_eq!(child.parent_path.as_deref(), Some(normalized_workspace.to_string_lossy().as_ref()));
+        assert_eq!(
+            child.parent_path.as_deref(),
+            Some(normalized_workspace.to_string_lossy().as_ref())
+        );
         assert_eq!(child.relative_path, "src-tauri");
         assert_eq!(child.kind, "package");
 
@@ -2874,7 +2877,8 @@ mod tests {
             super::normalize_path(&destination_project).join(".agents/skills/example")
         );
         assert_eq!(
-            fs::read_to_string(destination.join("SKILL.md")).expect("copied skill should be readable"),
+            fs::read_to_string(destination.join("SKILL.md"))
+                .expect("copied skill should be readable"),
             "---\nname: example\n---\n"
         );
 

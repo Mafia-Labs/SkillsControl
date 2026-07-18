@@ -1090,12 +1090,17 @@ mod tests {
         let map = load_detection_map().expect("bundled map should be valid");
         assert_eq!(map.version, 1);
         assert!(map.technologies.iter().any(|item| item.id == "nextjs"));
-        assert!(map.combos.iter().any(|item| item.id == "react-hook-form-zod"));
+        assert!(map
+            .combos
+            .iter()
+            .any(|item| item.id == "react-hook-form-zod"));
         assert!(map.profiles.iter().any(|item| item.id == "frontend"));
         // The map is now a broader seed spanning languages, backends and tooling,
         // not just the original frontend four.
         assert!(map.technologies.len() >= 20);
-        for expected in ["python", "rust", "go", "django", "tailwind", "docker", "tauri"] {
+        for expected in [
+            "python", "rust", "go", "django", "tailwind", "docker", "tauri",
+        ] {
             assert!(
                 map.technologies.iter().any(|item| item.id == expected),
                 "expected technology {expected} to be present"

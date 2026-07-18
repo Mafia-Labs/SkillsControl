@@ -78,7 +78,10 @@ fn validate_list(list: &SkillList) -> Result<(), String> {
                 .split('/')
                 .any(|segment| segment.is_empty() || segment == "." || segment == "..");
         if !(valid_repo && valid_commit && valid_hash && valid_path) {
-            return Err(format!("Skill list entry {} has an invalid source pin", skill.id));
+            return Err(format!(
+                "Skill list entry {} has an invalid source pin",
+                skill.id
+            ));
         }
     }
     Ok(())
@@ -209,7 +212,10 @@ pub(crate) async fn download_skill_folder(
     let mut extracted_any = false;
     for entry in archive.entries().map_err(|error| error.to_string())? {
         let mut entry = entry.map_err(|error| error.to_string())?;
-        let entry_path = entry.path().map_err(|error| error.to_string())?.into_owned();
+        let entry_path = entry
+            .path()
+            .map_err(|error| error.to_string())?
+            .into_owned();
         // Tarball paths are "<repo>-<commit>/<path...>": drop the root folder.
         let mut components = entry_path.components();
         components.next();
@@ -275,8 +281,14 @@ mod tests {
     fn bundled_list_parses_and_validates() {
         let list = bundled_skill_list().expect("bundled list should be valid");
         assert!(list.skills.len() > 200);
-        assert!(list.skills.iter().any(|skill| skill.id == "next-best-practices"));
-        assert!(list.skills.iter().any(|skill| skill.id == "mafia-frontend-design"));
+        assert!(list
+            .skills
+            .iter()
+            .any(|skill| skill.id == "next-best-practices"));
+        assert!(list
+            .skills
+            .iter()
+            .any(|skill| skill.id == "mafia-frontend-design"));
     }
 
     #[test]
@@ -309,7 +321,10 @@ mod tests {
             .expect("download should succeed");
         let hash = bundle_hash(&destination).expect("hash should compute");
         fs::remove_dir_all(&destination).unwrap();
-        assert_eq!(hash, skill.source.sha256, "downloaded content must match the pinned hash");
+        assert_eq!(
+            hash, skill.source.sha256,
+            "downloaded content must match the pinned hash"
+        );
     }
 
     #[test]
