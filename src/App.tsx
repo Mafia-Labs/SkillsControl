@@ -126,6 +126,7 @@ export default function App() {
   const globalSkills = useMemo(() => (report?.skills ?? [])
     .filter((skill) => skill.installations.some((installation) => installation.scope === 'user'))
     .sort((a, b) => a.name.localeCompare(b.name)), [report])
+  const filteredGlobalSkills = useMemo(() => globalSkills.filter((skill) => `${skill.name} ${skill.description} ${skill.installations.map((installation) => installation.path).join(' ')}`.toLowerCase().includes(search.toLowerCase())), [globalSkills, search])
   const selected = report?.skills.find((skill) => skill.id === selectedId) ?? null
   const selectedInventory = selectedProjectPath ? inventories.find((inventory) => inventory.path === selectedProjectPath) ?? null : null
   const projects = report?.projects.length ? report.projects : workspaceRoots.map(fallbackProject)
@@ -284,7 +285,7 @@ export default function App() {
   }
 
   return <main className="app-shell">
-    <Sidebar view={view} onChange={setView} />
+    <Sidebar view={view} onChange={(nextView) => { setView(nextView); setSelectedProjectPath(null) }} />
     <section className="workspace">
       <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh(undefined, { showConsole: true })} onAddProject={() => void addWorkspaceRoots()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
       {isDemo && <div className="demo-banner" role="status"><span>◒</span>{t('app.demoBanner')}</div>}
@@ -293,7 +294,7 @@ export default function App() {
       {isScanning && !report ? <Loading /> : <div className="page-content">
         {view === 'projects' && (selectedInventory
           ? <ProjectDetail inventory={selectedInventory} findings={report?.findings ?? []} analysis={analyses[selectedInventory.path] ?? null} analyzing={analyzingPath === selectedInventory.path} onAnalyze={() => void analyzeProject(selectedInventory)} onBack={() => setSelectedProjectPath(null)} onInspect={inspectSkill} onQuarantine={(installation) => void requestDisable(installation)} onLocalize={requestLocalize} onInstallRecommendation={(recommendation) => setModal({ kind: 'install-listed', recommendation, projectPath: selectedInventory.path })} />
-          : <Projects inventories={filteredInventories} findings={report?.findings ?? []} globalSkills={globalSkills} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} onInspect={inspectSkill} onLocalize={requestLocalize} onQuarantine={(installation) => void requestDisable(installation)} />)}
+          : <Projects inventories={filteredInventories} findings={report?.findings ?? []} globalSkills={filteredGlobalSkills} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} onInspect={inspectSkill} onLocalize={requestLocalize} onQuarantine={(installation) => void requestDisable(installation)} />)}
         {view === 'overview' && report && <Overview report={report} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} />}
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} projects={projects} selectedId={selectedId} onSelect={setSelectedId} />}
         {view === 'discover' && <Discover query={search} onInstall={(skill) => setModal({ kind: 'install', skill })} />}

@@ -55,14 +55,14 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
               {inventory.skills.length > 0 && <span className={`health-pill ${health.tone}`}>{t(health.key)}</span>}
             </div>
             <div className="agent-badges">{inventory.agents.length ? inventory.agents.map((agent) => <span className="agent-badge" key={agent}>{t(`agents.${agent}`)}</span>) : <span className="agent-badge muted">{t('projects.noActiveAgent')}</span>}</div>
+            {inventory.skills.length ? <>
+              <p className="project-skill-count">{t('projects.skillCount', { count: inventory.skills.length })}</p>
+              <div className="skill-chips">{preview.map((entry) => <span className="skill-chip" key={entry.skill.id}>{entry.skill.name}</span>)}{remaining > 0 && <span className="skill-chip muted">+{remaining}</span>}</div>
+            </> : <div className="project-empty">
+              <p>{t('projects.noSkillsYet')}</p>
+              <span className="primary-button compact">{t('projects.analyzeRecommend')} <span>→</span></span>
+            </div>}
           </button>
-          {inventory.skills.length ? <>
-            <p className="project-skill-count">{t('projects.skillCount', { count: inventory.skills.length })}</p>
-            <div className="skill-chips">{preview.map((entry) => <span className="skill-chip" key={entry.skill.id}>{entry.skill.name}</span>)}{remaining > 0 && <span className="skill-chip muted">+{remaining}</span>}</div>
-          </> : <div className="project-empty">
-            <p>{t('projects.noSkillsYet')}</p>
-            <button className="primary-button compact" onClick={() => onOpen(inventory.path)}>{t('projects.analyzeRecommend')} <span>→</span></button>
-          </div>}
         </article>
       })}
     </div> : <Empty icon="◇" title={t('projects.noProjects')} detail={t('projects.noProjectsDetail')} />}
@@ -78,7 +78,7 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
         const source = userInstallations[0] ?? skill.installations[0]
         return <div className="global-row" key={skill.id}>
           <span className="global-main">
-            <strong>{skill.name}</strong>
+            <button className="skill-name-button" onClick={() => onInspect(skill.id)}><strong>{skill.name}</strong></button>
             <small>{skill.description || t('common.noDescription')}</small>
             {userInstallations.map((installation) => <code className="global-path" key={installation.id} title={installation.path}>{abbreviate(installation.path)}</code>)}
           </span>
@@ -88,7 +88,7 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
           <div className="row-actions">
             <button className="secondary-button compact" onClick={() => onInspect(skill.id)}>{t('common.inspect')}</button>
             {source && <button className="secondary-button compact" title={t('projects.moveToProjectTitle')} onClick={() => onLocalize(skill, source)}>{t('common.moveToProject')}</button>}
-            {userInstallations.map((installation) => <button className="icon-button" key={installation.id} aria-label={t('projects.quarantineGlobalAria', { name: skill.name, agent: t(`agents.${installation.agent}`) })} title={t('projects.quarantineGlobalTitle')} onClick={() => onQuarantine(installation)}>⊘</button>)}
+            {userInstallations.map((installation) => <button className="danger-button compact" key={installation.id} aria-label={t('projects.quarantineGlobalAria', { name: skill.name, agent: t(`agents.${installation.agent}`) })} title={t('projects.quarantineGlobalTitle')} onClick={() => onQuarantine(installation)}>{t('common.uninstall')}</button>)}
           </div>
         </div>
       })}</div> : <p className="global-empty-copy">{t('projects.noGlobalSkills')}</p>}

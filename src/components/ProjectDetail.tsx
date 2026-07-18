@@ -98,13 +98,13 @@ export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnal
         {inventory.skills.map((entry) => {
           const divergent = new Set(entry.skill.installations.map((installation) => installation.contentHashSha256)).size > 1
           return <div className="skill-table-row" role="row" key={entry.skill.id}>
-            <span className="skill-cell"><strong>{entry.skill.name}</strong>{divergent && <small className="divergent-flag">{t('projectDetail.divergentHash')}</small>}</span>
+            <span className="skill-cell"><button className="skill-name-button" onClick={() => onInspect(entry.skill.id)}><strong>{entry.skill.name}</strong></button>{divergent && <small className="divergent-flag">{t('projectDetail.divergentHash')}</small>}</span>
             <span className="agent-cell">{[...new Set(entry.installations.map((installation) => installation.agent))].map((agent) => <span className="agent-badge sm" key={agent}>{t(`agents.${agent}`)}</span>)}</span>
             <span className="path-cell">{entry.installations.map((installation) => <code key={installation.id} title={installation.path}>{localRoot(installation.path, inventory.path)}</code>)}</span>
             <span className={`health-pill ${healthClass(entry.skill, findings)}`}>{t(healthLabelKey(entry.skill, findings))}</span>
             <span className="row-actions">
               <button className="secondary-button compact" onClick={() => onInspect(entry.skill.id)}>{t('common.inspect')}</button>
-              {entry.installations.map((installation) => <button className="icon-button" key={installation.id} aria-label={t('projectDetail.quarantineSkillAgent', { name: entry.skill.name, agent: t(`agents.${installation.agent}`) })} title={t('projectDetail.quarantineThisCopy')} onClick={() => onQuarantine(installation)}>⊘</button>)}
+              {entry.installations.map((installation) => <button className="danger-button compact" key={installation.id} aria-label={t('projectDetail.quarantineSkillAgent', { name: entry.skill.name, agent: t(`agents.${installation.agent}`) })} title={t('projectDetail.quarantineThisCopy')} onClick={() => onQuarantine(installation)}>{t('common.uninstall')}</button>)}
             </span>
           </div>
         })}
@@ -117,7 +117,7 @@ export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnal
       <div className="global-list">{applicableGlobals.map((skill) => {
         const source = skill.installations.find((installation) => installation.scope === 'user') ?? skill.installations[0]
         return <div className="global-row" key={skill.id}>
-          <span><strong>{skill.name}</strong><small>{skill.description || t('common.noDescription')}</small></span>
+          <span><button className="skill-name-button" onClick={() => onInspect(skill.id)}><strong>{skill.name}</strong></button><small>{skill.description || t('common.noDescription')}</small></span>
           <div className="row-actions">
             <button className="secondary-button compact" onClick={() => onInspect(skill.id)}>{t('common.inspect')}</button>
             {source && <button className="primary-button compact" onClick={() => onLocalize(skill, source)}>{t('common.convertToLocal')}</button>}
