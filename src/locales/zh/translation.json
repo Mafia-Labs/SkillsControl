@@ -74,7 +74,8 @@
     "spanish": "Español",
     "french": "Français",
     "chinese": "中文",
-    "japanese": "日本語"
+    "japanese": "日本語",
+    "german": "Deutsch"
   },
   "common": {
     "addFolder": "添加文件夹",
