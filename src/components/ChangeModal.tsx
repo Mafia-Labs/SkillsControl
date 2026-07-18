@@ -1,4 +1,4 @@
-import { useMemo, useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 import type { Agent, CatalogSkill, ChangePreview, Installation, InstallTarget, ProjectSummary, Scope, Skill, SkillRecommendation } from '../lib/types'
@@ -42,7 +42,7 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
   projects: ProjectSummary[]
   applying: boolean
   onCancel: () => void
-  onApply: (scope?: Scope, target?: InstallTarget, projectPath?: string) => void
+  onApply: (scope?: Scope, target?: InstallTarget, projectPath?: string, removeGlobal?: boolean) => void
 }) {
   const { t } = useTranslation()
   const install = modal.kind === 'install'
@@ -52,13 +52,17 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
   const [scope, setScope] = useState<Scope>(listed || projects.length ? 'project' : 'user')
   const [target, setTarget] = useState<InstallTarget>(compatibleAgents.length > 1 ? 'all' : compatibleAgents[0] ?? 'codex')
   const [projectPath, setProjectPath] = useState(listed ? modal.projectPath : projects[0]?.path ?? '')
+  const [removeGlobal, setRemoveGlobal] = useState(modal.kind === 'localize' && modal.source.scope === 'user')
+  useEffect(() => {
+    if (modal.kind === 'localize') setRemoveGlobal(modal.source.scope === 'user')
+  }, [modal.kind, modal.kind === 'localize' ? modal.source.id : ''])
   const skillId = modal.kind === 'disable' ? '' : listed ? modal.recommendation.skillId : modal.skill.id
   const effectiveScope: Scope = localize ? 'project' : scope
   const effectiveTarget: InstallTarget = localize ? modal.source.agent : target
   const installPaths = modal.kind !== 'disable' ? previewPaths(effectiveScope, effectiveTarget, skillId, projectPath) : []
   const projectRequired = modal.kind !== 'disable' && effectiveScope === 'project' && !projectPath
   const script = useMemo(() => applying ? applyScript(modal, installPaths) : null, [applying]) // eslint-disable-line react-hooks/exhaustive-deps
-  const title = install ? t('change.install', { name: modal.skill.name }) : listed ? t('change.install', { name: modal.recommendation.skillId }) : localize ? t('change.installInProject', { name: modal.skill.name }) : modal.preview.title
+  const title = install ? t('change.install', { name: modal.skill.name }) : listed ? t('change.install', { name: modal.recommendation.skillId }) : localize ? (removeGlobal ? t('change.moveToProject', { name: modal.skill.name }) : t('change.installInProject', { name: modal.skill.name })) : modal.preview.title
 
   if (applying && script) return <div className="modal-backdrop" role="presentation">
     <section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title">
@@ -113,15 +117,16 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
         {scope === 'project' && <ProjectSelector projects={projects} value={projectPath} onChange={setProjectPath} />}
         <InstallPlan paths={installPaths} multiple={installPaths.length > 1} />
       </> : localize ? <>
-        <p>{t('change.copyDescription')}</p>
+        <p>{t(removeGlobal ? 'change.moveDescription' : 'change.copyDescription')}</p>
         <div className="change-list"><strong>{t('common.source')}</strong><span><code>{modal.source.path}</code></span><span>• {t('common.runtime')}: {t(`agents.${modal.source.agent}`)}</span></div>
         <ProjectSelector projects={projects} value={projectPath} onChange={setProjectPath} />
         <InstallPlan paths={installPaths} multiple={false} />
+        {modal.source.scope === 'user' && <label className="checkbox-row" htmlFor="remove-global"><input id="remove-global" type="checkbox" checked={removeGlobal} onChange={(event: ChangeEvent<HTMLInputElement>) => setRemoveGlobal(event.target.checked)} /><span>{t('change.removeGlobalAfterCopy')}</span></label>}
       </> : modal.kind === 'disable' ? <>
         <div className="change-list"><strong>{t('common.changes')}</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div>
         <div className="warning-box"><strong>{t('common.headsUp')}</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div>
       </> : null}
-      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>{t('common.cancel')}</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath)}>{modal.kind === 'disable' ? t('change.quarantineSkill') : localize ? t('common.copyToProject') : listed ? t('change.installVerified') : t('change.installSkill')}</button></div>
+      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>{t('common.cancel')}</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath, removeGlobal)}>{modal.kind === 'disable' ? t('change.quarantineSkill') : localize ? t(removeGlobal ? 'change.moveToProjectAction' : 'common.copyToProject') : listed ? t('change.installVerified') : t('change.installSkill')}</button></div>
     </section>
   </div>
 }

@@ -161,7 +161,7 @@ struct ChangePreview {
     warnings: Vec<String>,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ArchiveEntry {
     id: String,
@@ -169,6 +169,13 @@ struct ArchiveEntry {
     source_path: String,
     archive_path: String,
     created_at: String,
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct MoveSkillResult {
+    destination: String,
+    archive: Option<ArchiveEntry>,
 }
 
 #[derive(Clone)]
@@ -1929,15 +1936,25 @@ fn copy_skill_to_project(
     {
         return Err("This skill is blocked because its static scan found critical behavior. Review or quarantine it before copying.".into());
     }
+    let destination = copy_skill_to_project_path(&installation, &source, &home, &project_path)?;
+    Ok(destination.to_string_lossy().to_string())
+}
+
+fn copy_skill_to_project_path(
+    installation: &Installation,
+    source: &Path,
+    home: &Path,
+    project_path: &str,
+) -> Result<PathBuf, String> {
     let skill_name = source
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or("Could not determine the skill name")?;
     let target_root = skill_root(
-        &home,
+        home,
         "project",
         &installation.agent,
-        Some(project_path.as_str()),
+        Some(project_path),
     )?;
     let destination = target_root.join(skill_name);
     if normalize_path(&source) == normalize_path(&destination) {
@@ -1950,7 +1967,44 @@ fn copy_skill_to_project(
         ));
     }
     copy_skill_atomically(&source, &destination)?;
-    Ok(destination.to_string_lossy().to_string())
+    Ok(destination)
+}
+
+#[tauri::command]
+fn move_skill_to_project(
+    installation: Installation,
+    project_path: String,
+    remove_source: bool,
+) -> Result<MoveSkillResult, String> {
+    if remove_source && installation.scope != "user" {
+        return Err("Only a global skill installation can be removed after copying.".into());
+    }
+    let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
+    let source = validate_installation(&installation, &home)?;
+    let (_, _, scan) = analyze_existing_skill(&source)?;
+    if scan
+        .findings
+        .iter()
+        .any(|finding| finding.severity == "critical")
+    {
+        return Err("This skill is blocked because its static scan found critical behavior. Review or quarantine it before copying.".into());
+    }
+    let destination = copy_skill_to_project_path(&installation, &source, &home, &project_path)?;
+    let archive = if remove_source {
+        match disable_skill(installation.clone()) {
+            Ok(entry) => Some(entry),
+            Err(error) => {
+                let _ = fs::remove_dir_all(&destination);
+                return Err(format!("The project copy was created, but the global copy could not be removed: {error}"));
+            }
+        }
+    } else {
+        None
+    };
+    Ok(MoveSkillResult {
+        destination: destination.to_string_lossy().to_string(),
+        archive,
+    })
 }
 
 #[tauri::command]
@@ -2387,6 +2441,7 @@ pub fn run() {
             restore_skill,
             list_archives,
             copy_skill_to_project,
+            move_skill_to_project,
             install_catalog_skill,
             install_listed_skill,
             check_online_reputation,
@@ -2625,6 +2680,67 @@ mod tests {
     #[test]
     fn all_target_covers_both_supported_agents() {
         assert_eq!(target_agents("all").unwrap(), vec!["codex", "claude"]);
+    }
+
+    #[test]
+    fn refuses_to_remove_a_project_copy_during_move() {
+        let installation = super::Installation {
+            id: "project-copy".into(),
+            path: "/tmp/project/.agents/skills/example".into(),
+            scope: "project".into(),
+            agent: "codex".into(),
+            project_path: Some("/tmp/project".into()),
+            enabled: true,
+            modified: false,
+            content_hash_sha256: "hash".into(),
+        };
+        let error = super::move_skill_to_project(installation, "/tmp/other".into(), true)
+            .expect_err("project copies must not be removed by the global move action");
+        assert_eq!(
+            error,
+            "Only a global skill installation can be removed after copying."
+        );
+    }
+
+    #[test]
+    fn copies_a_skill_folder_to_the_selected_agent_scope() {
+        let source_project = temporary_directory("copy-source");
+        let destination_project = temporary_directory("copy-destination");
+        let source = source_project.join(".agents/skills/example");
+        fs::create_dir_all(&source).expect("source skill should be created");
+        fs::create_dir_all(&destination_project).expect("destination project should be created");
+        fs::write(source.join("SKILL.md"), "---\nname: example\n---\n")
+            .expect("source skill should contain SKILL.md");
+
+        let installation = super::Installation {
+            id: "source-copy".into(),
+            path: source.to_string_lossy().to_string(),
+            scope: "project".into(),
+            agent: "codex".into(),
+            project_path: Some(source_project.to_string_lossy().to_string()),
+            enabled: true,
+            modified: false,
+            content_hash_sha256: "hash".into(),
+        };
+        let destination = super::copy_skill_to_project_path(
+            &installation,
+            &source,
+            Path::new("/tmp/home"),
+            destination_project.to_string_lossy().as_ref(),
+        )
+        .expect("skill should be copied");
+
+        assert_eq!(
+            destination,
+            super::normalize_path(&destination_project).join(".agents/skills/example")
+        );
+        assert_eq!(
+            fs::read_to_string(destination.join("SKILL.md")).expect("copied skill should be readable"),
+            "---\nname: example\n---\n"
+        );
+
+        fs::remove_dir_all(source_project).expect("source project should clean up");
+        fs::remove_dir_all(destination_project).expect("destination project should clean up");
     }
 
     #[test]

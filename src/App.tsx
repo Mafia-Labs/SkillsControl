@@ -12,7 +12,7 @@ import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { appendConsoleLines, ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, copySkillToProject, detectStack, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, detectStack, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, moveSkillToProject, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
 import type { ArchiveEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
 
@@ -168,7 +168,7 @@ export default function App() {
     }
   }
 
-  const applyModal = async (scope: Scope = 'user', target: InstallTarget = 'all', projectPath?: string) => {
+  const applyModal = async (scope: Scope = 'user', target: InstallTarget = 'all', projectPath?: string, removeGlobal = false) => {
     if (!modal) return
     setApplying(true)
     // Let the in-modal console play its verification sequence before closing.
@@ -180,9 +180,10 @@ export default function App() {
         setRecentArchive(archive)
         setNotice(t('app.notices.quarantined'))
       } else if (modal.kind === 'localize') {
-        const destination = await copySkillToProject(modal.source, projectPath ?? '')
+        const result = await moveSkillToProject(modal.source, projectPath ?? '', removeGlobal)
         await minWait
-        setNotice(t('app.notices.localizeCopied', { name: modal.skill.name, destination }))
+        setRecentArchive(result.archive ?? null)
+        setNotice(t(result.archive ? 'app.notices.localizeMoved' : 'app.notices.localizeCopied', { name: modal.skill.name, destination: result.destination }))
       } else if (modal.kind === 'install-listed') {
         const installedPaths = await installListedSkill(modal.recommendation.skillId, scope, target, projectPath)
         await minWait

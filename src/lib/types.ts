@@ -120,6 +120,11 @@ export type ArchiveEntry = {
   createdAt: string
 }
 
+export type MoveSkillResult = {
+  destination: string
+  archive?: ArchiveEntry
+}
+
 export type DetectionEvidence =
   | { kind: 'packageDependency', name: string }
   | { kind: 'configFilePresent', path: string }

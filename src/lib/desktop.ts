@@ -1,5 +1,5 @@
 import { demoReport, demoStackDetection } from './demo-data'
-import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, ScanReport, Scope, Skill, StackDetection } from './types'
+import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, MoveSkillResult, ScanReport, Scope, Skill, StackDetection } from './types'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
 
@@ -52,6 +52,13 @@ export const listArchives = async (): Promise<ArchiveEntry[]> => {
 export const copySkillToProject = async (installation: Installation, projectPath: string): Promise<string> => {
   if (!isTauri()) return `${projectPath}/${installation.agent === 'codex' ? '.agents/skills' : '.claude/skills'}/${installation.path.replace(/\\/g, '/').split('/').slice(-1)[0]}`
   return invoke<string>('copy_skill_to_project', { installation, projectPath })
+}
+
+export const moveSkillToProject = async (installation: Installation, projectPath: string, removeSource: boolean): Promise<MoveSkillResult> => {
+  if (!isTauri()) return {
+    destination: `${projectPath}/${installation.agent === 'codex' ? '.agents/skills' : '.claude/skills'}/${installation.path.replace(/\\/g, '/').split('/').slice(-1)[0]}`
+  }
+  return invoke<MoveSkillResult>('move_skill_to_project', { installation, projectPath, removeSource })
 }
 
 export const installCatalogSkill = async (skillId: string, scope: Scope, target: InstallTarget, projectPath?: string): Promise<string[]> => {
