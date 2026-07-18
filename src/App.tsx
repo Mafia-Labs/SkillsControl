@@ -8,6 +8,7 @@ import { Overview } from './components/Overview'
 import { Projects } from './components/Projects'
 import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
+import { ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
 import { SkillMap } from './components/SkillMap'
 import { checkOnlineReputation, chooseProjects, copySkillToProject, detectStack, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
@@ -26,6 +27,28 @@ const fallbackProject = (path: string): ProjectSummary => ({
   agents: []
 })
 
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const scanScript = (rootCount: number): ConsoleLine[] => [
+  { id: 'cmd', text: 'skillctl scan --workspace', tone: 'cmd', delay: 120 },
+  { id: 'roots', text: 'Locating agent roots · ~/.claude · ~/.agents', tone: 'step', delay: 620 },
+  { id: 'walk', text: rootCount ? `Walking ${rootCount} workspace folder${rootCount === 1 ? '' : 's'}` : 'Walking global scopes', tone: 'step', delay: 430 },
+  { id: 'hash', text: 'Hashing skill contents · SHA-256', tone: 'step', delay: 460 },
+  { id: 'checks', text: 'Running local security checks', tone: 'step', delay: 470 }
+]
+
+const scanResultLines = (report: ScanReport): ConsoleLine[] => {
+  const locations = report.skills.reduce((total, skill) => total + skill.installations.length, 0)
+  return [
+    { id: 'r-skills', text: `${report.skills.length} skill${report.skills.length === 1 ? '' : 's'} found across ${locations} location${locations === 1 ? '' : 's'}`, tone: 'ok', delay: 340 },
+    { id: 'r-projects', text: `${report.projects.length} project folder${report.projects.length === 1 ? '' : 's'} mapped`, tone: 'ok', delay: 300 },
+    report.findings.length
+      ? { id: 'r-findings', text: `${report.findings.length} finding${report.findings.length === 1 ? '' : 's'} flagged for review`, tone: 'warn', delay: 320 }
+      : { id: 'r-findings', text: 'No security findings', tone: 'ok', delay: 320 },
+    { id: 'r-done', text: 'Report ready', tone: 'ok', delay: 380 }
+  ]
+}
+
 export default function App() {
   const [view, setView] = useState<View>('projects')
   const [report, setReport] = useState<ScanReport | null>(null)
@@ -41,6 +64,7 @@ export default function App() {
   const [recentArchive, setRecentArchive] = useState<ArchiveEntry | null>(null)
   const [analyses, setAnalyses] = useState<Record<string, { result: StackDetection, at: string }>>({})
   const [analyzingPath, setAnalyzingPath] = useState<string | null>(null)
+  const [scanConsole, setScanConsole] = useState<{ lines: ConsoleLine[], done: boolean } | null>(null)
 
   const applyReport = (next: ScanReport) => {
     setReport(next)
@@ -50,12 +74,17 @@ export default function App() {
   const refresh = async (roots = workspaceRoots) => {
     setIsScanning(true)
     setError(null)
+    setScanConsole({ lines: scanScript(roots.length), done: false })
     try {
-      const [nextReport, nextArchives] = await Promise.all([scanSkills(roots), listArchives()])
+      // Keep the console sequence on screen long enough to read even when the scan is instant.
+      const [[nextReport, nextArchives]] = await Promise.all([Promise.all([scanSkills(roots), listArchives()]), wait(2100)])
       applyReport(nextReport)
       setArchives(nextArchives)
+      setScanConsole((current) => current ? { lines: [...current.lines, ...scanResultLines(nextReport)], done: true } : current)
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'The scan could not complete.')
+      const message = reason instanceof Error ? reason.message : 'The scan could not complete.'
+      setError(message)
+      setScanConsole((current) => current ? { lines: [...current.lines, { id: 'r-error', text: message, tone: 'err', delay: 300 }], done: true } : current)
     } finally {
       setIsScanning(false)
     }
@@ -255,5 +284,8 @@ export default function App() {
     </section>
     {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
     {modal && <ChangeModal modal={modal} projects={projects} onCancel={() => setModal(null)} onApply={applyModal} />}
+    {scanConsole && <div className="console-overlay" role="presentation">
+      <ProcessConsole title="skill-control — scan" lines={scanConsole.lines} done={scanConsole.done} onSettled={() => setTimeout(() => setScanConsole(null), 900)} />
+    </div>}
   </main>
 }
