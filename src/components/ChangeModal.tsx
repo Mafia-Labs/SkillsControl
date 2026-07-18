@@ -1,5 +1,6 @@
 import { useMemo, useState, type ChangeEvent } from 'react'
-import { agentLabels } from '../lib/skill-utils'
+import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 import type { Agent, CatalogSkill, ChangePreview, Installation, InstallTarget, ProjectSummary, Scope, Skill, SkillRecommendation } from '../lib/types'
 import { ProcessConsole, type ConsoleLine } from './ProcessConsole'
 
@@ -13,26 +14,26 @@ const applyScript = (modal: ModalState, paths: string[]): ConsoleLine[] => {
   if (modal.kind === 'disable') {
     const name = modal.installation.path.replace(/\\/g, '/').split('/').filter(Boolean).slice(-1)[0] ?? 'skill'
     return [
-      { id: 'cmd', text: `skillctl quarantine ${name}`, tone: 'cmd', delay: 120 },
-      { id: 'backup', text: 'Creating reversible backup in the local archive', tone: 'step', delay: 620 },
-      { id: 'move', text: 'Moving the copy out of the agent load path', tone: 'step', delay: 560 },
-      { id: 'verify', text: 'Confirming the original location is clean', tone: 'step', delay: 540 }
+      { id: 'cmd', text: i18n.t('console.quarantineCommand', { name }), tone: 'cmd', delay: 120 },
+      { id: 'backup', text: i18n.t('console.creatingBackup'), tone: 'step', delay: 620 },
+      { id: 'move', text: i18n.t('console.movingCopy'), tone: 'step', delay: 560 },
+      { id: 'verify', text: i18n.t('console.confirmingClean'), tone: 'step', delay: 540 }
     ]
   }
   if (modal.kind === 'localize') return [
-    { id: 'cmd', text: `skillctl copy ${modal.skill.name} --to project`, tone: 'cmd', delay: 120 },
-    { id: 'read', text: 'Reading the global skill folder', tone: 'step', delay: 620 },
-    { id: 'copy', text: `Writing ${paths[0] ?? 'the local copy'}`, tone: 'step', delay: 560 },
-    { id: 'hash', text: 'Re-hashing the copy · SHA-256', tone: 'step', delay: 540 }
+    { id: 'cmd', text: i18n.t('console.copyCommand', { name: modal.skill.name }), tone: 'cmd', delay: 120 },
+    { id: 'read', text: i18n.t('console.readingGlobal'), tone: 'step', delay: 620 },
+    { id: 'copy', text: i18n.t('console.writingPath', { path: paths[0] ?? i18n.t('common.localCopy') }), tone: 'step', delay: 560 },
+    { id: 'hash', text: i18n.t('console.rehashing'), tone: 'step', delay: 540 }
   ]
   const listed = modal.kind === 'install-listed'
   const skillId = listed ? modal.recommendation.skillId : modal.skill.id
   return [
-    { id: 'cmd', text: `skillctl install ${skillId} --verify`, tone: 'cmd', delay: 120 },
-    { id: 'resolve', text: listed ? 'Resolving in the MafiaIA Skill List · pinned commit' : 'Resolving in the curated catalog', tone: 'step', delay: 520 },
-    { id: 'download', text: listed ? `Downloading pinned files · ${modal.recommendation.sourceRepo}` : 'Downloading skill files', tone: 'step', delay: 480 },
-    { id: 'verify', text: 'Verifying SHA-256 against the curated hash', tone: 'step', delay: 500 },
-    ...paths.slice(0, 2).map((path, index) => ({ id: `write-${index}`, text: `Writing ${path}`, tone: 'step' as const, delay: 380 }))
+    { id: 'cmd', text: i18n.t('console.installCommand', { skillId }), tone: 'cmd', delay: 120 },
+    { id: 'resolve', text: listed ? i18n.t('console.resolvingListed') : i18n.t('console.resolvingCatalog'), tone: 'step', delay: 520 },
+    { id: 'download', text: listed ? i18n.t('console.downloadingPinned', { repo: modal.recommendation.sourceRepo }) : i18n.t('console.downloadingSkill'), tone: 'step', delay: 480 },
+    { id: 'verify', text: i18n.t('console.verifyingHash'), tone: 'step', delay: 500 },
+    ...paths.slice(0, 2).map((path, index) => ({ id: `write-${index}`, text: i18n.t('console.writingPath', { path }), tone: 'step' as const, delay: 380 }))
   ]
 }
 
@@ -43,6 +44,7 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
   onCancel: () => void
   onApply: (scope?: Scope, target?: InstallTarget, projectPath?: string) => void
 }) {
+  const { t } = useTranslation()
   const install = modal.kind === 'install'
   const listed = modal.kind === 'install-listed'
   const localize = modal.kind === 'localize'
@@ -56,75 +58,77 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
   const installPaths = modal.kind !== 'disable' ? previewPaths(effectiveScope, effectiveTarget, skillId, projectPath) : []
   const projectRequired = modal.kind !== 'disable' && effectiveScope === 'project' && !projectPath
   const script = useMemo(() => applying ? applyScript(modal, installPaths) : null, [applying]) // eslint-disable-line react-hooks/exhaustive-deps
+  const title = install ? t('change.install', { name: modal.skill.name }) : listed ? t('change.install', { name: modal.recommendation.skillId }) : localize ? t('change.installInProject', { name: modal.skill.name }) : modal.preview.title
 
   if (applying && script) return <div className="modal-backdrop" role="presentation">
     <section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title">
       <div className="modal-icon">{modal.kind === 'disable' ? '⊘' : '↓'}</div>
-      <p className="eyebrow">Applying change</p>
-      <h2 id="change-title">{install ? `Install ${modal.skill.name}` : listed ? `Install ${modal.recommendation.skillId}` : localize ? `Install ${modal.skill.name} in a project` : modal.preview.title}</h2>
-      <div className="console-modal"><ProcessConsole title="skill-control — apply" lines={script} done={false} /></div>
+      <p className="eyebrow">{t('change.applying')}</p>
+      <h2 id="change-title">{title}</h2>
+      <div className="console-modal"><ProcessConsole title={t('app.processApplyTitle')} lines={script} done={false} /></div>
     </section>
   </div>
 
   return <div className="modal-backdrop" role="presentation">
     <section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title">
       <div className="modal-icon">{modal.kind === 'disable' ? '⊘' : '↓'}</div>
-      <p className="eyebrow">Review change</p>
-      <h2 id="change-title">{install ? `Install ${modal.skill.name}` : listed ? `Install ${modal.recommendation.skillId}` : localize ? `Install ${modal.skill.name} in a project` : modal.preview.title}</h2>
+      <p className="eyebrow">{t('change.review')}</p>
+      <h2 id="change-title">{title}</h2>
       {listed && <>
-        <p>{modal.recommendation.description || 'Curated skill from the MafiaIA Skill List.'}</p>
+        <p>{modal.recommendation.description || t('change.curatedDescription')}</p>
         <div className="change-list">
-          <strong>Verified source</strong>
-          <span>• From the curated list, pinned to an exact commit of <code>{modal.recommendation.sourceRepo}</code></span>
-          <span>• Content is downloaded and its SHA-256 verified before anything is written</span>
+          <strong>{t('change.verifiedSource')}</strong>
+          <span>{t('change.pinnedCommit')} <code>{modal.recommendation.sourceRepo}</code></span>
+          <span>{t('change.verifiedBeforeWrite')}</span>
         </div>
-        <label className="select-label">Scope
+        <label className="select-label">{t('common.scope')}
           <select value={scope} onChange={(event: ChangeEvent<HTMLSelectElement>) => setScope(event.target.value as Scope)}>
-            {projects.length > 0 && <option value="project">Project or folder · recommended</option>}
-            <option value="user">Global · every project</option>
+            {projects.length > 0 && <option value="project">{t('common.projectOrFolderRecommended')}</option>}
+            <option value="user">{t('common.globalEveryProject')}</option>
           </select>
         </label>
-        <label className="select-label">Available to
+        <label className="select-label">{t('common.availableTo')}
           <select value={target} onChange={(event: ChangeEvent<HTMLSelectElement>) => setTarget(event.target.value as InstallTarget)}>
-            <option value="all">All compatible agents · recommended</option>
-            {compatibleAgents.map((agent) => <option value={agent} key={agent}>{agentLabels[agent]}</option>)}
+            <option value="all">{t('common.allCompatibleAgentsRecommended')}</option>
+            {compatibleAgents.map((agent) => <option value={agent} key={agent}>{t(`agents.${agent}`)}</option>)}
           </select>
         </label>
         {scope === 'project' && <ProjectSelector projects={projects} value={projectPath} onChange={setProjectPath} />}
         <InstallPlan paths={installPaths} multiple={installPaths.length > 1} />
       </>}
       {install ? <>
-        <p>Project scope is recommended: the skill stays available to agents working in this folder without affecting unrelated projects.</p>
-        <label className="select-label">Scope
+        <p>{t('change.projectScopeDescription')}</p>
+        <label className="select-label">{t('common.scope')}
           <select value={scope} onChange={(event: ChangeEvent<HTMLSelectElement>) => setScope(event.target.value as Scope)}>
-            {projects.length > 0 && <option value="project">Project or folder · recommended</option>}
-            <option value="user">Global · every project</option>
+            {projects.length > 0 && <option value="project">{t('common.projectOrFolderRecommended')}</option>}
+            <option value="user">{t('common.globalEveryProject')}</option>
           </select>
         </label>
-        <label className="select-label">Available to
+        <label className="select-label">{t('common.availableTo')}
           <select value={target} onChange={(event: ChangeEvent<HTMLSelectElement>) => setTarget(event.target.value as InstallTarget)}>
-            {compatibleAgents.length > 1 && <option value="all">All compatible agents · recommended</option>}
-            {compatibleAgents.map((agent) => <option value={agent} key={agent}>{agentLabels[agent]}</option>)}
+            {compatibleAgents.length > 1 && <option value="all">{t('common.allCompatibleAgentsRecommended')}</option>}
+            {compatibleAgents.map((agent) => <option value={agent} key={agent}>{t(`agents.${agent}`)}</option>)}
           </select>
         </label>
         {scope === 'project' && <ProjectSelector projects={projects} value={projectPath} onChange={setProjectPath} />}
         <InstallPlan paths={installPaths} multiple={installPaths.length > 1} />
       </> : localize ? <>
-        <p>Copy the complete skill folder into a project for the same agent. The source stays untouched so you can verify the local copy before disabling the global one.</p>
-        <div className="change-list"><strong>Source</strong><span><code>{modal.source.path}</code></span><span>• Runtime: {agentLabels[modal.source.agent]}</span></div>
+        <p>{t('change.copyDescription')}</p>
+        <div className="change-list"><strong>{t('common.source')}</strong><span><code>{modal.source.path}</code></span><span>• {t('common.runtime')}: {t(`agents.${modal.source.agent}`)}</span></div>
         <ProjectSelector projects={projects} value={projectPath} onChange={setProjectPath} />
         <InstallPlan paths={installPaths} multiple={false} />
       </> : modal.kind === 'disable' ? <>
-        <div className="change-list"><strong>Changes</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div>
-        <div className="warning-box"><strong>Heads up</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div>
+        <div className="change-list"><strong>{t('common.changes')}</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div>
+        <div className="warning-box"><strong>{t('common.headsUp')}</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div>
       </> : null}
-      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>Cancel</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath)}>{modal.kind === 'disable' ? 'Quarantine skill' : localize ? 'Copy to project' : listed ? 'Install verified skill' : 'Install skill'}</button></div>
+      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>{t('common.cancel')}</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath)}>{modal.kind === 'disable' ? t('change.quarantineSkill') : localize ? t('common.copyToProject') : listed ? t('change.installVerified') : t('change.installSkill')}</button></div>
     </section>
   </div>
 }
 
 function ProjectSelector({ projects, value, onChange }: { projects: ProjectSummary[], value: string, onChange: (value: string) => void }) {
-  return <label className="select-label">Project or folder
+  const { t } = useTranslation()
+  return <label className="select-label">{t('common.projectOrFolder')}
     <select value={value} onChange={(event: ChangeEvent<HTMLSelectElement>) => onChange(event.target.value)}>
       {projects.map((project) => <option value={project.path} key={project.path}>{project.name} — {project.path}</option>)}
     </select>
@@ -132,7 +136,8 @@ function ProjectSelector({ projects, value, onChange }: { projects: ProjectSumma
 }
 
 function InstallPlan({ paths, multiple }: { paths: string[], multiple: boolean }) {
-  return <div className="change-list"><strong>Skill Control will</strong>{paths.map((path) => <span key={path}>• Create <code>{path}</code></span>)}<span>• Never overwrite an existing installation</span>{multiple && <span>• Roll back every new copy if one target fails</span>}</div>
+  const { t } = useTranslation()
+  return <div className="change-list"><strong>{t('common.skillControlWill')}</strong>{paths.map((path) => <span key={path}>• {t('common.create')} <code>{path}</code></span>)}<span>• {t('common.neverOverwrite')}</span>{multiple && <span>• {t('common.rollback')}</span>}</div>
 }
 
 function previewPaths(scope: Scope, target: InstallTarget, skillId: string, projectPath?: string) {

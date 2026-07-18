@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export function Banner({ tone, message, action, onDismiss }: {
   tone: 'error' | 'success'
@@ -6,10 +7,11 @@ export function Banner({ tone, message, action, onDismiss }: {
   action?: { label: string, onClick: () => void }
   onDismiss: () => void
 }) {
+  const { t } = useTranslation()
   return <div className={`banner ${tone}`} role="status">
     <span>{tone === 'success' ? '✓' : '!'}</span>{message}
     {action && <button className="banner-action" onClick={action.onClick}>{action.label}</button>}
-    <button onClick={onDismiss} aria-label="Dismiss message">×</button>
+    <button onClick={onDismiss} aria-label={t('common.dismiss')}>×</button>
   </div>
 }
 
@@ -18,7 +20,8 @@ export function Empty({ icon, title, detail }: { icon: string, title: string, de
 }
 
 export function Loading() {
-  return <div className="loading"><span className="loader" />Reading local skill folders…</div>
+  const { t } = useTranslation()
+  return <div className="loading"><span className="loader" />{t('common.readingLocalFolders')}</div>
 }
 
 export function PanelHeading({ title, action, onAction }: { title: string, action?: string, onAction?: () => void }) {

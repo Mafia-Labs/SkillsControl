@@ -15,6 +15,13 @@ export const healthLabel = (skill: Skill, findings: Finding[]) => {
   return 'Healthy'
 }
 
+export const healthLabelKey = (skill: Skill, findings: Finding[]) => {
+  const health = getSkillHealth(skill, findings)
+  if (health.some((finding) => finding.severity === 'error')) return 'health.needsAttention'
+  if (health.some((finding) => finding.severity === 'warning')) return 'health.reviewSuggested'
+  return 'health.healthy'
+}
+
 export const securityStatusClass = (status: Skill['securityStatus']) =>
   status.replace(/\s+/g, '-').toLowerCase()
 

@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import i18n from './i18n'
 import { ChangeModal, type ModalState } from './components/ChangeModal'
 import { Discover } from './components/Discover'
 import { Health } from './components/Health'
@@ -30,26 +32,27 @@ const fallbackProject = (path: string): ProjectSummary => ({
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 const scanScript = (rootCount: number): ConsoleLine[] => [
-  { id: 'cmd', text: 'skillctl scan --workspace', tone: 'cmd', delay: 120 },
-  { id: 'roots', text: 'Locating agent roots · ~/.claude · ~/.agents', tone: 'step', delay: 620 },
-  { id: 'walk', text: rootCount ? `Walking ${rootCount} workspace folder${rootCount === 1 ? '' : 's'}` : 'Walking global scopes', tone: 'step', delay: 430 },
-  { id: 'hash', text: 'Hashing skill contents · SHA-256', tone: 'step', delay: 460 },
-  { id: 'checks', text: 'Running local security checks', tone: 'step', delay: 470 }
+  { id: 'cmd', text: i18n.t('app.scan.command'), tone: 'cmd', delay: 120 },
+  { id: 'roots', text: i18n.t('app.scan.locatingRoots'), tone: 'step', delay: 620 },
+  { id: 'walk', text: i18n.t(rootCount ? 'app.scan.walkingFolders' : 'app.scan.walkingGlobal', { count: rootCount }), tone: 'step', delay: 430 },
+  { id: 'hash', text: i18n.t('app.scan.hashing'), tone: 'step', delay: 460 },
+  { id: 'checks', text: i18n.t('app.scan.checks'), tone: 'step', delay: 470 }
 ]
 
 const scanResultLines = (report: ScanReport): ConsoleLine[] => {
   const locations = report.skills.reduce((total, skill) => total + skill.installations.length, 0)
   return [
-    { id: 'r-skills', text: `${report.skills.length} skill${report.skills.length === 1 ? '' : 's'} found across ${locations} location${locations === 1 ? '' : 's'}`, tone: 'ok', delay: 340 },
-    { id: 'r-projects', text: `${report.projects.length} project folder${report.projects.length === 1 ? '' : 's'} mapped`, tone: 'ok', delay: 300 },
+    { id: 'r-skills', text: i18n.t('app.scan.skillsFound', { count: report.skills.length, locations }), tone: 'ok', delay: 340 },
+    { id: 'r-projects', text: i18n.t('app.scan.projectsMapped', { count: report.projects.length }), tone: 'ok', delay: 300 },
     report.findings.length
-      ? { id: 'r-findings', text: `${report.findings.length} finding${report.findings.length === 1 ? '' : 's'} flagged for review`, tone: 'warn', delay: 320 }
-      : { id: 'r-findings', text: 'No security findings', tone: 'ok', delay: 320 },
-    { id: 'r-done', text: 'Report ready', tone: 'ok', delay: 380 }
+      ? { id: 'r-findings', text: i18n.t('app.scan.findingsFlagged', { count: report.findings.length }), tone: 'warn', delay: 320 }
+      : { id: 'r-findings', text: i18n.t('app.scan.noFindings'), tone: 'ok', delay: 320 },
+    { id: 'r-done', text: i18n.t('app.scan.reportReady'), tone: 'ok', delay: 380 }
   ]
 }
 
 export default function App() {
+  const { t } = useTranslation()
   const [view, setView] = useState<View>('projects')
   const [report, setReport] = useState<ScanReport | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -85,7 +88,7 @@ export default function App() {
       setArchives(nextArchives)
       setScanConsole((current) => current ? { lines: appendConsoleLines(current.lines, scanResultLines(nextReport)), done: true } : current)
     } catch (reason) {
-      const message = reason instanceof Error ? reason.message : 'The scan could not complete.'
+      const message = reason instanceof Error ? reason.message : t('app.errors.scanCouldNotComplete')
       setError(message)
       setScanConsole((current) => current ? { lines: appendConsoleLines(current.lines, [{ id: 'r-error', text: message, tone: 'err', delay: 300 }]), done: true } : current)
     } finally {
@@ -132,13 +135,13 @@ export default function App() {
     try {
       setModal({ kind: 'disable', installation, preview: await previewDisable(installation) })
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Could not prepare this change.')
+      setError(reason instanceof Error ? reason.message : t('app.errors.couldNotPrepareChange'))
     }
   }
 
   const requestLocalize = (skill: Skill, installation: Installation) => {
     if (!projects.length) {
-      setError('Add a project or workspace folder before creating a local copy.')
+      setError(t('app.errors.addProjectFirst'))
       return
     }
     setModal({ kind: 'localize', skill, source: installation })
@@ -158,7 +161,7 @@ export default function App() {
       const [result] = await Promise.all([detectStack(inventory.path, installedIds), wait(1900)])
       setAnalyses((current) => ({ ...current, [inventory.path]: { result, at: new Date().toISOString() } }))
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'The project could not be analyzed.')
+      setError(reason instanceof Error ? reason.message : t('app.errors.projectCouldNotBeAnalyzed'))
     } finally {
       setAnalyzingPath(null)
     }
@@ -174,15 +177,15 @@ export default function App() {
         const archive = await quarantineSkill(modal.installation)
         await minWait
         setRecentArchive(archive)
-        setNotice('Skill quarantined and retained in the local archive.')
+        setNotice(t('app.notices.quarantined'))
       } else if (modal.kind === 'localize') {
         const destination = await copySkillToProject(modal.source, projectPath ?? '')
         await minWait
-        setNotice(`${modal.skill.name} copied to ${destination}. Verify it, then quarantine the global copy if it is no longer needed.`)
+        setNotice(t('app.notices.localizeCopied', { name: modal.skill.name, destination }))
       } else if (modal.kind === 'install-listed') {
         const installedPaths = await installListedSkill(modal.recommendation.skillId, scope, target, projectPath)
         await minWait
-        setNotice(`${modal.recommendation.skillId} installed and verified against the curated list${installedPaths.length > 1 ? ` (${installedPaths.length} copies)` : ''}.`)
+        setNotice(t('app.notices.installVerified', { skillId: modal.recommendation.skillId, copiesSuffix: installedPaths.length > 1 ? t('common.copies', { count: installedPaths.length }) : '' }))
         setModal(null)
         await refresh()
         // Re-mark this recommendation as installed without forcing a re-scan of the stack.
@@ -205,14 +208,14 @@ export default function App() {
       } else {
         const installedPaths = await installCatalogSkill(modal.skill.id, scope, target, projectPath)
         await minWait
-        const location = scope === 'project' ? projects.find((project) => project.path === projectPath)?.name ?? 'project' : 'global scope'
-        const coverage = target === 'all' ? 'all compatible agents' : target
-        setNotice(`${modal.skill.name} installed for ${coverage} in ${location}${installedPaths.length > 1 ? ` (${installedPaths.length} copies)` : ''}.`)
+        const location = scope === 'project' ? projects.find((project) => project.path === projectPath)?.name ?? t('common.project') : t('common.global')
+        const coverage = target === 'all' ? t('common.allCompatibleAgents') : target
+        setNotice(t('app.notices.installed', { name: modal.skill.name, coverage, location, copiesSuffix: installedPaths.length > 1 ? t('common.copies', { count: installedPaths.length }) : '' }))
       }
       setModal(null)
       await refresh()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'The change could not be applied.')
+      setError(reason instanceof Error ? reason.message : t('app.errors.changeCouldNotBeApplied'))
     } finally {
       setApplying(false)
     }
@@ -221,10 +224,10 @@ export default function App() {
   const trustExactVersion = async (installation: Installation) => {
     try {
       await trustSkillVersion(installation)
-      setNotice('This exact content hash is now trusted locally. A changed copy will no longer inherit that trust.')
+      setNotice(t('app.notices.trusted'))
       await refresh()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'This version could not be trusted.')
+      setError(reason instanceof Error ? reason.message : t('app.errors.versionCouldNotBeTrusted'))
     }
   }
 
@@ -241,9 +244,9 @@ export default function App() {
         ...current,
         skills: current.skills.map((skill) => skill.id === selected.id ? { ...skill, externalReputation: reputation, securityStatus: externalStatus } : skill)
       } : current)
-      setNotice(`Online reputation checked for ${selected.name}. The result only covers the matching local SHA-256.`)
+      setNotice(t('app.notices.reputationChecked', { name: selected.name }))
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Could not check online reputation.')
+      setError(reason instanceof Error ? reason.message : t('app.errors.reputationCouldNotBeChecked'))
     }
   }
 
@@ -253,30 +256,30 @@ export default function App() {
       if (!selectedProjects.length) return
       const additions = selectedProjects.filter((project, index) => selectedProjects.indexOf(project) === index && !workspaceRoots.includes(project))
       if (!additions.length) {
-        setNotice('Those folders are already part of this workspace.')
+        setNotice(t('app.notices.foldersAlreadyAdded'))
         return
       }
       await persistRoots([...workspaceRoots, ...additions])
-      setNotice(`Added ${additions.length} project folder${additions.length === 1 ? '' : 's'} and scanned nested scopes.`)
+      setNotice(t('app.notices.foldersAdded', { count: additions.length }))
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Could not add the selected folder.')
+      setError(reason instanceof Error ? reason.message : t('app.errors.couldNotAddFolder'))
     }
   }
 
   const removeWorkspaceRoot = async (root: string) => {
     if (selectedProjectPath && selectedProjectPath.replace(/\\/g, '/').startsWith(root.replace(/\\/g, '/'))) setSelectedProjectPath(null)
     await persistRoots(workspaceRoots.filter((existing) => existing !== root))
-    setNotice('Folder removed from the workspace.')
+    setNotice(t('app.notices.folderRemoved'))
   }
 
   const restoreArchive = async (archive: ArchiveEntry) => {
     try {
       await restoreSkill(archive)
       setRecentArchive(null)
-      setNotice('Skill restored to its original location.')
+      setNotice(t('app.notices.skillRestored'))
       await refresh()
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'The skill could not be restored.')
+      setError(reason instanceof Error ? reason.message : t('app.errors.skillCouldNotBeRestored'))
     }
   }
 
@@ -284,9 +287,9 @@ export default function App() {
     <Sidebar view={view} onChange={setView} />
     <section className="workspace">
       <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh(undefined, { showConsole: true })} onAddProject={() => void addWorkspaceRoots()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
-      {isDemo && <div className="demo-banner" role="status"><span>◒</span>Demo mode — you're seeing example data, not your real skills.</div>}
+      {isDemo && <div className="demo-banner" role="status"><span>◒</span>{t('app.demoBanner')}</div>}
       {error && <Banner tone="error" message={error} onDismiss={() => setError(null)} />}
-      {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: 'Undo', onClick: () => void restoreArchive(recentArchive) } : undefined} onDismiss={() => setNotice(null)} />}
+      {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: t('common.undo'), onClick: () => void restoreArchive(recentArchive) } : undefined} onDismiss={() => setNotice(null)} />}
       {isScanning && !report ? <Loading /> : <div className="page-content">
         {view === 'projects' && (selectedInventory
           ? <ProjectDetail inventory={selectedInventory} findings={report?.findings ?? []} analysis={analyses[selectedInventory.path] ?? null} analyzing={analyzingPath === selectedInventory.path} onAnalyze={() => void analyzeProject(selectedInventory)} onBack={() => setSelectedProjectPath(null)} onInspect={inspectSkill} onQuarantine={(installation) => void requestDisable(installation)} onLocalize={requestLocalize} onInstallRecommendation={(recommendation) => setModal({ kind: 'install-listed', recommendation, projectPath: selectedInventory.path })} />
@@ -295,13 +298,13 @@ export default function App() {
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} projects={projects} selectedId={selectedId} onSelect={setSelectedId} />}
         {view === 'discover' && <Discover query={search} onInstall={(skill) => setModal({ kind: 'install', skill })} />}
         {view === 'health' && report && <Health query={search} report={report} archives={archives} onRestore={(archive) => void restoreArchive(archive)} onSelect={(id) => { setSelectedId(id); setView('map') }} />}
-        {!report && <Empty icon="!" title="No report available" detail="Run another scan to inspect your local skills." />}
+        {!report && <Empty icon="!" title={t('app.errors.noReport')} detail={t('app.errors.runScan')} />}
       </div>}
     </section>
     {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onDisable={requestDisable} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
     {modal && <ChangeModal modal={modal} projects={projects} applying={applying} onCancel={() => setModal(null)} onApply={applyModal} />}
     {scanConsole && <div className="console-overlay" role="presentation">
-      <ProcessConsole title="skill-control — scan" lines={scanConsole.lines} done={scanConsole.done} onSettled={() => setTimeout(() => setScanConsole(null), 900)} />
+      <ProcessConsole title={t('app.scan.title')} lines={scanConsole.lines} done={scanConsole.done} onSettled={() => setTimeout(() => setScanConsole(null), 900)} />
     </div>}
   </main>
 }

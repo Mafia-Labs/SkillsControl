@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 export type ConsoleTone = 'cmd' | 'step' | 'ok' | 'warn' | 'err' | 'out' | 'dim'
 
@@ -32,6 +33,7 @@ export function ProcessConsole({ title, lines, done, onSettled }: {
   done: boolean
   onSettled?: () => void
 }) {
+  const { t } = useTranslation()
   const [visible, setVisible] = useState(0)
   const bodyRef = useRef<HTMLDivElement>(null)
 
@@ -68,7 +70,7 @@ export function ProcessConsole({ title, lines, done, onSettled }: {
           {line.detail && <span className="console-detail">← {line.detail}</span>}
         </div>
       })}
-      {!done && visible >= lines.length && <div className="console-line tone-dim console-working"><span className="console-spinner" /><span className="console-text">working…</span></div>}
+      {!done && visible >= lines.length && <div className="console-line tone-dim console-working"><span className="console-spinner" /><span className="console-text">{t('common.working')}</span></div>}
       {!settled && done && <div className="console-line"><span className="console-cursor" /></div>}
       {settled && <div className="console-line"><span className="console-prefix tone-cmd">$</span><span className="console-cursor" /></div>}
     </div>

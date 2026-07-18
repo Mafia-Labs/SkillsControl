@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { agentLabels, formatTokenCount, projectName, securityStatusClass } from '../lib/skill-utils'
+import { useTranslation } from 'react-i18next'
+import { formatTokenCount, projectName, securityStatusClass } from '../lib/skill-utils'
 import type { ExternalReputation, Finding, Installation, Skill } from '../lib/types'
 import { InspectorSection } from './shared'
 
@@ -12,6 +13,7 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
   onTrust: (installation: Installation) => void
   onCheckReputation: () => void
 }) {
+  const { t } = useTranslation()
   const [showFiles, setShowFiles] = useState(false)
   const [showChanges, setShowChanges] = useState(false)
   const preferredSource = skill.installations.find((installation) => installation.scope === 'user') ?? skill.installations[0]
@@ -20,48 +22,49 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
   const canTrust = Boolean(preferredSource) && skill.securityStatus !== 'Blocked' && !exactVersionReviewed
 
   return <aside className="inspector">
-    <div className="inspector-head"><div><p className="eyebrow">Skill inspector</p><h2>{skill.name}</h2></div><span className={`health-pill security-${securityStatusClass(skill.securityStatus)}`}>{skill.securityStatus}</span></div>
-    <p className="inspector-description">{skill.description || 'No description is available.'}</p>
-    {preferredSource && <div className="inspector-actions"><button className="primary-button compact" disabled={!canLocalize} title={canLocalize ? `Copy the ${agentLabels[preferredSource.agent]} installation into a project` : 'Add a project folder first and keep a global source available'} onClick={() => onLocalize(preferredSource)}>Install in project</button></div>}
+    <div className="inspector-head"><div><p className="eyebrow">{t('inspector.eyebrow')}</p><h2>{skill.name}</h2></div><span className={`health-pill security-${securityStatusClass(skill.securityStatus)}`}>{t(`securityStatuses.${securityStatusClass(skill.securityStatus)}`, { defaultValue: skill.securityStatus })}</span></div>
+    <p className="inspector-description">{skill.description || t('inspector.noDescription')}</p>
+    {preferredSource && <div className="inspector-actions"><button className="primary-button compact" disabled={!canLocalize} title={canLocalize ? t('inspector.copyInstallation', { agent: t(`agents.${preferredSource.agent}`) }) : t('inspector.addProjectSource')} onClick={() => onLocalize(preferredSource)}>{t('inspector.installInProject')}</button></div>}
 
-    <InspectorSection title="Security">
-      <div className="security-summary"><strong>Security status: {skill.securityStatus}</strong><span>Local deterministic scan · no scripts executed</span></div>
+    <InspectorSection title={t('inspector.security')}>
+      <div className="security-summary"><strong>{t('health.securityStatus', { status: t(`securityStatuses.${securityStatusClass(skill.securityStatus)}`, { defaultValue: skill.securityStatus }) })}</strong><span>{t('inspector.localScan')}</span></div>
       <div className="provenance-grid">
-        <span>Origin</span><code title={skill.provenance.sourceUrl}>{skill.provenance.sourceRepository ?? skill.source ?? 'Unknown origin'}</code>
-        <span>Commit</span><code>{skill.provenance.sourceCommit ?? 'Not recorded'}</code>
-        {skill.provenance.sourceRef && <><span>Ref</span><code>{skill.provenance.sourceRef}</code></>}
-        <span>SHA-256</span><code className="hash-value">{skill.contentHashSha256}</code>
-        <span>Reviewed hash</span><code>{exactVersionReviewed ? `${skill.provenance.reviewedHash} · ${skill.provenance.reviewedAt ?? 'locally'}` : 'No exact-version review'}</code>
+        <span>{t('inspector.origin')}</span><code title={skill.provenance.sourceUrl}>{skill.provenance.sourceRepository ?? skill.source ?? t('inspector.unknownOrigin')}</code>
+        <span>{t('inspector.commit')}</span><code>{skill.provenance.sourceCommit ?? t('inspector.notRecorded')}</code>
+        {skill.provenance.sourceRef && <><span>{t('inspector.ref')}</span><code>{skill.provenance.sourceRef}</code></>}
+        <span>{t('inspector.sha256')}</span><code className="hash-value">{skill.contentHashSha256}</code>
+        <span>{t('inspector.reviewedHash')}</span><code>{exactVersionReviewed ? `${skill.provenance.reviewedHash} · ${skill.provenance.reviewedAt ?? t('inspector.locally')}` : t('inspector.noExactReview')}</code>
       </div>
-      <div className="capability-heading"><strong>Capabilities</strong><small>Declared from local content</small></div>
-      <ul className="capability-list">{skill.capabilities.map((capability) => <li key={capability}><span className={capability === 'Access credentials' || capability === 'Write outside project' ? 'capability-warning' : 'capability-ok'}>{capability === 'Access credentials' || capability === 'Write outside project' ? '⚠' : '✓'}</span>{capability}</li>)}</ul>
-      {!skill.capabilities.includes('Access credentials') && <p className="capability-note">✓ No credential access declared</p>}
+      <div className="capability-heading"><strong>{t('inspector.capabilities')}</strong><small>{t('inspector.declaredLocal')}</small></div>
+      <ul className="capability-list">{skill.capabilities.map((capability) => <li key={capability}><span className={capability === 'Access credentials' || capability === 'Write outside project' ? 'capability-warning' : 'capability-ok'}>{capability === 'Access credentials' || capability === 'Write outside project' ? '⚠' : '✓'}</span>{t(`capabilities.${capability.replace(/\s+/g, '-')}`, { defaultValue: capability })}</li>)}</ul>
+      {!skill.capabilities.includes('Access credentials') && <p className="capability-note">{t('inspector.noCredentialAccess')}</p>}
       <ExternalReputationPanel reputation={skill.externalReputation} canCheck={Boolean(skill.provenance.sourceRepository)} onCheck={onCheckReputation} />
       <div className="security-actions">
-        <button className="secondary-button compact" onClick={() => setShowFiles((current) => !current)}>{showFiles ? 'Hide files' : 'Review files'}</button>
-        {hashes.length > 1 && <button className="secondary-button compact" onClick={() => setShowChanges((current) => !current)}>{showChanges ? 'Hide changes' : 'View changes'}</button>}
-        {preferredSource && <button className="danger-button compact" onClick={() => onDisable(preferredSource)}>Quarantine</button>}
-        {preferredSource && <button className="secondary-button compact" disabled={!canTrust} title={skill.securityStatus === 'Blocked' ? 'Blocked versions cannot be trusted' : undefined} onClick={() => onTrust(preferredSource)}>Trust this exact version</button>}
+        <button className="secondary-button compact" onClick={() => setShowFiles((current) => !current)}>{showFiles ? t('inspector.hideFiles') : t('inspector.reviewFiles')}</button>
+        {hashes.length > 1 && <button className="secondary-button compact" onClick={() => setShowChanges((current) => !current)}>{showChanges ? t('inspector.hideChanges') : t('inspector.viewChanges')}</button>}
+        {preferredSource && <button className="danger-button compact" onClick={() => onDisable(preferredSource)}>{t('common.quarantine')}</button>}
+        {preferredSource && <button className="secondary-button compact" disabled={!canTrust} title={skill.securityStatus === 'Blocked' ? t('inspector.blockedCannotTrust') : undefined} onClick={() => onTrust(preferredSource)}>{t('inspector.trustVersion')}</button>}
       </div>
-      {showChanges && <div className="change-hash-list"><strong>Installed copies do not share one hash</strong>{skill.installations.map((installation) => <span key={installation.id}><code>{installation.contentHashSha256}</code> · {installation.path}</span>)}</div>}
+      {showChanges && <div className="change-hash-list"><strong>{t('inspector.hashDivergence')}</strong>{skill.installations.map((installation) => <span key={installation.id}><code>{installation.contentHashSha256}</code> · {installation.path}</span>)}</div>}
     </InspectorSection>
 
-    <InspectorSection title="Installed in">{skill.installations.map((installation) => <div className="location" key={installation.id}><span><i className={`scope-dot ${installation.scope}`} />{installation.scope === 'project' ? `${projectName(installation.projectPath)} · Project` : 'Global'} · {agentLabels[installation.agent]}{installation.modified ? ' · differs' : ''}</span><code title={installation.path}>{installation.path}</code><button className="icon-button" aria-label={`Quarantine ${skill.name} from ${installation.path}`} onClick={() => onDisable(installation)}>⊘</button></div>)}</InspectorSection>
-    <InspectorSection title="Context footprint"><div className="token-number">{formatTokenCount(skill.contextTokens)} <small>estimated tokens</small></div><p className="muted-copy">The estimate is based on SKILL.md. Project scope reduces where a skill is discoverable; actual loading behavior still depends on the agent.</p></InspectorSection>
-    {showFiles && <InspectorSection title="Files"><ul className="file-list">{skill.files.map((file) => <li key={file}><span>⌁</span>{file}{skill.executableScripts.includes(file) && <b>executable</b>}{skill.invokedScripts.includes(file) && <b>invoked</b>}</li>)}</ul></InspectorSection>}
-    <InspectorSection title="Local findings">{findings.length ? <ul className="finding-list">{findings.map((finding) => <li key={finding.id}><span className={`severity ${finding.severity}`} /><div><strong>{finding.title}</strong><small>{finding.detail}</small></div></li>)}</ul> : <p className="healthy-copy">✓ No local findings for this exact copy.</p>}</InspectorSection>
+    <InspectorSection title={t('inspector.installedIn')}>{skill.installations.map((installation) => <div className="location" key={installation.id}><span><i className={`scope-dot ${installation.scope}`} />{installation.scope === 'project' ? `${projectName(installation.projectPath)} · ${t('inspector.projectScope')}` : t('common.global')} · {t(`agents.${installation.agent}`)}{installation.modified ? ` · ${t('inspector.differs')}` : ''}</span><code title={installation.path}>{installation.path}</code><button className="icon-button" aria-label={t('inspector.quarantineFrom', { name: skill.name, path: installation.path })} onClick={() => onDisable(installation)}>⊘</button></div>)}</InspectorSection>
+    <InspectorSection title={t('inspector.contextFootprint')}><div className="token-number">{formatTokenCount(skill.contextTokens)} <small>{t('inspector.estimatedTokens')}</small></div><p className="muted-copy">{t('inspector.contextDescription')}</p></InspectorSection>
+    {showFiles && <InspectorSection title={t('inspector.files')}><ul className="file-list">{skill.files.map((file) => <li key={file}><span>⌁</span>{file}{skill.executableScripts.includes(file) && <b>{t('inspector.executable')}</b>}{skill.invokedScripts.includes(file) && <b>{t('inspector.invoked')}</b>}</li>)}</ul></InspectorSection>}
+    <InspectorSection title={t('inspector.localFindings')}>{findings.length ? <ul className="finding-list">{findings.map((finding) => <li key={finding.id}><span className={`severity ${finding.severity}`} /><div><strong>{finding.title}</strong><small>{finding.detail}</small></div></li>)}</ul> : <p className="healthy-copy">{t('health.noFindingsExactCopy')}</p>}</InspectorSection>
   </aside>
 }
 
 function ExternalReputationPanel({ reputation, canCheck, onCheck }: { reputation?: ExternalReputation, canCheck: boolean, onCheck: () => void }) {
+  const { t } = useTranslation()
   return <div className="external-audit-note">
-    <strong>External reputation</strong>
-    {!reputation ? <span>Not checked · only the source identifier and local SHA-256 are sent.</span> : <>
-      <span className={`reputation-verdict reputation-${reputation.verdict.toLowerCase().replace(/\s+/g, '-')}`}>{reputation.verdict}</span>
-      <span>{reputation.hashMatches ? 'Audit hash matches this installed copy.' : reputation.auditedHash ? 'Audit found another content hash; this copy is not covered.' : 'No audited content hash was returned.'}</span>
+    <strong>{t('inspector.externalReputation')}</strong>
+    {!reputation ? <span>{t('inspector.notChecked')}</span> : <>
+      <span className={`reputation-verdict reputation-${reputation.verdict.toLowerCase().replace(/\s+/g, '-')}`}>{reputation.verdict === 'High risk' ? t('reputation.verdictHighRisk') : reputation.verdict}</span>
+      <span>{reputation.hashMatches ? t('inspector.hashMatches') : reputation.auditedHash ? t('inspector.hashNotCovered') : t('inspector.noAuditedHash')}</span>
       {reputation.audits.length > 0 && <div className="external-audit-list">{reputation.audits.map((audit) => <div className="external-audit-row" key={audit.provider}><span>{audit.provider}</span><b className={`audit-${audit.status.toLowerCase()}`}>{audit.status}{audit.riskLevel ? ` · ${audit.riskLevel}` : ''}</b></div>)}</div>}
-      <code className="reputation-url">{reputation.skillUrl} · checked {reputation.checkedAt}</code>
+      <code className="reputation-url">{reputation.skillUrl} · {t('inspector.checked', { date: reputation.checkedAt })}</code>
     </>}
-    <button className="secondary-button compact" disabled={!canCheck} title={canCheck ? 'Compare this exact local SHA-256 with skills.sh audits' : 'Add source repository provenance before checking online'} onClick={onCheck}>Check online reputation</button>
+    <button className="secondary-button compact" disabled={!canCheck} title={canCheck ? t('inspector.compareAudit') : t('inspector.addProvenance')} onClick={onCheck}>{t('inspector.checkOnline')}</button>
   </div>
 }
