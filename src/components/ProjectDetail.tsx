@@ -1,5 +1,7 @@
+import { useEffect, useRef, useState } from 'react'
 import { agentLabels, healthClass, healthLabel } from '../lib/skill-utils'
 import type { Finding, Installation, ProjectInventory, Skill, SkillRecommendation, StackDetection } from '../lib/types'
+import { appendConsoleLines, ProcessConsole, type ConsoleLine } from './ProcessConsole'
 import { Empty } from './shared'
 
 const analyzedLabel = (iso: string) => {
@@ -10,6 +12,25 @@ const analyzedLabel = (iso: string) => {
   const hours = Math.floor(minutes / 60)
   if (hours < 24) return `${hours}h ago`
   return `on ${new Date(iso).toLocaleDateString('en-US')}`
+}
+
+const detectScript = (name: string): ConsoleLine[] => [
+  { id: 'cmd', text: `autoskills detect ./${name}`, tone: 'cmd', delay: 120 },
+  { id: 'pkg', text: 'Reading package.json and config files', tone: 'step', delay: 620 },
+  { id: 'map', text: 'Matching against the curated detection map', tone: 'step', delay: 500 },
+  { id: 'installed', text: 'Cross-checking skills already installed here', tone: 'step', delay: 480 }
+]
+
+const detectResultLines = (result: StackDetection): ConsoleLine[] => {
+  const shown = result.detected.slice(0, 8)
+  const lines: ConsoleLine[] = shown.map((technology, index) => ({ id: `tech-${technology.techId}`, text: technology.techName, tone: 'ok', delay: index === 0 ? 380 : 190, detail: technology.category }))
+  if (!shown.length) lines.push({ id: 'tech-none', text: 'No known technology detected in this folder', tone: 'warn', delay: 380 })
+  if (result.detected.length > shown.length) lines.push({ id: 'tech-more', text: `+${result.detected.length - shown.length} more technologies`, tone: 'dim', delay: 190 })
+  const pending = result.recommendations.filter((recommendation) => !recommendation.installed).length
+  const alreadyInstalled = result.recommendations.length - pending
+  lines.push({ id: 'list', text: 'Matching the MafiaIA Skill List', tone: 'step', delay: 430 })
+  lines.push({ id: 'recs', text: `${pending} skill recommendation${pending === 1 ? '' : 's'} ready${alreadyInstalled ? ` · ${alreadyInstalled} already installed` : ''}`, tone: pending ? 'ok' : 'dim', delay: 460 })
+  return lines
 }
 
 const localRoot = (path: string, projectPath: string) => {
@@ -35,6 +56,20 @@ export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnal
   const installedIds = new Set(inventory.skills.map((entry) => entry.skill.id))
   const applicableGlobals = inventory.globalSkills.filter((skill) => !installedIds.has(skill.id))
 
+  // Detection console: plays while the backend analyzes, prints the real
+  // findings when they land, then hands over to the analysis panel.
+  const [detectConsole, setDetectConsole] = useState<{ lines: ConsoleLine[], done: boolean } | null>(null)
+  const wasAnalyzing = useRef(analyzing)
+  useEffect(() => {
+    if (analyzing && !wasAnalyzing.current) setDetectConsole({ lines: detectScript(inventory.name), done: false })
+    if (!analyzing && wasAnalyzing.current) setDetectConsole((current) => {
+      if (!current) return current
+      const results = analysis ? detectResultLines(analysis.result) : [{ id: 'err', text: 'The analysis could not complete', tone: 'err' as const, delay: 320 }]
+      return { lines: appendConsoleLines(current.lines, results), done: true }
+    })
+    wasAnalyzing.current = analyzing
+  }, [analyzing, analysis, inventory.name])
+
   return <section className="project-detail">
     <button className="text-button back-button" onClick={onBack}>← Projects</button>
     <div className="project-detail-head">
@@ -49,7 +84,9 @@ export function ProjectDetail({ inventory, findings, analysis, analyzing, onAnal
       </div>
     </div>
 
-    {analysis && !analyzing && <AnalysisPanel result={analysis.result} at={analysis.at} onInspect={onInspect} onInstall={onInstallRecommendation} />}
+    {detectConsole
+      ? <div className="console-inline"><ProcessConsole title={`autoskills — ${inventory.name}`} lines={detectConsole.lines} done={detectConsole.done} onSettled={() => setTimeout(() => setDetectConsole(null), 1000)} /></div>
+      : analysis && !analyzing && <AnalysisPanel result={analysis.result} at={analysis.at} onInspect={onInspect} onInstall={onInstallRecommendation} />}
 
     <div className="panel">
       <div className="panel-heading"><h3>Skills installed here</h3><span className="count-chip">{inventory.skills.length}</span></div>

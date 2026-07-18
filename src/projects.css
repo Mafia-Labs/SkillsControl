@@ -67,7 +67,8 @@
 .detail-head-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 
 /* Auto Skills analysis panel */
-.analysis-panel { border-color: #2b2a45; background: linear-gradient(180deg, #14131f, #101216); }
+.analysis-panel { border-color: #2b2a45; background: linear-gradient(180deg, #14131f, #101216); animation: panel-reveal .32s ease; }
+@keyframes panel-reveal { from { opacity: 0; transform: translateY(6px); } }
 .analysis-timestamp { color: #8b8fa0; font-size: 11px; }
 .stack-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 4px; }
 .stack-chip { padding: 4px 11px; border: 1px solid #35335a; border-radius: 999px; color: #cfccff; background: #201f31; font-size: 12px; font-weight: 600; }

@@ -8,7 +8,7 @@ import { Overview } from './components/Overview'
 import { Projects } from './components/Projects'
 import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
-import { ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
+import { appendConsoleLines, ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
 import { SkillMap } from './components/SkillMap'
 import { checkOnlineReputation, chooseProjects, copySkillToProject, detectStack, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, previewDisable, quarantineSkill, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
@@ -80,11 +80,11 @@ export default function App() {
       const [[nextReport, nextArchives]] = await Promise.all([Promise.all([scanSkills(roots), listArchives()]), wait(2100)])
       applyReport(nextReport)
       setArchives(nextArchives)
-      setScanConsole((current) => current ? { lines: [...current.lines, ...scanResultLines(nextReport)], done: true } : current)
+      setScanConsole((current) => current ? { lines: appendConsoleLines(current.lines, scanResultLines(nextReport)), done: true } : current)
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : 'The scan could not complete.'
       setError(message)
-      setScanConsole((current) => current ? { lines: [...current.lines, { id: 'r-error', text: message, tone: 'err', delay: 300 }], done: true } : current)
+      setScanConsole((current) => current ? { lines: appendConsoleLines(current.lines, [{ id: 'r-error', text: message, tone: 'err', delay: 300 }]), done: true } : current)
     } finally {
       setIsScanning(false)
     }
@@ -148,7 +148,8 @@ export default function App() {
     setError(null)
     try {
       const installedIds = [...new Set([...inventory.skills.map((entry) => entry.skill.id), ...inventory.globalSkills.map((skill) => skill.id)])]
-      const result = await detectStack(inventory.path, installedIds)
+      // Give the detection console time to play its sequence even on instant scans.
+      const [result] = await Promise.all([detectStack(inventory.path, installedIds), wait(1900)])
       setAnalyses((current) => ({ ...current, [inventory.path]: { result, at: new Date().toISOString() } }))
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'The project could not be analyzed.')

@@ -14,6 +14,13 @@ export type ConsoleLine = {
 
 const prefixes: Record<ConsoleTone, string> = { cmd: '$', step: '▸', ok: '✓', warn: '⚠', err: '✗', out: '', dim: '' }
 
+// Append lines skipping ids already present, so overlapping runs
+// (e.g. StrictMode double-invoking a mount effect) stay idempotent.
+export const appendConsoleLines = (lines: ConsoleLine[], additions: ConsoleLine[]): ConsoleLine[] => {
+  const existing = new Set(lines.map((line) => line.id))
+  return [...lines, ...additions.filter((line) => !existing.has(line.id))]
+}
+
 /**
  * Terminal-style panel that reveals `lines` one by one on a timed schedule.
  * The parent appends result lines as real data arrives and flips `done`;
