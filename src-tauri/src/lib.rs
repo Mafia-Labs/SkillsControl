@@ -1962,14 +1962,6 @@ fn archive_source(source: &Path) -> Result<ArchiveEntry, String> {
 }
 
 #[tauri::command]
-fn quarantine_skill(installation: Installation) -> Result<ArchiveEntry, String> {
-    disable_skill(vec![installation])?
-        .into_iter()
-        .next()
-        .ok_or("The skill could not be archived.".into())
-}
-
-#[tauri::command]
 fn trust_skill_version(installation: Installation) -> Result<(), String> {
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
     let source = validate_installation(&installation, &home)?;
@@ -2017,25 +2009,6 @@ fn restore_skill(archive_id: String) -> Result<(), String> {
         return Err(format!("Could not update archive history: {error}"));
     }
     Ok(())
-}
-
-#[tauri::command]
-fn copy_skill_to_project(
-    installation: Installation,
-    project_path: String,
-) -> Result<String, String> {
-    let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
-    let source = validate_installation(&installation, &home)?;
-    let (_, _, scan) = analyze_existing_skill(&source)?;
-    if scan
-        .findings
-        .iter()
-        .any(|finding| finding.severity == "critical")
-    {
-        return Err("This skill is blocked because its static scan found critical behavior. Review or quarantine it before copying.".into());
-    }
-    let destination = copy_skill_to_project_path(&installation, &source, &home, &project_path)?;
-    Ok(destination.to_string_lossy().to_string())
 }
 
 fn copy_skill_to_project_path(
@@ -2588,11 +2561,9 @@ pub fn run() {
             scan_skills,
             preview_disable,
             disable_skill,
-            quarantine_skill,
             trust_skill_version,
             restore_skill,
             list_archives,
-            copy_skill_to_project,
             move_skill_to_project,
             open_skill_file,
             reveal_skill_folder,

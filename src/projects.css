@@ -66,8 +66,6 @@
 .path-cell { display: grid; gap: 3px; }
 .path-cell code { overflow: hidden; color: #9aa0ab; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .row-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-.icon-button { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #313641; border-radius: 6px; color: #b6939b; background: #1b1e24; }
-.icon-button:hover { color: #ff9aa2; background: #241a1e; }
 
 .global-list { display: grid; gap: 10px; }
 .global-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 11px 12px; border: 1px solid #21252c; border-radius: 8px; background: #13151a; }

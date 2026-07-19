@@ -97,7 +97,6 @@
     "uninstallGlobal_other": "Uninstall globally ({{count}} copies)",
     "uninstallProject_one": "Uninstall from this project ({{count}} copy)",
     "uninstallProject_other": "Uninstall from this project ({{count}} copies)",
-    "quarantine": "Quarantine",
     "moveToProject": "Move to project",
     "copyToProject": "Copy to project",
     "convertToLocal": "Convert to local",
@@ -227,8 +226,6 @@
     "skillsInstalledHere": "Skills installed here",
     "skillsInstalledAria": "Skills installed in this project",
     "divergentHash": "divergent hash across copies",
-    "quarantineSkillAgent": "Uninstall {{name}} ({{agent}})",
-    "quarantineThisCopy": "Uninstall this copy",
     "noSkillsTitle": "This project has no skills yet",
     "noSkillsDetail": "Install a local skill, or convert a global copy into a local one from the section below.",
     "globalCopies": "Global copies that also apply here",
@@ -365,7 +362,6 @@
     "installSkill": "Install skill"
   },
   "console": {
-    "quarantineCommand": "skillctl uninstall {{name}}",
     "uninstallCommand": "skillctl uninstall {{name}}",
     "creatingBackup": "Creating reversible backup in the local archive",
     "movingCopy": "Moving the copy out of the agent load path",

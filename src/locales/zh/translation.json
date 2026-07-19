@@ -97,7 +97,6 @@
     "uninstallGlobal_other": "从全局卸载（{{count}} 个副本）",
     "uninstallProject_one": "从此项目卸载（{{count}} 个副本）",
     "uninstallProject_other": "从此项目卸载（{{count}} 个副本）",
-    "quarantine": "隔离",
     "moveToProject": "移动到项目",
     "copyToProject": "复制到项目",
     "convertToLocal": "转换为本地",
@@ -227,8 +226,6 @@
     "skillsInstalledHere": "此处已安装的 skills",
     "skillsInstalledAria": "此项目中已安装的 skills",
     "divergentHash": "副本之间的哈希存在差异",
-    "quarantineSkillAgent": "卸载 {{name}}（{{agent}}）",
-    "quarantineThisCopy": "卸载此副本",
     "noSkillsTitle": "此项目还没有 skills",
     "noSkillsDetail": "安装一个本地 skill，或从下方区域将全局副本转换为本地副本。",
     "globalCopies": "同样适用于此处的全局副本",
@@ -365,7 +362,6 @@
     "installSkill": "安装 skill"
   },
   "console": {
-    "quarantineCommand": "skillctl uninstall {{name}}",
     "uninstallCommand": "skillctl uninstall {{name}}",
     "creatingBackup": "正在本地归档中创建可逆备份",
     "movingCopy": "正在将副本移出 agent 加载路径",

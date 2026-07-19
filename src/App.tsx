@@ -95,7 +95,7 @@ export default function App() {
   }
 
   // showConsole plays the animated scan sequence; silent refreshes (after an
-  // install or quarantine) skip it so the app stays snappy.
+  // install or uninstall) skip it so the app stays snappy.
   const refresh = async (roots = workspaceRoots, { showConsole = false } = {}) => {
     setIsScanning(true)
     setError(null)

@@ -33,11 +33,6 @@ export const disableSkill = async (installations: Installation[]): Promise<Archi
   return invoke<ArchiveEntry[]>('disable_skill', { installations })
 }
 
-export const quarantineSkill = async (installation: Installation): Promise<ArchiveEntry> => {
-  if (!isTauri()) return (await disableSkill([installation]))[0]
-  return invoke<ArchiveEntry>('quarantine_skill', { installation })
-}
-
 export const trustSkillVersion = async (installation: Installation): Promise<void> => {
   if (!isTauri()) return
   return invoke<void>('trust_skill_version', { installation })
@@ -51,11 +46,6 @@ export const restoreSkill = async (archive: ArchiveEntry): Promise<void> => {
 export const listArchives = async (): Promise<ArchiveEntry[]> => {
   if (!isTauri()) return []
   return invoke<ArchiveEntry[]>('list_archives')
-}
-
-export const copySkillToProject = async (installation: Installation, projectPath: string): Promise<string> => {
-  if (!isTauri()) return `${projectPath}/${installation.agent === 'codex' ? '.agents/skills' : '.claude/skills'}/${installation.path.replace(/\\/g, '/').split('/').slice(-1)[0]}`
-  return invoke<string>('copy_skill_to_project', { installation, projectPath })
 }
 
 export const moveSkillToProject = async (installation: Installation, projectPath: string, removeSource: boolean): Promise<MoveSkillResult> => {
