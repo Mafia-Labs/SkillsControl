@@ -18,11 +18,12 @@ export const scanSkills = async (projects: string[]): Promise<ScanReport> => {
 export const previewDisable = async (installations: Installation[]): Promise<ChangePreview> => {
   const first = installations[0]
   const name = first?.path.replace(/\\/g, '/').split('/').slice(-1)[0] ?? 'skill'
-  const scopeLabel = installations.every((installation) => installation.scope === 'user') ? 'globally' : 'from this project'
+  const scope: Scope = installations.every((installation) => installation.scope === 'user') ? 'user' : 'project'
   if (!isTauri()) return {
-    title: installations.length > 1 ? `Uninstall ${name} ${scopeLabel} (${installations.length} copies)` : `Uninstall ${name}`,
-    changes: installations.map((installation) => `Move ${installation.path} to Skill Control's local archive`),
-    warnings: [installations.length > 1 ? `All ${installations.length} installations in this scope are removed. A reversible backup is retained for each copy.` : 'Only this exact installation is removed. A reversible backup is retained.']
+    skillName: name,
+    count: installations.length,
+    scope,
+    paths: installations.map((installation) => installation.path)
   }
   return invoke<ChangePreview>('preview_disable', { installations })
 }

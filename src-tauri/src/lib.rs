@@ -160,9 +160,10 @@ struct ScanReport {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ChangePreview {
-    title: String,
-    changes: Vec<String>,
-    warnings: Vec<String>,
+    skill_name: String,
+    count: usize,
+    scope: String,
+    paths: Vec<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -1875,38 +1876,24 @@ fn preview_disable(installations: Vec<Installation>) -> ChangePreview {
         .first()
         .and_then(|installation| Path::new(&installation.path).file_name())
         .and_then(|name| name.to_str())
-        .unwrap_or("skill");
-    let count = installations.len();
+        .unwrap_or("skill")
+        .to_string();
     let scope = if installations
         .iter()
         .all(|installation| installation.scope == "user")
     {
-        "globally"
+        "user"
     } else {
-        "from this project"
+        "project"
     };
     ChangePreview {
-        title: if count > 1 {
-            format!("Uninstall {skill_name} {scope} ({count} copies)")
-        } else {
-            format!("Uninstall {skill_name}")
-        },
-        changes: installations
+        skill_name,
+        count: installations.len(),
+        scope: scope.to_string(),
+        paths: installations
             .iter()
-            .map(|installation| {
-                format!(
-                    "Move {} to Skill Control's local archive",
-                    installation.path
-                )
-            })
+            .map(|installation| installation.path.clone())
             .collect(),
-        warnings: vec![if count > 1 {
-            format!(
-                    "All {count} installations in this scope will be removed. Other scopes remain active, and every copy can be restored later."
-                )
-        } else {
-            "Only this exact installation will be removed. Other project or global copies remain active, and this copy can be restored later.".into()
-        }],
     }
 }
 

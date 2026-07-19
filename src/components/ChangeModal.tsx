@@ -62,7 +62,8 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
   const installPaths = modal.kind !== 'disable' ? previewPaths(effectiveScope, effectiveTarget, skillId, projectPath) : []
   const projectRequired = modal.kind !== 'disable' && effectiveScope === 'project' && !projectPath
   const script = useMemo(() => applying ? applyScript(modal, installPaths) : null, [applying]) // eslint-disable-line react-hooks/exhaustive-deps
-  const title = install ? t('change.install', { name: modal.skill.name }) : listed ? t('change.install', { name: modal.recommendation.skillId }) : localize ? (removeGlobal ? t('change.moveToProject', { name: modal.skill.name }) : t('change.installInProject', { name: modal.skill.name })) : modal.preview.title
+  const uninstallScopeLabel = modal.kind === 'disable' ? t(modal.preview.scope === 'user' ? 'change.uninstallScopeGlobal' : 'change.uninstallScopeProject') : ''
+  const title = install ? t('change.install', { name: modal.skill.name }) : listed ? t('change.install', { name: modal.recommendation.skillId }) : localize ? (removeGlobal ? t('change.moveToProject', { name: modal.skill.name }) : t('change.installInProject', { name: modal.skill.name })) : t('change.uninstallTitle', { name: modal.preview.skillName, scope: uninstallScopeLabel, count: modal.preview.count })
 
   if (applying && script) return <div className="modal-backdrop" role="presentation">
     <section className="change-modal" role="dialog" aria-modal="true" aria-labelledby="change-title">
@@ -123,8 +124,8 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
         <InstallPlan paths={installPaths} multiple={false} />
         {modal.source.scope === 'user' && <label className="checkbox-row" htmlFor="remove-global"><input id="remove-global" type="checkbox" checked={removeGlobal} onChange={(event: ChangeEvent<HTMLInputElement>) => setRemoveGlobal(event.target.checked)} /><span>{t('change.removeGlobalAfterCopy')}</span></label>}
       </> : modal.kind === 'disable' ? <>
-        <div className="change-list"><strong>{t('common.changes')}</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div>
-        <div className="warning-box"><strong>{t('common.headsUp')}</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div>
+        <div className="change-list"><strong>{t('common.changes')}</strong>{modal.preview.paths.map((path) => <span key={path}>• {t('change.uninstallChange', { path })}</span>)}</div>
+        <div className="warning-box"><strong>{t('common.headsUp')}</strong><span>{t('change.uninstallWarning', { count: modal.preview.count })}</span></div>
       </> : null}
       <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>{t('common.cancel')}</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath, removeGlobal)}>{modal.kind === 'disable' ? t('common.uninstall') : localize ? t(removeGlobal ? 'change.moveToProjectAction' : 'common.copyToProject') : listed ? t('change.installVerified') : t('change.installSkill')}</button></div>
     </section>

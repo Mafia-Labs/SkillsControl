@@ -114,9 +114,10 @@ export type ScanReport = {
 }
 
 export type ChangePreview = {
-  title: string
-  changes: string[]
-  warnings: string[]
+  skillName: string
+  count: number
+  scope: Scope
+  paths: string[]
 }
 
 export type ArchiveEntry = {
