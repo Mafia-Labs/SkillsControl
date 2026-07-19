@@ -194,7 +194,7 @@
     "globalCaution": "In jedem Projekt geladen",
     "globalIntro": "Diese befinden sich in ~/.claude/skills oder ~/.agents/skills, sodass jeder Agent sie in jedem Projekt lädt. Behalten Sie nur skills, die wirklich universell sind — verschieben Sie den Rest in das Projekt, das sie tatsächlich verwendet, oder deinstallieren Sie nicht mehr benötigte skills. Das lokale Archiv ermöglicht die Wiederherstellung.",
     "approximateContextCost": "Ungefähre Kontextkosten",
-    "moveToProjectTitle": "In einen Projektordner kopieren, dann die globale Kopie deinstallieren",
+    "moveToProjectTitle": "Die {{agent}}-Installation in einen Projektordner kopieren und anschließend diese globale Kopie deinstallieren",
     "quarantineGlobalAria": "Globale Kopie von {{name}} deinstallieren ({{agent}})",
     "quarantineGlobalTitle": "Diese globale Kopie deinstallieren",
     "noGlobalSkills": "Keine global installierten skills — alles ist auf ein Projekt beschränkt. Dies ist die empfohlene Einrichtung."
@@ -350,6 +350,8 @@
     "projectScopeDescription": "Projektbereich wird empfohlen: Der skill bleibt für Agenten verfügbar, die in diesem Ordner arbeiten, ohne andere Projekte zu beeinflussen.",
     "copyDescription": "Kopiert den vollständigen skill-Ordner in ein Projekt für denselben Agenten. Die Quelle bleibt unberührt, sodass Sie die lokale Kopie prüfen können, bevor Sie die globale deaktivieren.",
     "moveDescription": "Kopiert den vollständigen skill-Ordner in ein Projekt und entfernt die globale Kopie nach erfolgreicher Prüfung des Ziels.",
+    "otherGlobalCopyNote_one": "Dieser skill hat außerdem eine weitere globale Kopie für {{agents}}, die von dieser Verschiebung nicht betroffen ist.",
+    "otherGlobalCopyNote_other": "Dieser skill hat außerdem weitere globale Kopien für {{agents}}, die von dieser Verschiebung nicht betroffen sind.",
     "removeGlobalAfterCopy": "Globale Kopie nach erfolgreichem Kopieren deinstallieren",
     "moveToProjectAction": "In Projekt verschieben",
     "uninstallTitle_one": "{{name}} deinstallieren",

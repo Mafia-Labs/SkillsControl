@@ -8,7 +8,7 @@ type ModalState =
   | { kind: 'disable', installations: Installation[], preview: ChangePreview }
   | { kind: 'install', skill: CatalogSkill }
   | { kind: 'install-listed', recommendation: SkillRecommendation, projectPath: string }
-  | { kind: 'localize', skill: Skill, source: Installation }
+  | { kind: 'localize', skill: Skill, source: Installation, alternateSources: Installation[] }
 
 const applyScript = (modal: ModalState, paths: string[]): ConsoleLine[] => {
   if (modal.kind === 'disable') {
@@ -120,6 +120,7 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
       </> : localize ? <>
         <p>{t(removeGlobal ? 'change.moveDescription' : 'change.copyDescription')}</p>
         <div className="change-list"><strong>{t('common.source')}</strong><span><code>{modal.source.path}</code></span><span>• {t('common.runtime')}: {t(`agents.${modal.source.agent}`)}</span></div>
+        {modal.alternateSources.length > 0 && <div className="warning-box"><span>{t('change.otherGlobalCopyNote', { count: modal.alternateSources.length, agents: [...new Set(modal.alternateSources.map((installation) => t(`agents.${installation.agent}`)))].join(', ') })}</span></div>}
         <ProjectSelector projects={projects} value={projectPath} onChange={setProjectPath} />
         <InstallPlan paths={installPaths} multiple={false} />
         {modal.source.scope === 'user' && <label className="checkbox-row" htmlFor="remove-global"><input id="remove-global" type="checkbox" checked={removeGlobal} onChange={(event: ChangeEvent<HTMLInputElement>) => setRemoveGlobal(event.target.checked)} /><span>{t('change.removeGlobalAfterCopy')}</span></label>}

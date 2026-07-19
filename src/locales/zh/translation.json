@@ -194,7 +194,7 @@
     "globalCaution": "在每个项目中加载",
     "globalIntro": "这些内容位于 ~/.claude/skills 或 ~/.agents/skills，因此每个 agent 都会在每个项目中加载它们。只保留真正通用的 skills：将其余内容移动到实际使用它的项目，或卸载不再需要的内容。本地归档支持撤销。",
     "approximateContextCost": "大致上下文成本",
-    "moveToProjectTitle": "复制到项目文件夹，然后卸载全局副本",
+    "moveToProjectTitle": "将 {{agent}} 的安装复制到项目文件夹，然后卸载该全局副本",
     "quarantineGlobalAria": "卸载 {{name}} 的全局副本（{{agent}}）",
     "quarantineGlobalTitle": "卸载此全局副本",
     "noGlobalSkills": "没有全局安装的 skills — 所有内容都已限定到项目。这是推荐的设置。"
@@ -350,6 +350,8 @@
     "projectScopeDescription": "推荐使用项目作用域：skill 对在此文件夹中工作的 agents 可用，同时不会影响无关项目。",
     "copyDescription": "将完整的 skill 文件夹复制到同一 agent 的项目中。来源保持不变，这样你可以先验证本地副本，再禁用全局副本。",
     "moveDescription": "将完整的 skill 文件夹复制到项目中，并在验证目标后移除全局副本。",
+    "otherGlobalCopyNote_one": "此 skill 还有一份针对 {{agents}} 的全局副本，不会受此次移动影响。",
+    "otherGlobalCopyNote_other": "此 skill 还有其他针对 {{agents}} 的全局副本，不会受此次移动影响。",
     "removeGlobalAfterCopy": "复制成功后卸载全局副本",
     "moveToProjectAction": "移动到项目",
     "uninstallTitle_one": "卸载 {{name}}",

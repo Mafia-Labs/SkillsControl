@@ -54,7 +54,7 @@ export function ProjectDetail({ inventory, childScopes, findings, analysis, anal
   onOpenScope: (path: string) => void
   onInspect: (skillId: string, projectPath?: string) => void
   onUninstall: (installations: Installation[]) => void
-  onLocalize: (skill: Skill, installation: Installation) => void
+  onLocalize: (skill: Skill, installation: Installation, alternateSources?: Installation[]) => void
   onInstallRecommendation: (recommendation: SkillRecommendation) => void
 }) {
   const { t } = useTranslation()
@@ -125,12 +125,13 @@ export function ProjectDetail({ inventory, childScopes, findings, analysis, anal
       <div className="panel-heading"><h3>{t('projectDetail.globalCopies')}</h3><span className="count-chip">{applicableGlobals.length}</span></div>
       <p className="muted-copy">{t('projectDetail.globalCopiesDescription')}</p>
       <div className="global-list">{applicableGlobals.map((skill) => {
-        const source = skill.installations.find((installation) => installation.scope === 'user') ?? skill.installations[0]
+        const userInstallations = skill.installations.filter((installation) => installation.scope === 'user')
+        const source = userInstallations[0] ?? skill.installations[0]
         return <div className="global-row" key={skill.id}>
           <span><button className="skill-name-button" onClick={() => onInspect(skill.id, inventory.path)}><strong>{skill.name}</strong></button><small>{skill.description || t('common.noDescription')}</small></span>
           <div className="row-actions">
             <button className="secondary-button compact" onClick={() => onInspect(skill.id, inventory.path)}>{t('common.inspect')}</button>
-            {source && <button className="primary-button compact" onClick={() => onLocalize(skill, source)}>{t('common.convertToLocal')}</button>}
+            {source && <button className="primary-button compact" title={t('projects.moveToProjectTitle', { agent: t(`agents.${source.agent}`) })} onClick={() => onLocalize(skill, source, userInstallations.filter((installation) => installation.id !== source.id))}>{t('common.convertToLocal')}</button>}
           </div>
         </div>
       })}</div>

@@ -194,7 +194,7 @@
     "globalCaution": "Chargés dans chaque projet",
     "globalIntro": "Ils se trouvent dans ~/.claude/skills ou ~/.agents/skills ; chaque agent les charge donc dans chaque projet. Ne gardez que les skills véritablement universels : déplacez les autres dans le projet qui les utilise ou désinstallez ceux dont vous n'avez plus besoin. L'archive permet de revenir en arrière.",
     "approximateContextCost": "Coût de contexte approximatif",
-    "moveToProjectTitle": "Copier dans un dossier de projet, puis désinstaller la copie globale",
+    "moveToProjectTitle": "Copier l'installation {{agent}} dans un dossier de projet, puis désinstaller cette copie globale",
     "quarantineGlobalAria": "Désinstaller la copie globale de {{name}} ({{agent}})",
     "quarantineGlobalTitle": "Désinstaller cette copie globale",
     "noGlobalSkills": "Aucun skill installé globalement — tout est limité à un projet. C'est la configuration recommandée."
@@ -350,6 +350,8 @@
     "projectScopeDescription": "La portée du projet est recommandée : le skill reste disponible pour les agents qui travaillent dans ce dossier sans affecter les projets voisins.",
     "copyDescription": "Copiez le dossier complet du skill dans un projet pour le même agent. La source reste inchangée afin que vous puissiez vérifier la copie locale avant de désactiver la copie globale.",
     "moveDescription": "Copiez le dossier complet du skill dans un projet, puis retirez la copie globale après vérification de la destination.",
+    "otherGlobalCopyNote_one": "Ce skill a aussi une autre copie globale pour {{agents}}, qui ne sera pas affectée par ce déplacement.",
+    "otherGlobalCopyNote_other": "Ce skill a aussi d'autres copies globales pour {{agents}}, qui ne seront pas affectées par ce déplacement.",
     "removeGlobalAfterCopy": "Désinstaller la copie globale après une copie réussie",
     "moveToProjectAction": "Déplacer vers le projet",
     "uninstallTitle_one": "Désinstaller {{name}}",

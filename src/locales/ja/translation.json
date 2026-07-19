@@ -194,7 +194,7 @@
     "globalCaution": "すべてのプロジェクトで読み込まれます",
     "globalIntro": "これらは ~/.claude/skills または ~/.agents/skills に存在するため、すべてのエージェントがすべてのプロジェクトで読み込みます。真に汎用的な skills のみを保持し、残りは実際に使用するプロジェクトに移動するか、不要なものはアンインストールしてください。ローカルアーカイブから元に戻せます。",
     "approximateContextCost": "おおよそのコンテキストコスト",
-    "moveToProjectTitle": "プロジェクトフォルダにコピーし、グローバルコピーをアンインストール",
+    "moveToProjectTitle": "{{agent}} のインストールをプロジェクトフォルダにコピーし、そのグローバルコピーをアンインストール",
     "quarantineGlobalAria": "{{name}} のグローバルコピーをアンインストール ({{agent}})",
     "quarantineGlobalTitle": "このグローバルコピーをアンインストール",
     "noGlobalSkills": "グローバルにインストールされた skills はありません — すべてがプロジェクトにスコープされています。これが推奨設定です。"
@@ -350,6 +350,8 @@
     "projectScopeDescription": "プロジェクトスコープを推奨: skill はこのフォルダで作業するエージェントにのみ利用可能になり、他のプロジェクトに影響しません。",
     "copyDescription": "完全な skill フォルダを同じエージェントのプロジェクトにコピーします。ソースはそのまま残るため、グローバルコピーを無効化する前にローカルコピーを検証できます。",
     "moveDescription": "完全な skill フォルダをプロジェクトにコピーし、移行先を検証した後でグローバルコピーを削除します。",
+    "otherGlobalCopyNote_one": "この skill には {{agents}} 用のグローバルコピーがもう1つあり、今回の移動には影響しません。",
+    "otherGlobalCopyNote_other": "この skill には {{agents}} 用の他のグローバルコピーもあり、今回の移動には影響しません。",
     "removeGlobalAfterCopy": "コピー成功後にグローバルコピーをアンインストール",
     "moveToProjectAction": "プロジェクトに移動",
     "uninstallTitle_one": "{{name}} をアンインストール",

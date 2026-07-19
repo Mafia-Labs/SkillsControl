@@ -24,7 +24,7 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
   onRemoveFolder: (root: string) => void
   onOpen: (path: string) => void
   onInspect: (skillId: string) => void
-  onLocalize: (skill: Skill, installation: Installation) => void
+  onLocalize: (skill: Skill, installation: Installation, alternateSources?: Installation[]) => void
   onUninstall: (installations: Installation[]) => void
 }) {
   const { t } = useTranslation()
@@ -95,7 +95,7 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
           <span className={`health-pill ${healthClass(skill, findings)}`}>{t(healthLabelKey(skill, findings))}</span>
           <div className="row-actions">
             <button className="secondary-button compact" onClick={() => onInspect(skill.id)}>{t('common.inspect')}</button>
-            {source && <button className="secondary-button compact" title={t('projects.moveToProjectTitle')} onClick={() => onLocalize(skill, source)}>{t('common.moveToProject')}</button>}
+            {source && <button className="secondary-button compact" title={t('projects.moveToProjectTitle', { agent: t(`agents.${source.agent}`) })} onClick={() => onLocalize(skill, source, userInstallations.filter((installation) => installation.id !== source.id))}>{t('common.moveToProject')}</button>}
             {userInstallations.length > 0 && <button className="danger-button compact" aria-label={t('common.uninstallGlobal', { count: userInstallations.length })} title={t('common.uninstallGlobal', { count: userInstallations.length })} onClick={() => onUninstall(userInstallations)}>{t('common.uninstallGlobal', { count: userInstallations.length })}</button>}
           </div>
         </div>

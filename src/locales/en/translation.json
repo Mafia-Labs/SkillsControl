@@ -194,7 +194,7 @@
     "globalCaution": "Loaded in every project",
     "globalIntro": "These live in ~/.claude/skills or ~/.agents/skills, so every agent loads them in every project. Keep only skills that are genuinely universal — move the rest into the project that actually uses them, or uninstall what you no longer need. Uninstalling keeps a reversible archive.",
     "approximateContextCost": "Approximate context cost",
-    "moveToProjectTitle": "Copy into a project folder, then uninstall the global copy",
+    "moveToProjectTitle": "Copy the {{agent}} installation into a project folder, then uninstall that global copy",
     "quarantineGlobalAria": "Uninstall the global copy of {{name}} ({{agent}})",
     "quarantineGlobalTitle": "Uninstall this global copy",
     "noGlobalSkills": "No skills installed globally — everything is scoped to a project. That is the recommended setup."
@@ -350,6 +350,8 @@
     "projectScopeDescription": "Project scope is recommended: the skill stays available to agents working in this folder without affecting unrelated projects.",
     "copyDescription": "Copy the complete skill folder into a project for the same agent. The source stays untouched so you can verify the local copy before disabling the global one.",
     "moveDescription": "Copy the complete skill folder into a project, then remove the global copy after the destination is verified.",
+    "otherGlobalCopyNote_one": "This skill also has another global copy for {{agents}}, which will not be affected by this move.",
+    "otherGlobalCopyNote_other": "This skill also has other global copies for {{agents}}, which will not be affected by this move.",
     "removeGlobalAfterCopy": "Uninstall the global copy after copying successfully",
     "moveToProjectAction": "Move to project",
     "uninstallTitle_one": "Uninstall {{name}}",

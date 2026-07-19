@@ -167,12 +167,12 @@ export default function App() {
     }
   }
 
-  const requestLocalize = (skill: Skill, installation: Installation) => {
+  const requestLocalize = (skill: Skill, installation: Installation, alternateSources: Installation[] = []) => {
     if (!projects.length) {
       setError(t('app.errors.addProjectFirst'))
       return
     }
-    setModal({ kind: 'localize', skill, source: installation })
+    setModal({ kind: 'localize', skill, source: installation, alternateSources })
   }
 
   const inspectSkill = (id: string, projectPath?: string) => {
@@ -375,7 +375,7 @@ export default function App() {
         {!report && <Empty icon="!" title={t('app.errors.noReport')} detail={t('app.errors.runScan')} />}
       </div>}
     </section>
-    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} uninstallInstallations={selectedProjectPath ? selected.installations.filter((installation) => installation.scope === 'project' && installation.projectPath === selectedProjectPath) : selected.installations.filter((installation) => installation.scope === 'user')} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onUninstall={requestDisable} onEdit={(installation) => void editSkill(installation)} onReveal={(installation) => void revealSkill(installation)} onCopyHandoff={(skill, installation, agent) => void copyHandoff(skill, installation, agent)} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
+    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} uninstallInstallations={selectedProjectPath ? selected.installations.filter((installation) => installation.scope === 'project' && installation.projectPath === selectedProjectPath) : selected.installations.filter((installation) => installation.scope === 'user')} onLocalize={(installation) => selected && requestLocalize(selected, installation, selected.installations.filter((candidate) => candidate.scope === 'user' && candidate.id !== installation.id))} onUninstall={requestDisable} onEdit={(installation) => void editSkill(installation)} onReveal={(installation) => void revealSkill(installation)} onCopyHandoff={(skill, installation, agent) => void copyHandoff(skill, installation, agent)} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
     {modal && <ChangeModal modal={modal} projects={projects} applying={applying} onCancel={() => setModal(null)} onApply={applyModal} />}
     {scanConsole && <div className="console-overlay" role="presentation">
       <ProcessConsole title={t('app.scan.title')} lines={scanConsole.lines} done={scanConsole.done} onSettled={() => setTimeout(() => setScanConsole(null), 900)} />
