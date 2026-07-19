@@ -1,0 +1,18 @@
+{
+  "skills": {
+    "nodejs-best-practices": {
+      "commit": "0ec725320d2137253ab2e68e7ba8a072148e741a",
+      "installedAt": "1784394406",
+      "installedBy": "skill-control",
+      "list": "mafiaia-skill-list",
+      "sha256": "8ffc9442db41be2688a77e37ebc5251af8fc2fcbe1155cdade7134be6a377f16",
+      "skillPath": "packages/autoskills/skills-registry/nodejs-best-practices",
+      "source": "midudev/autoskills",
+      "sourceRepository": "midudev/autoskills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/midudev/autoskills",
+      "upstreamRepository": "sickn33/antigravity-awesome-skills"
+    }
+  },
+  "version": 1
+}
