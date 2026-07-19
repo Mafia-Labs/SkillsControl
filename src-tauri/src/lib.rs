@@ -1870,35 +1870,89 @@ fn scan_skills(projects: Vec<String>) -> ScanReport {
 }
 
 #[tauri::command]
-fn preview_disable(installation: Installation) -> ChangePreview {
-    let skill_name = Path::new(&installation.path)
-        .file_name()
+fn preview_disable(installations: Vec<Installation>) -> ChangePreview {
+    let skill_name = installations
+        .first()
+        .and_then(|installation| Path::new(&installation.path).file_name())
         .and_then(|name| name.to_str())
         .unwrap_or("skill");
+    let count = installations.len();
+    let scope = if installations
+        .iter()
+        .all(|installation| installation.scope == "user")
+    {
+        "globally"
+    } else {
+        "from this project"
+    };
     ChangePreview {
-        title: format!("Uninstall {skill_name}"),
-        changes: vec![format!(
-            "Move {} to Skill Control's local archive",
-            installation.path
-        )],
-        warnings: vec![
-            "Only this exact installation will be removed. Other project or global copies remain active, and this copy can be restored later."
-                .into(),
-        ],
+        title: if count > 1 {
+            format!("Uninstall {skill_name} {scope} ({count} copies)")
+        } else {
+            format!("Uninstall {skill_name}")
+        },
+        changes: installations
+            .iter()
+            .map(|installation| {
+                format!(
+                    "Move {} to Skill Control's local archive",
+                    installation.path
+                )
+            })
+            .collect(),
+        warnings: vec![if count > 1 {
+            format!(
+                    "All {count} installations in this scope will be removed. Other scopes remain active, and every copy can be restored later."
+                )
+        } else {
+            "Only this exact installation will be removed. Other project or global copies remain active, and this copy can be restored later.".into()
+        }],
     }
 }
 
 #[tauri::command]
-fn disable_skill(installation: Installation) -> Result<ArchiveEntry, String> {
+fn disable_skill(installations: Vec<Installation>) -> Result<Vec<ArchiveEntry>, String> {
+    if installations.is_empty() {
+        return Err("Choose at least one installation to uninstall.".into());
+    }
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
-    let source = validate_installation(&installation, &home)?;
+    let sources = installations
+        .iter()
+        .map(|installation| validate_installation(installation, &home))
+        .collect::<Result<Vec<_>, _>>()?;
+    let mut entries = Vec::with_capacity(sources.len());
+    for source in sources {
+        match archive_source(&source) {
+            Ok(entry) => entries.push(entry),
+            Err(error) => {
+                for entry in entries.iter().rev() {
+                    let source = PathBuf::from(&entry.source_path);
+                    let archive = PathBuf::from(&entry.archive_path);
+                    let _ = fs::rename(&archive, &source);
+                    let _ = remove_archive_record(&entry.id);
+                }
+                return Err(error);
+            }
+        }
+    }
+    Ok(entries)
+}
+
+fn archive_source(source: &Path) -> Result<ArchiveEntry, String> {
     let skill_name = source
         .file_name()
         .and_then(|name| name.to_str())
         .ok_or("Could not determine the skill name")?
         .to_string();
-    let id = format!("{}-{}", skill_name, unix_millis());
-    let archive = disabled_archive_root()?.join(&id);
+    let root = disabled_archive_root()?;
+    let base_id = format!("{}-{}", skill_name, unix_millis());
+    let mut id = base_id.clone();
+    let mut suffix = 1;
+    while root.join(&id).exists() {
+        id = format!("{base_id}-{suffix}");
+        suffix += 1;
+    }
+    let archive = root.join(&id);
     fs::create_dir_all(
         archive
             .parent()
@@ -1922,7 +1976,10 @@ fn disable_skill(installation: Installation) -> Result<ArchiveEntry, String> {
 
 #[tauri::command]
 fn quarantine_skill(installation: Installation) -> Result<ArchiveEntry, String> {
-    disable_skill(installation)
+    disable_skill(vec![installation])?
+        .into_iter()
+        .next()
+        .ok_or("The skill could not be archived.".into())
 }
 
 #[tauri::command]
@@ -2040,8 +2097,8 @@ fn move_skill_to_project(
     }
     let destination = copy_skill_to_project_path(&installation, &source, &home, &project_path)?;
     let archive = if remove_source {
-        match disable_skill(installation.clone()) {
-            Ok(entry) => Some(entry),
+        match disable_skill(vec![installation.clone()]) {
+            Ok(mut entries) => Some(entries.remove(0)),
             Err(error) => {
                 let _ = fs::remove_dir_all(&destination);
                 return Err(format!("The project copy was created, but the global copy could not be removed: {error}"));

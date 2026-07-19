@@ -15,22 +15,25 @@ export const scanSkills = async (projects: string[]): Promise<ScanReport> => {
   return invoke<ScanReport>('scan_skills', { projects })
 }
 
-export const previewDisable = async (installation: Installation): Promise<ChangePreview> => {
+export const previewDisable = async (installations: Installation[]): Promise<ChangePreview> => {
+  const first = installations[0]
+  const name = first?.path.replace(/\\/g, '/').split('/').slice(-1)[0] ?? 'skill'
+  const scopeLabel = installations.every((installation) => installation.scope === 'user') ? 'globally' : 'from this project'
   if (!isTauri()) return {
-    title: `Uninstall ${installation.path.replace(/\\/g, '/').split('/').slice(-1)[0] ?? 'skill'}`,
-    changes: [`Move ${installation.path} to Skill Control's local archive`],
-    warnings: ['Only this exact installation is removed. A reversible backup is retained.']
+    title: installations.length > 1 ? `Uninstall ${name} ${scopeLabel} (${installations.length} copies)` : `Uninstall ${name}`,
+    changes: installations.map((installation) => `Move ${installation.path} to Skill Control's local archive`),
+    warnings: [installations.length > 1 ? `All ${installations.length} installations in this scope are removed. A reversible backup is retained for each copy.` : 'Only this exact installation is removed. A reversible backup is retained.']
   }
-  return invoke<ChangePreview>('preview_disable', { installation })
+  return invoke<ChangePreview>('preview_disable', { installations })
 }
 
-export const disableSkill = async (installation: Installation): Promise<ArchiveEntry> => {
-  if (!isTauri()) return { id: 'demo-archive', skillName: installation.path.replace(/\\/g, '/').split('/').slice(-1)[0] ?? 'skill', sourcePath: installation.path, archivePath: '~/.skill-control/disabled/demo', createdAt: new Date().toISOString() }
-  return invoke<ArchiveEntry>('disable_skill', { installation })
+export const disableSkill = async (installations: Installation[]): Promise<ArchiveEntry[]> => {
+  if (!isTauri()) return installations.map((installation, index) => ({ id: `demo-archive-${index}`, skillName: installation.path.replace(/\\/g, '/').split('/').slice(-1)[0] ?? 'skill', sourcePath: installation.path, archivePath: `~/.skill-control/disabled/demo-${index}`, createdAt: new Date().toISOString() }))
+  return invoke<ArchiveEntry[]>('disable_skill', { installations })
 }
 
 export const quarantineSkill = async (installation: Installation): Promise<ArchiveEntry> => {
-  if (!isTauri()) return disableSkill(installation)
+  if (!isTauri()) return (await disableSkill([installation]))[0]
   return invoke<ArchiveEntry>('quarantine_skill', { installation })
 }
 

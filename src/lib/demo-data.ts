@@ -15,6 +15,7 @@ export const demoReport: ScanReport = {
       id: 'frontend-design', name: 'frontend-design', description: 'Build polished, accessible interfaces with a coherent visual system.', version: '2.4.0', source: 'Alex Picks', provenance: { sourceRepository: 'Mafia-Labs/SkillsControl', contentHashSha256: 'a82f3d9', installedAt: 'demo', reviewedHash: 'a82f3d9', reviewedAt: 'demo' }, capabilities: ['Read project files'], securityStatus: 'Reviewed', contextTokens: 2430, contentHashSha256: 'a82f3d9', files: ['SKILL.md', 'references/accessibility.md'], executableScripts: [], invokedScripts: [],
       installations: [
         { id: 'fd-codex-user', path: '~/.agents/skills/frontend-design', scope: 'user', agent: 'codex', enabled: true, modified: true, contentHashSha256: 'a82f3d9' },
+        { id: 'fd-claude-user', path: '~/.claude/skills/frontend-design', scope: 'user', agent: 'claude', enabled: true, modified: true, contentHashSha256: 'a82f3d9' },
         { id: 'fd-codex-project', path: '/workspace/demo/.agents/skills/frontend-design', scope: 'project', agent: 'codex', projectPath: '/workspace/demo', enabled: true, modified: true, contentHashSha256: 'project-a82f' },
         { id: 'fd-claude-project', path: '/workspace/demo/.claude/skills/frontend-design', scope: 'project', agent: 'claude', projectPath: '/workspace/demo', enabled: true, modified: true, contentHashSha256: 'project-a82f' }
       ]

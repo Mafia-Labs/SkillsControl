@@ -14,7 +14,7 @@ const aggregateHealth = (inventory: ProjectInventory, findings: Finding[]): Proj
   return { key: 'health.healthy', tone: 'info' }
 }
 
-export function Projects({ inventories, findings, globalSkills, workspaceRoots, isDemo, onAddFolder, onRemoveFolder, onOpen, onInspect, onLocalize, onQuarantine }: {
+export function Projects({ inventories, findings, globalSkills, workspaceRoots, isDemo, onAddFolder, onRemoveFolder, onOpen, onInspect, onLocalize, onUninstall }: {
   inventories: ProjectInventory[]
   findings: Finding[]
   globalSkills: Skill[]
@@ -25,7 +25,7 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
   onOpen: (path: string) => void
   onInspect: (skillId: string) => void
   onLocalize: (skill: Skill, installation: Installation) => void
-  onQuarantine: (installation: Installation) => void
+  onUninstall: (installations: Installation[]) => void
 }) {
   const { t } = useTranslation()
   const rootInventories = inventories.filter((inventory) => !inventory.parentPath || !inventories.some((candidate) => candidate.path === inventory.parentPath))
@@ -96,7 +96,7 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
           <div className="row-actions">
             <button className="secondary-button compact" onClick={() => onInspect(skill.id)}>{t('common.inspect')}</button>
             {source && <button className="secondary-button compact" title={t('projects.moveToProjectTitle')} onClick={() => onLocalize(skill, source)}>{t('common.moveToProject')}</button>}
-            {userInstallations.map((installation) => <button className="danger-button compact" key={installation.id} aria-label={t('projects.quarantineGlobalAria', { name: skill.name, agent: t(`agents.${installation.agent}`) })} title={t('projects.quarantineGlobalTitle')} onClick={() => onQuarantine(installation)}>{t('common.uninstall')}</button>)}
+            {userInstallations.length > 0 && <button className="danger-button compact" aria-label={t('common.uninstallGlobal', { count: userInstallations.length })} title={t('common.uninstallGlobal', { count: userInstallations.length })} onClick={() => onUninstall(userInstallations)}>{t('common.uninstallGlobal', { count: userInstallations.length })}</button>}
           </div>
         </div>
       })}</div> : <p className="global-empty-copy">{t('projects.noGlobalSkills')}</p>}

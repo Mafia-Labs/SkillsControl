@@ -43,7 +43,7 @@ const localRoot = (path: string, projectPath: string) => {
   return cut >= 0 ? normalized.slice(cut + 1) : normalized.replace(`${projectPath.replace(/\\/g, '/')}/`, '')
 }
 
-export function ProjectDetail({ inventory, childScopes, findings, analysis, analyzing, onAnalyze, onBack, onOpenScope, onInspect, onQuarantine, onLocalize, onInstallRecommendation }: {
+export function ProjectDetail({ inventory, childScopes, findings, analysis, analyzing, onAnalyze, onBack, onOpenScope, onInspect, onUninstall, onLocalize, onInstallRecommendation }: {
   inventory: ProjectInventory
   childScopes: ProjectInventory[]
   findings: Finding[]
@@ -52,8 +52,8 @@ export function ProjectDetail({ inventory, childScopes, findings, analysis, anal
   onAnalyze: () => void
   onBack: () => void
   onOpenScope: (path: string) => void
-  onInspect: (skillId: string) => void
-  onQuarantine: (installation: Installation) => void
+  onInspect: (skillId: string, projectPath?: string) => void
+  onUninstall: (installations: Installation[]) => void
   onLocalize: (skill: Skill, installation: Installation) => void
   onInstallRecommendation: (recommendation: SkillRecommendation) => void
 }) {
@@ -99,7 +99,7 @@ export function ProjectDetail({ inventory, childScopes, findings, analysis, anal
 
     {detectConsole
       ? <div className="console-inline"><ProcessConsole title={t('projectDetail.consoleTitle', { name: inventory.name })} lines={detectConsole.lines} done={detectConsole.done} onSettled={() => setTimeout(() => setDetectConsole(null), 1000)} /></div>
-      : analysis && !analyzing && <AnalysisPanel result={analysis.result} at={analysis.at} onInspect={onInspect} onInstall={onInstallRecommendation} />}
+      : analysis && !analyzing && <AnalysisPanel result={analysis.result} at={analysis.at} projectPath={inventory.path} onInspect={onInspect} onInstall={onInstallRecommendation} />}
 
     <div className="panel">
       <div className="panel-heading"><h3>{t('projectDetail.skillsInstalledHere')}</h3><span className="count-chip">{inventory.skills.length}</span></div>
@@ -108,13 +108,13 @@ export function ProjectDetail({ inventory, childScopes, findings, analysis, anal
         {inventory.skills.map((entry) => {
           const divergent = new Set(entry.skill.installations.map((installation) => installation.contentHashSha256)).size > 1
           return <div className="skill-table-row" role="row" key={entry.skill.id}>
-            <span className="skill-cell"><button className="skill-name-button" onClick={() => onInspect(entry.skill.id)}><strong>{entry.skill.name}</strong></button>{divergent && <small className="divergent-flag">{t('projectDetail.divergentHash')}</small>}</span>
+            <span className="skill-cell"><button className="skill-name-button" onClick={() => onInspect(entry.skill.id, inventory.path)}><strong>{entry.skill.name}</strong></button>{divergent && <small className="divergent-flag">{t('projectDetail.divergentHash')}</small>}</span>
             <span className="agent-cell">{[...new Set(entry.installations.map((installation) => installation.agent))].map((agent) => <span className="agent-badge sm" key={agent}>{t(`agents.${agent}`)}</span>)}</span>
             <span className="path-cell">{entry.installations.map((installation) => <code key={installation.id} title={installation.path}>{localRoot(installation.path, inventory.path)}</code>)}</span>
             <span className={`health-pill ${healthClass(entry.skill, findings)}`}>{t(healthLabelKey(entry.skill, findings))}</span>
             <span className="row-actions">
-              <button className="secondary-button compact" onClick={() => onInspect(entry.skill.id)}>{t('common.inspect')}</button>
-              {entry.installations.map((installation) => <button className="danger-button compact" key={installation.id} aria-label={t('projectDetail.quarantineSkillAgent', { name: entry.skill.name, agent: t(`agents.${installation.agent}`) })} title={t('projectDetail.quarantineThisCopy')} onClick={() => onQuarantine(installation)}>{t('common.uninstall')}</button>)}
+              <button className="secondary-button compact" onClick={() => onInspect(entry.skill.id, inventory.path)}>{t('common.inspect')}</button>
+              {entry.installations.length > 0 && <button className="danger-button compact" aria-label={t('common.uninstallProject', { count: entry.installations.length })} title={t('common.uninstallProject', { count: entry.installations.length })} onClick={() => onUninstall(entry.installations)}>{t('common.uninstallProject', { count: entry.installations.length })}</button>}
             </span>
           </div>
         })}
@@ -127,9 +127,9 @@ export function ProjectDetail({ inventory, childScopes, findings, analysis, anal
       <div className="global-list">{applicableGlobals.map((skill) => {
         const source = skill.installations.find((installation) => installation.scope === 'user') ?? skill.installations[0]
         return <div className="global-row" key={skill.id}>
-          <span><button className="skill-name-button" onClick={() => onInspect(skill.id)}><strong>{skill.name}</strong></button><small>{skill.description || t('common.noDescription')}</small></span>
+          <span><button className="skill-name-button" onClick={() => onInspect(skill.id, inventory.path)}><strong>{skill.name}</strong></button><small>{skill.description || t('common.noDescription')}</small></span>
           <div className="row-actions">
-            <button className="secondary-button compact" onClick={() => onInspect(skill.id)}>{t('common.inspect')}</button>
+            <button className="secondary-button compact" onClick={() => onInspect(skill.id, inventory.path)}>{t('common.inspect')}</button>
             {source && <button className="primary-button compact" onClick={() => onLocalize(skill, source)}>{t('common.convertToLocal')}</button>}
           </div>
         </div>
@@ -138,10 +138,11 @@ export function ProjectDetail({ inventory, childScopes, findings, analysis, anal
   </section>
 }
 
-function AnalysisPanel({ result, at, onInspect, onInstall }: {
+function AnalysisPanel({ result, at, projectPath, onInspect, onInstall }: {
   result: StackDetection
   at: string
-  onInspect: (skillId: string) => void
+  projectPath: string
+  onInspect: (skillId: string, projectPath?: string) => void
   onInstall: (recommendation: SkillRecommendation) => void
 }) {
   const { t } = useTranslation()
@@ -165,7 +166,7 @@ function AnalysisPanel({ result, at, onInspect, onInstall }: {
       </div>)}</div>
     </>}
 
-    {installed.length > 0 && <div className="recommend-installed">{installed.map((recommendation) => <button className="installed-chip" key={recommendation.skillId} onClick={() => onInspect(recommendation.skillId)} title={t('projectDetail.alreadyInstalledInspect')}>✓ {recommendation.skillId}</button>)}</div>}
+    {installed.length > 0 && <div className="recommend-installed">{installed.map((recommendation) => <button className="installed-chip" key={recommendation.skillId} onClick={() => onInspect(recommendation.skillId, projectPath)} title={t('projectDetail.alreadyInstalledInspect')}>✓ {recommendation.skillId}</button>)}</div>}
 
     {result.warnings.length > 0 && <div className="analysis-warnings">{result.warnings.map((warning) => <span key={warning}>⚠ {warning}</span>)}</div>}
   </div>

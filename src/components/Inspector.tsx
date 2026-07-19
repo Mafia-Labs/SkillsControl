@@ -4,12 +4,13 @@ import { formatTokenCount, projectName, securityStatusClass } from '../lib/skill
 import type { Agent, ExternalReputation, Finding, Installation, Skill } from '../lib/types'
 import { InspectorSection } from './shared'
 
-export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable, onEdit, onReveal, onCopyHandoff, onTrust, onCheckReputation }: {
+export function Inspector({ skill, findings, canLocalize, uninstallInstallations, onLocalize, onUninstall, onEdit, onReveal, onCopyHandoff, onTrust, onCheckReputation }: {
   skill: Skill
   findings: Finding[]
   canLocalize: boolean
+  uninstallInstallations: Installation[]
   onLocalize: (installation: Installation) => void
-  onDisable: (installation: Installation) => void
+  onUninstall: (installations: Installation[]) => void
   onEdit: (installation: Installation) => void
   onReveal: (installation: Installation) => void
   onCopyHandoff: (skill: Skill, installation: Installation, agent: Agent) => void
@@ -20,6 +21,9 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
   const [showFiles, setShowFiles] = useState(false)
   const [showChanges, setShowChanges] = useState(false)
   const preferredSource = skill.installations.find((installation) => installation.scope === 'user') ?? skill.installations[0]
+  const uninstallLabel = uninstallInstallations.some((installation) => installation.scope === 'user')
+    ? t('common.uninstallGlobal', { count: uninstallInstallations.length })
+    : t('common.uninstallProject', { count: uninstallInstallations.length })
   const hashes = [...new Set(skill.installations.map((installation) => installation.contentHashSha256))]
   const exactVersionReviewed = skill.provenance.reviewedHash === skill.contentHashSha256
   const canTrust = Boolean(preferredSource) && skill.securityStatus !== 'Blocked' && !exactVersionReviewed
@@ -45,13 +49,13 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
       <div className="security-actions">
         <button className="secondary-button compact" onClick={() => setShowFiles((current) => !current)}>{showFiles ? t('inspector.hideFiles') : t('inspector.reviewFiles')}</button>
         {hashes.length > 1 && <button className="secondary-button compact" onClick={() => setShowChanges((current) => !current)}>{showChanges ? t('inspector.hideChanges') : t('inspector.viewChanges')}</button>}
-        {preferredSource && <button className="danger-button compact" onClick={() => onDisable(preferredSource)}>{t('common.uninstall')}</button>}
+        {uninstallInstallations.length > 0 && <button className="danger-button compact" onClick={() => onUninstall(uninstallInstallations)}>{uninstallLabel}</button>}
         {preferredSource && <button className="secondary-button compact" disabled={!canTrust} title={skill.securityStatus === 'Blocked' ? t('inspector.blockedCannotTrust') : undefined} onClick={() => onTrust(preferredSource)}>{t('inspector.trustVersion')}</button>}
       </div>
       {showChanges && <div className="change-hash-list"><strong>{t('inspector.hashDivergence')}</strong>{skill.installations.map((installation) => <span key={installation.id}><code>{installation.contentHashSha256}</code> · {installation.path}</span>)}</div>}
     </InspectorSection>
 
-    <InspectorSection title={t('inspector.installedIn')}>{skill.installations.map((installation) => <div className="location" key={installation.id}><span><i className={`scope-dot ${installation.scope}`} />{installation.scope === 'project' ? `${projectName(installation.projectPath)} · ${t('inspector.projectScope')}` : t('common.global')} · {t(`agents.${installation.agent}`)}{installation.modified ? ` · ${t('inspector.differs')}` : ''}</span><code title={installation.path}>{installation.path}</code><div className="location-actions"><button className="secondary-button compact" onClick={() => onEdit(installation)}>{t('inspector.editSkill')}</button><button className="secondary-button compact" onClick={() => onReveal(installation)}>{t('inspector.revealFolder')}</button><button className="secondary-button compact" onClick={() => onCopyHandoff(skill, installation, installation.agent)}>{t('inspector.copyHandoff', { agent: t(`agents.${installation.agent}`) })}</button><button className="danger-button compact" aria-label={t('inspector.quarantineFrom', { name: skill.name, path: installation.path })} onClick={() => onDisable(installation)}>{t('common.uninstall')}</button></div></div>)}</InspectorSection>
+    <InspectorSection title={t('inspector.installedIn')}>{skill.installations.map((installation) => <div className="location" key={installation.id}><span><i className={`scope-dot ${installation.scope}`} />{installation.scope === 'project' ? `${projectName(installation.projectPath)} · ${t('inspector.projectScope')}` : t('common.global')} · {t(`agents.${installation.agent}`)}{installation.modified ? ` · ${t('inspector.differs')}` : ''}</span><code title={installation.path}>{installation.path}</code><div className="location-actions"><button className="secondary-button compact" onClick={() => onEdit(installation)}>{t('inspector.editSkill')}</button><button className="secondary-button compact" onClick={() => onReveal(installation)}>{t('inspector.revealFolder')}</button><button className="secondary-button compact" onClick={() => onCopyHandoff(skill, installation, installation.agent)}>{t('inspector.copyHandoff', { agent: t(`agents.${installation.agent}`) })}</button></div></div>)}</InspectorSection>
     <InspectorSection title={t('inspector.contextFootprint')}><div className="token-number">{formatTokenCount(skill.contextTokens)} <small>{t('inspector.estimatedTokens')}</small></div><p className="muted-copy">{t('inspector.contextDescription')}</p></InspectorSection>
     {showFiles && <InspectorSection title={t('inspector.files')}><ul className="file-list">{skill.files.map((file) => <li key={file}><span>⌁</span>{file}{skill.executableScripts.includes(file) && <b>{t('inspector.executable')}</b>}{skill.invokedScripts.includes(file) && <b>{t('inspector.invoked')}</b>}</li>)}</ul></InspectorSection>}
     <InspectorSection title={t('inspector.localFindings')}>{findings.length ? <ul className="finding-list">{findings.map((finding) => <li key={finding.id}><span className={`severity ${finding.severity}`} /><div><strong>{finding.title}</strong><small>{finding.detail}</small></div></li>)}</ul> : <p className="healthy-copy">{t('health.noFindingsExactCopy')}</p>}</InspectorSection>

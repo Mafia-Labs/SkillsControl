@@ -5,16 +5,16 @@ import type { Agent, CatalogSkill, ChangePreview, Installation, InstallTarget, P
 import { ProcessConsole, type ConsoleLine } from './ProcessConsole'
 
 type ModalState =
-  | { kind: 'disable', installation: Installation, preview: ChangePreview }
+  | { kind: 'disable', installations: Installation[], preview: ChangePreview }
   | { kind: 'install', skill: CatalogSkill }
   | { kind: 'install-listed', recommendation: SkillRecommendation, projectPath: string }
   | { kind: 'localize', skill: Skill, source: Installation }
 
 const applyScript = (modal: ModalState, paths: string[]): ConsoleLine[] => {
   if (modal.kind === 'disable') {
-    const name = modal.installation.path.replace(/\\/g, '/').split('/').filter(Boolean).slice(-1)[0] ?? 'skill'
+    const name = modal.installations[0]?.path.replace(/\\/g, '/').split('/').filter(Boolean).slice(-1)[0] ?? 'skill'
     return [
-      { id: 'cmd', text: i18n.t('console.uninstallCommand', { name }), tone: 'cmd', delay: 120 },
+      { id: 'cmd', text: i18n.t('console.uninstallCommand', { name, count: modal.installations.length }), tone: 'cmd', delay: 120 },
       { id: 'backup', text: i18n.t('console.creatingBackup'), tone: 'step', delay: 620 },
       { id: 'move', text: i18n.t('console.movingCopy'), tone: 'step', delay: 560 },
       { id: 'verify', text: i18n.t('console.confirmingClean'), tone: 'step', delay: 540 }

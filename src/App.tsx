@@ -83,7 +83,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [workspaceRoots, setWorkspaceRoots] = useState(loadWorkspaceRoots)
   const [archives, setArchives] = useState<ArchiveEntry[]>([])
-  const [recentArchive, setRecentArchive] = useState<ArchiveEntry | null>(null)
+  const [recentArchives, setRecentArchives] = useState<ArchiveEntry[]>([])
   const [analyses, setAnalyses] = useState<Record<string, { result: StackDetection, at: string }>>({})
   const [analyzingPath, setAnalyzingPath] = useState<string | null>(null)
   const [scanConsole, setScanConsole] = useState<{ lines: ConsoleLine[], done: boolean } | null>(null)
@@ -157,9 +157,11 @@ export default function App() {
   const projects = report?.projects.length ? report.projects : workspaceRoots.map(fallbackProject)
   const isDemo = isDemoMode()
 
-  const requestDisable = async (installation: Installation) => {
+  const requestDisable = async (installations: Installation[]) => {
+    const uniqueInstallations = [...new Map(installations.map((installation) => [installation.id, installation])).values()]
+    if (!uniqueInstallations.length) return
     try {
-      setModal({ kind: 'disable', installation, preview: await previewDisable(installation) })
+      setModal({ kind: 'disable', installations: uniqueInstallations, preview: await previewDisable(uniqueInstallations) })
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : t('app.errors.couldNotPrepareChange'))
     }
@@ -173,8 +175,9 @@ export default function App() {
     setModal({ kind: 'localize', skill, source: installation })
   }
 
-  const inspectSkill = (id: string) => {
+  const inspectSkill = (id: string, projectPath?: string) => {
     setSelectedId(id)
+    setSelectedProjectPath(projectPath ?? null)
     setView('map')
   }
 
@@ -233,14 +236,14 @@ export default function App() {
     const minWait = wait(3000)
     try {
       if (modal.kind === 'disable') {
-        const archive = await disableSkill(modal.installation)
+        const archives = await disableSkill(modal.installations)
         await minWait
-        setRecentArchive(archive)
-        setNotice(t('app.notices.uninstalled'))
+        setRecentArchives(archives)
+        setNotice(t('app.notices.uninstalled', { count: archives.length }))
       } else if (modal.kind === 'localize') {
         const result = await moveSkillToProject(modal.source, projectPath ?? '', removeGlobal)
         await minWait
-        setRecentArchive(result.archive ?? null)
+        setRecentArchives(result.archive ? [result.archive] : [])
         setNotice(t(result.archive ? 'app.notices.localizeMoved' : 'app.notices.localizeCopied', { name: modal.skill.name, destination: result.destination }))
       } else if (modal.kind === 'install-listed') {
         const installedPaths = await installListedSkill(modal.recommendation.skillId, scope, target, projectPath)
@@ -335,7 +338,18 @@ export default function App() {
   const restoreArchive = async (archive: ArchiveEntry) => {
     try {
       await restoreSkill(archive)
-      setRecentArchive(null)
+      setRecentArchives([])
+      setNotice(t('app.notices.skillRestored'))
+      await refresh()
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : t('app.errors.skillCouldNotBeRestored'))
+    }
+  }
+
+  const restoreRecentArchives = async () => {
+    try {
+      for (const archive of recentArchives) await restoreSkill(archive)
+      setRecentArchives([])
       setNotice(t('app.notices.skillRestored'))
       await refresh()
     } catch (reason) {
@@ -349,11 +363,11 @@ export default function App() {
       <TopBar view={view} search={search} onSearch={setSearch} onScan={() => void refresh(undefined, { showConsole: true })} onAddProject={() => void addWorkspaceRoots()} projectCount={report?.projects.length ?? workspaceRoots.length} isScanning={isScanning} />
       {isDemo && <div className="demo-banner" role="status"><span>◒</span>{t('app.demoBanner')}</div>}
       {error && <Banner tone="error" message={error} onDismiss={() => setError(null)} />}
-      {notice && <Banner tone="success" message={notice} action={recentArchive ? { label: t('common.undo'), onClick: () => void restoreArchive(recentArchive) } : undefined} onDismiss={() => setNotice(null)} />}
+      {notice && <Banner tone="success" message={notice} action={recentArchives.length > 0 ? { label: t('common.undo'), onClick: () => void restoreRecentArchives() } : undefined} onDismiss={() => setNotice(null)} />}
       {isScanning && !report ? <Loading /> : <div className="page-content">
         {view === 'projects' && (selectedInventory
-          ? <ProjectDetail inventory={selectedInventory} childScopes={selectedChildScopes} findings={report?.findings ?? []} analysis={analyses[selectedInventory.path] ?? null} analyzing={analyzingPath === selectedInventory.path} onAnalyze={() => void analyzeProject(selectedInventory)} onBack={() => setSelectedProjectPath(null)} onOpenScope={setSelectedProjectPath} onInspect={inspectSkill} onQuarantine={(installation) => void requestDisable(installation)} onLocalize={requestLocalize} onInstallRecommendation={(recommendation) => setModal({ kind: 'install-listed', recommendation, projectPath: selectedInventory.path })} />
-          : <Projects inventories={filteredInventories} findings={report?.findings ?? []} globalSkills={filteredGlobalSkills} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} onInspect={inspectSkill} onLocalize={requestLocalize} onQuarantine={(installation) => void requestDisable(installation)} />)}
+          ? <ProjectDetail inventory={selectedInventory} childScopes={selectedChildScopes} findings={report?.findings ?? []} analysis={analyses[selectedInventory.path] ?? null} analyzing={analyzingPath === selectedInventory.path} onAnalyze={() => void analyzeProject(selectedInventory)} onBack={() => setSelectedProjectPath(null)} onOpenScope={setSelectedProjectPath} onInspect={(id, projectPath) => inspectSkill(id, projectPath ?? selectedInventory.path)} onUninstall={(installations) => void requestDisable(installations)} onLocalize={requestLocalize} onInstallRecommendation={(recommendation) => setModal({ kind: 'install-listed', recommendation, projectPath: selectedInventory.path })} />
+          : <Projects inventories={filteredInventories} findings={report?.findings ?? []} globalSkills={filteredGlobalSkills} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} onInspect={inspectSkill} onLocalize={requestLocalize} onUninstall={(installations) => void requestDisable(installations)} />)}
         {view === 'overview' && report && <Overview report={report} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} />}
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} projects={projects} selectedId={selectedId} onSelect={setSelectedId} />}
         {view === 'discover' && <Discover query={search} onInstall={(skill) => setModal({ kind: 'install', skill })} />}
@@ -361,7 +375,7 @@ export default function App() {
         {!report && <Empty icon="!" title={t('app.errors.noReport')} detail={t('app.errors.runScan')} />}
       </div>}
     </section>
-    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onDisable={requestDisable} onEdit={(installation) => void editSkill(installation)} onReveal={(installation) => void revealSkill(installation)} onCopyHandoff={(skill, installation, agent) => void copyHandoff(skill, installation, agent)} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
+    {view === 'map' && selected && report && <Inspector skill={selected} findings={getSkillHealth(selected, report.findings)} canLocalize={projects.length > 0} uninstallInstallations={selectedProjectPath ? selected.installations.filter((installation) => installation.scope === 'project' && installation.projectPath === selectedProjectPath) : selected.installations.filter((installation) => installation.scope === 'user')} onLocalize={(installation) => selected && requestLocalize(selected, installation)} onUninstall={requestDisable} onEdit={(installation) => void editSkill(installation)} onReveal={(installation) => void revealSkill(installation)} onCopyHandoff={(skill, installation, agent) => void copyHandoff(skill, installation, agent)} onTrust={(installation) => void trustExactVersion(installation)} onCheckReputation={() => void checkReputation()} />}
     {modal && <ChangeModal modal={modal} projects={projects} applying={applying} onCancel={() => setModal(null)} onApply={applyModal} />}
     {scanConsole && <div className="console-overlay" role="presentation">
       <ProcessConsole title={t('app.scan.title')} lines={scanConsole.lines} done={scanConsole.done} onSettled={() => setTimeout(() => setScanConsole(null), 900)} />
