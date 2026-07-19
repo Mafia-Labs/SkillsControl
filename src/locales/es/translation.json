@@ -40,7 +40,6 @@
       "localizeCopied": "{{name}} copiado en {{destination}}. Verifícalo y desinstala la copia global si ya no la necesitas; el archivo local permite deshacerlo.",
       "localizeMoved": "{{name}} movido a {{destination}} y la copia global se ha conservado en el archivo local.",
       "installVerified": "{{skillId}} instalado y verificado contra la lista curada{{copiesSuffix}}.",
-      "installed": "{{name}} instalado para {{coverage}} en {{location}}{{copiesSuffix}}.",
       "trusted": "Este hash de contenido exacto ahora es de confianza localmente. Una copia modificada ya no heredará esa confianza.",
       "reputationChecked": "Reputación online comprobada para {{name}}. El resultado solo cubre el SHA-256 coincidente.",
       "foldersAlreadyAdded": "Esas carpetas ya forman parte de este workspace.",
@@ -118,7 +117,6 @@
     "projectOrFolderRecommended": "Proyecto o carpeta · recomendado",
     "globalEveryProject": "Global · todos los proyectos",
     "allCompatibleAgentsRecommended": "Todos los agentes compatibles · recomendado",
-    "allCompatibleAgents": "todos los agentes compatibles",
     "localCopy": "la copia local",
     "undo": "Deshacer",
     "runtime": "Runtime",
@@ -261,11 +259,12 @@
     "curatedLibrary": "Biblioteca curada",
     "title": "Packs de skills pequeños y revisados.",
     "description": "Cada entrada tiene un origen conocido, un propósito explícito y una huella de contexto limitada. Sin ruido de marketplace abierto.",
-    "tokens": "tokens",
     "noMatch": "Ningún skill curado coincide",
     "tryDifferent": "Prueba otro término o borra la búsqueda.",
     "trustTitle": "Cómo se mantiene fiable la biblioteca",
-    "trustDescription": "Cada skill se revisa por su estructura, ámbito, scripts y compatibilidad documentada antes de aparecer aquí."
+    "trustDescription": "Cada skill se revisa por su estructura, ámbito, scripts y compatibilidad documentada antes de aparecer aquí.",
+    "loadingCatalog": "Cargando la lista curada de skills…",
+    "loadError": "No se pudo cargar la lista curada"
   },
   "healthPage": {
     "securityCheck": "Comprobación de seguridad",
@@ -344,7 +343,6 @@
     "verifiedSource": "Origen verificado",
     "pinnedCommit": "• De la lista curada, fijado a un commit exacto de",
     "verifiedBeforeWrite": "• El contenido se descarga y su SHA-256 se verifica antes de escribir nada",
-    "projectScopeDescription": "Se recomienda el ámbito de proyecto: el skill queda disponible para los agentes que trabajan en esta carpeta sin afectar a proyectos no relacionados.",
     "copyDescription": "Copia la carpeta completa del skill a un proyecto para el mismo agente. El origen permanece intacto para que puedas verificar la copia local antes de desactivar la global.",
     "moveDescription": "Copia la carpeta completa del skill a un proyecto y retira la copia global cuando el destino se haya verificado.",
     "otherGlobalCopyNote_one": "Este skill también tiene otra copia global para {{agents}}, que no se verá afectada por este movimiento.",
@@ -358,8 +356,7 @@
     "uninstallChange": "Mover {{path}} al archivo local de Skill Control",
     "uninstallWarning_one": "Solo se elimina esta instalación exacta. Se conserva una copia de seguridad reversible.",
     "uninstallWarning_other": "Se eliminan las {{count}} instalaciones de este ámbito. Se conserva una copia de seguridad reversible de cada una.",
-    "installVerified": "Instalar skill verificado",
-    "installSkill": "Instalar skill"
+    "installVerified": "Instalar skill verificado"
   },
   "console": {
     "uninstallCommand": "skillctl uninstall {{name}}",
@@ -372,9 +369,7 @@
     "rehashing": "Recalculando el hash de la copia · SHA-256",
     "installCommand": "skillctl install {{skillId}} --verify",
     "resolvingListed": "Resolviendo en MafiaIA Skill List · commit fijado",
-    "resolvingCatalog": "Resolviendo en el catálogo curado",
     "downloadingPinned": "Descargando archivos fijados · {{repo}}",
-    "downloadingSkill": "Descargando archivos del skill",
     "verifyingHash": "Verificando SHA-256 contra el hash curado"
   },
   "agents": {

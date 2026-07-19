@@ -173,13 +173,10 @@ export type StackDetection = {
   warnings: string[]
 }
 
-export type CatalogSkill = {
+export type CatalogEntry = {
   id: string
   name: string
   description: string
-  category: string
-  risk: 'Reviewed' | 'Contains scripts' | 'External dependencies'
-  compatibility: Agent[]
-  contextTokens: number
-  source: string
+  techs: string[]
+  sourceRepo: string
 }

@@ -40,7 +40,6 @@
       "localizeCopied": "{{name}} copié vers {{destination}}. Vérifiez-le, puis désinstallez la copie globale si elle n'est plus nécessaire ; l'archive permet de revenir en arrière.",
       "localizeMoved": "{{name}} déplacé vers {{destination}} et la copie globale a été conservée dans l'archive locale.",
       "installVerified": "{{skillId}} installé et vérifié par rapport à la liste curée{{copiesSuffix}}.",
-      "installed": "{{name}} installé pour {{coverage}} dans {{location}}{{copiesSuffix}}.",
       "trusted": "Ce hash de contenu exact est maintenant approuvé localement. Une copie modifiée n'héritera plus de cette approbation.",
       "reputationChecked": "Réputation en ligne vérifiée pour {{name}}. Le résultat ne couvre que le SHA-256 correspondant.",
       "foldersAlreadyAdded": "Ces dossiers font déjà partie de ce workspace.",
@@ -118,7 +117,6 @@
     "projectOrFolderRecommended": "Projet ou dossier · recommandé",
     "globalEveryProject": "Global · tous les projets",
     "allCompatibleAgentsRecommended": "Tous les agents compatibles · recommandé",
-    "allCompatibleAgents": "tous les agents compatibles",
     "localCopy": "la copie locale",
     "undo": "Annuler",
     "runtime": "Runtime",
@@ -261,11 +259,12 @@
     "curatedLibrary": "Bibliothèque curée",
     "title": "Des packs de skills compacts et révisés.",
     "description": "Chaque entrée possède une source connue, un objectif explicite et une empreinte de contexte limitée. Aucun bruit de marketplace ouverte.",
-    "tokens": "tokens",
     "noMatch": "Aucun skill curé ne correspond",
     "tryDifferent": "Essayez un autre terme ou effacez la recherche.",
     "trustTitle": "Comment la bibliothèque reste fiable",
-    "trustDescription": "Chaque skill est révisé pour sa structure, sa portée, ses scripts et sa compatibilité documentée avant d'apparaître ici."
+    "trustDescription": "Chaque skill est révisé pour sa structure, sa portée, ses scripts et sa compatibilité documentée avant d'apparaître ici.",
+    "loadingCatalog": "Chargement de la liste de skills organisée…",
+    "loadError": "Impossible de charger la liste organisée"
   },
   "healthPage": {
     "securityCheck": "Contrôle de sécurité",
@@ -344,7 +343,6 @@
     "verifiedSource": "Source vérifiée",
     "pinnedCommit": "• Depuis la liste curée, fixé sur le commit exact de",
     "verifiedBeforeWrite": "• Le contenu est téléchargé et son SHA-256 vérifié avant toute écriture",
-    "projectScopeDescription": "La portée du projet est recommandée : le skill reste disponible pour les agents qui travaillent dans ce dossier sans affecter les projets voisins.",
     "copyDescription": "Copiez le dossier complet du skill dans un projet pour le même agent. La source reste inchangée afin que vous puissiez vérifier la copie locale avant de désactiver la copie globale.",
     "moveDescription": "Copiez le dossier complet du skill dans un projet, puis retirez la copie globale après vérification de la destination.",
     "otherGlobalCopyNote_one": "Ce skill a aussi une autre copie globale pour {{agents}}, qui ne sera pas affectée par ce déplacement.",
@@ -358,8 +356,7 @@
     "uninstallChange": "Déplacer {{path}} vers l'archive locale de Skill Control",
     "uninstallWarning_one": "Seule cette installation exacte est supprimée. Une sauvegarde réversible est conservée.",
     "uninstallWarning_other": "Les {{count}} installations de cette portée sont supprimées. Une sauvegarde réversible est conservée pour chaque copie.",
-    "installVerified": "Installer le skill vérifié",
-    "installSkill": "Installer le skill"
+    "installVerified": "Installer le skill vérifié"
   },
   "console": {
     "uninstallCommand": "skillctl uninstall {{name}}",
@@ -372,9 +369,7 @@
     "rehashing": "Recalcul du hash de la copie · SHA-256",
     "installCommand": "skillctl install {{skillId}} --verify",
     "resolvingListed": "Résolution dans MafiaIA Skill List · commit fixé",
-    "resolvingCatalog": "Résolution dans le catalogue curé",
     "downloadingPinned": "Téléchargement des fichiers fixés · {{repo}}",
-    "downloadingSkill": "Téléchargement des fichiers du skill",
     "verifyingHash": "Vérification du SHA-256 par rapport au hash curé"
   },
   "agents": {

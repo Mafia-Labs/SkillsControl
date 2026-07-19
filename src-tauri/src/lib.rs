@@ -14,9 +14,6 @@ mod detection;
 mod skill_list;
 
 const MAX_PROJECT_SCAN_DEPTH: usize = 32;
-// The bundled catalog is reviewed with the source revision that introduced its
-// current definitions. Update this pin whenever a curated definition changes.
-const CURATED_SOURCE_COMMIT: &str = "1d8ed03";
 const AGENT_SKILL_PATHS: [(&str, &str); 2] =
     [("codex", ".agents/skills"), ("claude", ".claude/skills")];
 const PROJECT_MARKERS: [&str; 10] = [
@@ -1664,52 +1661,6 @@ fn is_supported_restore_destination(path: &Path) -> bool {
     )
 }
 
-fn catalog_definition(skill_id: &str) -> Option<(&'static str, &'static str)> {
-    match skill_id {
-        "repo-hygiene" => Some((
-            "Keep repositories small, predictable and easy for agents to navigate.",
-            "Review file structure, name modules clearly, remove generated artifacts from version control, and prefer focused changes.",
-        )),
-        "web-performance" => Some((
-            "Diagnose rendering, assets and loading bottlenecks before users feel them.",
-            "Measure first. Address unnecessary network requests, render work, asset weight, and avoid speculative rewrites.",
-        )),
-        "api-contracts" => Some((
-            "Design compatible API changes and document important constraints.",
-            "Make contracts explicit, preserve backwards compatibility where practical, and add contract tests for changes.",
-        )),
-        _ => None,
-    }
-}
-
-fn write_skill_atomically(destination: &Path, content: &str) -> Result<(), String> {
-    let parent = destination
-        .parent()
-        .ok_or("Could not determine the target skills folder")?;
-    fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-    let temporary = parent.join(format!(
-        ".skill-control-install-{}-{}",
-        destination
-            .file_name()
-            .and_then(|name| name.to_str())
-            .unwrap_or("skill"),
-        unix_millis()
-    ));
-    if temporary.exists() {
-        fs::remove_dir_all(&temporary).map_err(|error| error.to_string())?;
-    }
-    fs::create_dir(&temporary).map_err(|error| error.to_string())?;
-    if let Err(error) = fs::write(temporary.join("SKILL.md"), content) {
-        let _ = fs::remove_dir_all(&temporary);
-        return Err(error.to_string());
-    }
-    if let Err(error) = fs::rename(&temporary, destination) {
-        let _ = fs::remove_dir_all(&temporary);
-        return Err(error.to_string());
-    }
-    Ok(())
-}
-
 fn copy_directory(source: &Path, destination: &Path) -> Result<(), String> {
     fs::create_dir(destination).map_err(|error| error.to_string())?;
     let entries = fs::read_dir(source).map_err(|error| error.to_string())?;
@@ -2131,65 +2082,32 @@ fn reveal_skill_folder(installation: Installation) -> Result<(), String> {
     launch_path(&source, true)
 }
 
+/// Lightweight projection of the curated MafiaIA Skill List for the Discover
+/// screen. Kept separate from `skill_list::ListedSkill` so the frontend only
+/// receives what it renders, not the source pin used to verify downloads.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CatalogEntry {
+    id: String,
+    name: String,
+    description: String,
+    techs: Vec<String>,
+    source_repo: String,
+}
+
 #[tauri::command]
-fn install_catalog_skill(
-    skill_id: String,
-    scope: String,
-    target: String,
-    project_path: Option<String>,
-) -> Result<Vec<String>, String> {
-    validate_skill_id(&skill_id)?;
-    let (description, instructions) =
-        catalog_definition(&skill_id).ok_or("Unknown catalog skill")?;
-    let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
-    let agents = target_agents(&target)?;
-    let destinations: Vec<PathBuf> = agents
-        .iter()
-        .map(|agent| {
-            skill_root(&home, &scope, agent, project_path.as_deref())
-                .map(|root| root.join(&skill_id))
+async fn list_catalog_skills() -> Result<Vec<CatalogEntry>, String> {
+    let list = skill_list::load_skill_list().await?;
+    Ok(list
+        .skills
+        .into_iter()
+        .map(|skill| CatalogEntry {
+            id: skill.id,
+            name: skill.name,
+            description: skill.description,
+            techs: skill.techs,
+            source_repo: skill.source.repo,
         })
-        .collect::<Result<Vec<_>, _>>()?;
-
-    if let Some(existing) = destinations.iter().find(|destination| destination.exists()) {
-        return Err(format!(
-            "This skill already exists at {}. Inspect or disable that copy first.",
-            existing.to_string_lossy()
-        ));
-    }
-
-    let installed_at = unix_seconds();
-    let content = format!(
-        "---\nname: {skill_id}\ndescription: {description}\nversion: 1.0.0\nsource: Skill Control curated library\nsource_url: https://github.com/Mafia-Labs/SkillsControl\nsource_owner: Mafia-Labs\nsource_repository: Mafia-Labs/SkillsControl\nsource_commit: {CURATED_SOURCE_COMMIT}\nsource_skill_path: src-tauri/src/lib.rs#catalog_definition\ninstalled_at: {installed_at}\n---\n\n# {skill_id}\n\n{instructions}\n"
-    );
-    let mut created = Vec::new();
-    for destination in &destinations {
-        if let Err(error) = write_skill_atomically(destination, &content) {
-            for created_destination in &created {
-                let _ = fs::remove_dir_all(created_destination);
-            }
-            return Err(format!("Could not install skill: {error}"));
-        }
-        created.push(destination.clone());
-    }
-
-    for destination in &created {
-        let mut inventory = FileInventory::default();
-        files_in(destination, destination, &mut inventory);
-        let content_hash_sha256 = skill_hash(destination, &inventory.files);
-        if let Err(error) = record_skill_review(&skill_id, &content_hash_sha256, &unix_seconds()) {
-            for created_destination in &created {
-                let _ = fs::remove_dir_all(created_destination);
-            }
-            return Err(format!(
-                "Could not record the curated skill review: {error}"
-            ));
-        }
-    }
-
-    Ok(created
-        .iter()
-        .map(|path| path.to_string_lossy().to_string())
         .collect())
 }
 
@@ -2567,7 +2485,7 @@ pub fn run() {
             move_skill_to_project,
             open_skill_file,
             reveal_skill_folder,
-            install_catalog_skill,
+            list_catalog_skills,
             install_listed_skill,
             check_online_reputation,
             get_workspace_roots,

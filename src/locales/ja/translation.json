@@ -40,7 +40,6 @@
       "localizeCopied": "{{name}} を {{destination}} にコピーしました。確認後、不要であればグローバルコピーをアンインストールしてください。ローカルアーカイブから元に戻せます。",
       "localizeMoved": "{{name}} を {{destination}} に移動し、グローバルコピーをローカルアーカイブに保持しました。",
       "installVerified": "{{skillId}} をインストールし、MafiaIA Skill List で検証しました{{copiesSuffix}}。",
-      "installed": "{{name}} を {{coverage}} 向けに {{location}} にインストールしました{{copiesSuffix}}。",
       "trusted": "この正確なコンテンツハッシュはローカルで信頼されました。変更されたコピーはその信頼を継承しません。",
       "reputationChecked": "{{name}} のオンライン評価を確認しました。結果は一致するローカル SHA-256 のみを対象とします。",
       "foldersAlreadyAdded": "それらのフォルダはすでにこのワークスペースの一部です。",
@@ -118,7 +117,6 @@
     "projectOrFolderRecommended": "プロジェクトまたはフォルダ · 推奨",
     "globalEveryProject": "グローバル · すべてのプロジェクト",
     "allCompatibleAgentsRecommended": "すべての互換エージェント · 推奨",
-    "allCompatibleAgents": "すべての互換エージェント",
     "localCopy": "ローカルコピー",
     "undo": "元に戻す",
     "runtime": "ランタイム",
@@ -261,11 +259,12 @@
     "curatedLibrary": "キュレーションライブラリ",
     "title": "小さく、レビューされた skill パック。",
     "description": "各エントリには既知のソース、明示的な目的、限られたコンテキストフットプリントがあります。オープンマーケットプレイスのノイズはありません。",
-    "tokens": "トークン",
     "noMatch": "一致するキュレーション skills はありません",
     "tryDifferent": "別の検索語を試すか、検索をクリアしてください。",
     "trustTitle": "ライブラリの信頼性の維持方法",
-    "trustDescription": "各 skill は構造、スコープ、スクリプト、文書化された互換性についてレビューされてからここに表示されます。"
+    "trustDescription": "各 skill は構造、スコープ、スクリプト、文書化された互換性についてレビューされてからここに表示されます。",
+    "loadingCatalog": "厳選されたスキルリストを読み込み中…",
+    "loadError": "厳選リストを読み込めませんでした"
   },
   "healthPage": {
     "securityCheck": "セキュリティチェック",
@@ -344,7 +343,6 @@
     "verifiedSource": "検証済みソース",
     "pinnedCommit": "• MafiaIA Skill List から、次の正確なコミットに固定",
     "verifiedBeforeWrite": "• コンテンツをダウンロードし、書き込み前に SHA-256 を検証",
-    "projectScopeDescription": "プロジェクトスコープを推奨: skill はこのフォルダで作業するエージェントにのみ利用可能になり、他のプロジェクトに影響しません。",
     "copyDescription": "完全な skill フォルダを同じエージェントのプロジェクトにコピーします。ソースはそのまま残るため、グローバルコピーを無効化する前にローカルコピーを検証できます。",
     "moveDescription": "完全な skill フォルダをプロジェクトにコピーし、移行先を検証した後でグローバルコピーを削除します。",
     "otherGlobalCopyNote_one": "この skill には {{agents}} 用のグローバルコピーがもう1つあり、今回の移動には影響しません。",
@@ -358,8 +356,7 @@
     "uninstallChange": "{{path}} を Skill Control のローカルアーカイブに移動",
     "uninstallWarning_one": "この特定のインストールのみが削除されます。復元可能なバックアップが保持されます。",
     "uninstallWarning_other": "このスコープ内の {{count}} 件のインストールがすべて削除されます。各コピーの復元可能なバックアップが保持されます。",
-    "installVerified": "検証済み skill をインストール",
-    "installSkill": "Skill をインストール"
+    "installVerified": "検証済み skill をインストール"
   },
   "console": {
     "uninstallCommand": "skillctl uninstall {{name}}",
@@ -372,9 +369,7 @@
     "rehashing": "コピーを再ハッシュ化 · SHA-256",
     "installCommand": "skillctl install {{skillId}} --verify",
     "resolvingListed": "MafiaIA Skill List で解決中 · 固定コミット",
-    "resolvingCatalog": "キュレーションカタログで解決中",
     "downloadingPinned": "固定ファイルをダウンロード中 · {{repo}}",
-    "downloadingSkill": "skill ファイルをダウンロード中",
     "verifyingHash": "キュレーションハッシュと SHA-256 を照合中"
   },
   "agents": {

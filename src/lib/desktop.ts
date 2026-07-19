@@ -1,5 +1,5 @@
-import { demoReport, demoStackDetection } from './demo-data'
-import type { ArchiveEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, MoveSkillResult, ScanReport, Scope, Skill, StackDetection } from './types'
+import { demoCatalog, demoReport, demoStackDetection } from './demo-data'
+import type { ArchiveEntry, CatalogEntry, ChangePreview, ExternalReputation, Installation, InstallTarget, MoveSkillResult, ScanReport, Scope, Skill, StackDetection } from './types'
 
 const isTauri = () => '__TAURI_INTERNALS__' in window
 
@@ -65,9 +65,9 @@ export const revealSkillFolder = async (installation: Installation): Promise<voi
   return invoke<void>('reveal_skill_folder', { installation })
 }
 
-export const installCatalogSkill = async (skillId: string, scope: Scope, target: InstallTarget, projectPath?: string): Promise<string[]> => {
-  if (!isTauri()) return []
-  return invoke<string[]>('install_catalog_skill', { skillId, scope, target, projectPath })
+export const listCatalogSkills = async (): Promise<CatalogEntry[]> => {
+  if (!isTauri()) return demoCatalog
+  return invoke<CatalogEntry[]>('list_catalog_skills')
 }
 
 export const installListedSkill = async (skillId: string, scope: Scope, target: InstallTarget, projectPath?: string): Promise<string[]> => {

@@ -12,9 +12,9 @@ import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { appendConsoleLines, ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, detectStack, disableSkill, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, moveSkillToProject, openSkillFile, previewDisable, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, detectStack, disableSkill, getWorkspaceRoots, installListedSkill, isDemoMode, listArchives, moveSkillToProject, openSkillFile, previewDisable, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
-import type { Agent, ArchiveEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
+import type { Agent, ArchiveEntry, CatalogEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
 
 const loadWorkspaceRoots = (): string[] => {
   try {
@@ -181,6 +181,14 @@ export default function App() {
     setView('map')
   }
 
+  const requestInstallFromCatalog = (entry: CatalogEntry) => {
+    setModal({
+      kind: 'install-listed',
+      recommendation: { skillId: entry.id, sourceRepo: entry.sourceRepo, description: entry.description, reasons: [], installed: false },
+      projectPath: projects[0]?.path ?? ''
+    })
+  }
+
   const editSkill = async (installation: Installation) => {
     try {
       await openSkillFile(installation)
@@ -268,12 +276,6 @@ export default function App() {
           }
         })
         return
-      } else {
-        const installedPaths = await installCatalogSkill(modal.skill.id, scope, target, projectPath)
-        await minWait
-        const location = scope === 'project' ? projects.find((project) => project.path === projectPath)?.name ?? t('common.project') : t('common.global')
-        const coverage = target === 'all' ? t('common.allCompatibleAgents') : target
-        setNotice(t('app.notices.installed', { name: modal.skill.name, coverage, location, copiesSuffix: installedPaths.length > 1 ? t('common.copies', { count: installedPaths.length }) : '' }))
       }
       setModal(null)
       await refresh()
@@ -370,7 +372,7 @@ export default function App() {
           : <Projects inventories={filteredInventories} findings={report?.findings ?? []} globalSkills={filteredGlobalSkills} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} onInspect={inspectSkill} onLocalize={requestLocalize} onUninstall={(installations) => void requestDisable(installations)} />)}
         {view === 'overview' && report && <Overview report={report} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} />}
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} projects={projects} selectedId={selectedId} onSelect={setSelectedId} />}
-        {view === 'discover' && <Discover query={search} onInstall={(skill) => setModal({ kind: 'install', skill })} />}
+        {view === 'discover' && <Discover query={search} onInstall={requestInstallFromCatalog} />}
         {view === 'health' && report && <Health query={search} report={report} archives={archives} onRestore={(archive) => void restoreArchive(archive)} onSelect={(id) => { setSelectedId(id); setView('map') }} />}
         {!report && <Empty icon="!" title={t('app.errors.noReport')} detail={t('app.errors.runScan')} />}
       </div>}

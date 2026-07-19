@@ -40,7 +40,6 @@
       "localizeCopied": "{{name}} copiado para {{destination}}. Verifique-o e desinstale a cópia global se não for mais necessária; o arquivo local permite desfazer.",
       "localizeMoved": "{{name}} movido para {{destination}} e a cópia global foi mantida no arquivo local.",
       "installVerified": "{{skillId}} instalado e verificado em relação à MafiaIA Skill List{{copiesSuffix}}.",
-      "installed": "{{name}} instalado para {{coverage}} em {{location}}{{copiesSuffix}}.",
       "trusted": "Este hash exato de conteúdo agora é confiável localmente. Uma cópia alterada não herdará mais essa confiança.",
       "reputationChecked": "Reputação online verificada para {{name}}. O resultado cobre apenas o SHA-256 local correspondente.",
       "foldersAlreadyAdded": "Essas pastas já fazem parte deste workspace.",
@@ -118,7 +117,6 @@
     "projectOrFolderRecommended": "Projeto ou pasta · recomendado",
     "globalEveryProject": "Global · todos os projetos",
     "allCompatibleAgentsRecommended": "Todos os agentes compatíveis · recomendado",
-    "allCompatibleAgents": "todos os agentes compatíveis",
     "localCopy": "a cópia local",
     "undo": "Desfazer",
     "runtime": "Tempo de execução",
@@ -261,11 +259,12 @@
     "curatedLibrary": "Biblioteca curada",
     "title": "Pacotes de skills pequenos e revisados.",
     "description": "Cada entrada tem uma origem conhecida, um propósito explícito e uma pegada de contexto limitada. Sem ruído de marketplace aberto.",
-    "tokens": "tokens",
     "noMatch": "Nenhum skill curado corresponde",
     "tryDifferent": "Tente um termo diferente ou limpe a busca.",
     "trustTitle": "Como a biblioteca permanece confiável",
-    "trustDescription": "Cada skill é revisado quanto à estrutura, escopo, scripts e compatibilidade documentada antes de aparecer aqui."
+    "trustDescription": "Cada skill é revisado quanto à estrutura, escopo, scripts e compatibilidade documentada antes de aparecer aqui.",
+    "loadingCatalog": "Carregando a lista curada de skills…",
+    "loadError": "Não foi possível carregar a lista curada"
   },
   "healthPage": {
     "securityCheck": "Verificação de segurança",
@@ -344,7 +343,6 @@
     "verifiedSource": "Origem verificada",
     "pinnedCommit": "• Da MafiaIA Skill List, fixado em um commit exato de",
     "verifiedBeforeWrite": "• O conteúdo é baixado e seu SHA-256 é verificado antes de qualquer gravação",
-    "projectScopeDescription": "Escopo de projeto é recomendado: o skill permanece disponível para agentes que trabalham nesta pasta sem afetar projetos não relacionados.",
     "copyDescription": "Copia a pasta completa do skill para um projeto para o mesmo agente. A origem permanece intacta para que você possa verificar a cópia local antes de desabilitar a global.",
     "moveDescription": "Copia a pasta completa do skill para um projeto e remove a cópia global depois de verificar o destino.",
     "otherGlobalCopyNote_one": "Este skill também tem outra cópia global para {{agents}}, que não será afetada por esta movimentação.",
@@ -358,8 +356,7 @@
     "uninstallChange": "Mover {{path}} para o arquivo local do Skill Control",
     "uninstallWarning_one": "Apenas esta instalação exata é removida. Um backup reversível é mantido.",
     "uninstallWarning_other": "Todas as {{count}} instalações neste escopo são removidas. Um backup reversível é mantido para cada cópia.",
-    "installVerified": "Instalar skill verificado",
-    "installSkill": "Instalar skill"
+    "installVerified": "Instalar skill verificado"
   },
   "console": {
     "uninstallCommand": "skillctl uninstall {{name}}",
@@ -372,9 +369,7 @@
     "rehashing": "Recalculando o hash da cópia · SHA-256",
     "installCommand": "skillctl install {{skillId}} --verify",
     "resolvingListed": "Resolvendo na MafiaIA Skill List · commit fixado",
-    "resolvingCatalog": "Resolvendo no catálogo curado",
     "downloadingPinned": "Baixando arquivos fixados · {{repo}}",
-    "downloadingSkill": "Baixando arquivos de skill",
     "verifyingHash": "Verificando SHA-256 contra o hash curado"
   },
   "agents": {

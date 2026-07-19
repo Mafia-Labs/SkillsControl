@@ -40,7 +40,6 @@
       "localizeCopied": "{{name}} 已复制到 {{destination}}。请先验证它；如果不再需要全局副本，再将其卸载。本地归档支持撤销。",
       "localizeMoved": "{{name}} 已移动到 {{destination}}，全局副本已保留在本地归档中。",
       "installVerified": "{{skillId}} 已安装，并已通过精选列表验证{{copiesSuffix}}。",
-      "installed": "{{name}} 已为 {{coverage}} 安装到 {{location}}{{copiesSuffix}}。",
       "trusted": "此精确内容哈希现在已在本地受信任。内容发生变化的副本将不再继承该信任。",
       "reputationChecked": "已检查 {{name}} 的在线信誉。结果只覆盖匹配的本地 SHA-256。",
       "foldersAlreadyAdded": "这些文件夹已经属于当前 workspace。",
@@ -118,7 +117,6 @@
     "projectOrFolderRecommended": "项目或文件夹 · 推荐",
     "globalEveryProject": "全局 · 所有项目",
     "allCompatibleAgentsRecommended": "所有兼容的 agents · 推荐",
-    "allCompatibleAgents": "所有兼容的 agents",
     "localCopy": "本地副本",
     "undo": "撤销",
     "runtime": "Runtime",
@@ -261,11 +259,12 @@
     "curatedLibrary": "精选库",
     "title": "小巧、经过审核的 skill 包。",
     "description": "每个条目都有已知来源、明确用途和有限的上下文占用。没有开放 marketplace 的噪音。",
-    "tokens": "tokens",
     "noMatch": "没有符合条件的精选 skills",
     "tryDifferent": "尝试其他词语，或清除搜索。",
     "trustTitle": "精选库如何保持可信",
-    "trustDescription": "每个 skill 都会在出现之前经过结构、作用域、scripts 和文档化兼容性审核。"
+    "trustDescription": "每个 skill 都会在出现之前经过结构、作用域、scripts 和文档化兼容性审核。",
+    "loadingCatalog": "正在加载精选技能列表…",
+    "loadError": "无法加载精选列表"
   },
   "healthPage": {
     "securityCheck": "安全检查",
@@ -344,7 +343,6 @@
     "verifiedSource": "已验证来源",
     "pinnedCommit": "• 来自精选列表，固定到精确 commit：",
     "verifiedBeforeWrite": "• 内容会先下载并验证 SHA-256，然后才会写入任何内容",
-    "projectScopeDescription": "推荐使用项目作用域：skill 对在此文件夹中工作的 agents 可用，同时不会影响无关项目。",
     "copyDescription": "将完整的 skill 文件夹复制到同一 agent 的项目中。来源保持不变，这样你可以先验证本地副本，再禁用全局副本。",
     "moveDescription": "将完整的 skill 文件夹复制到项目中，并在验证目标后移除全局副本。",
     "otherGlobalCopyNote_one": "此 skill 还有一份针对 {{agents}} 的全局副本，不会受此次移动影响。",
@@ -358,8 +356,7 @@
     "uninstallChange": "将 {{path}} 移动到 Skill Control 的本地归档",
     "uninstallWarning_one": "仅移除这一个具体安装。会保留可恢复的备份。",
     "uninstallWarning_other": "此作用域内的全部 {{count}} 个安装都会被移除。每份副本都会保留可恢复的备份。",
-    "installVerified": "安装已验证的 skill",
-    "installSkill": "安装 skill"
+    "installVerified": "安装已验证的 skill"
   },
   "console": {
     "uninstallCommand": "skillctl uninstall {{name}}",
@@ -372,9 +369,7 @@
     "rehashing": "正在重新计算副本哈希 · SHA-256",
     "installCommand": "skillctl install {{skillId}} --verify",
     "resolvingListed": "正在 MafiaIA Skill List 中解析 · 固定 commit",
-    "resolvingCatalog": "正在精选目录中解析",
     "downloadingPinned": "正在下载固定文件 · {{repo}}",
-    "downloadingSkill": "正在下载 skill 文件",
     "verifyingHash": "正在根据精选哈希验证 SHA-256"
   },
   "agents": {

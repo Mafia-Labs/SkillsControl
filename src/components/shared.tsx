@@ -19,9 +19,9 @@ export function Empty({ icon, title, detail }: { icon: string, title: string, de
   return <div className="empty"><span>{icon}</span><strong>{title}</strong><p>{detail}</p></div>
 }
 
-export function Loading() {
+export function Loading({ label }: { label?: string } = {}) {
   const { t } = useTranslation()
-  return <div className="loading"><span className="loader" />{t('common.readingLocalFolders')}</div>
+  return <div className="loading"><span className="loader" />{label ?? t('common.readingLocalFolders')}</div>
 }
 
 export function PanelHeading({ title, action, onAction }: { title: string, action?: string, onAction?: () => void }) {

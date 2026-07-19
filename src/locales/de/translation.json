@@ -40,7 +40,6 @@
       "localizeCopied": "{{name}} nach {{destination}} kopiert. Prüfen Sie die Kopie und deinstallieren Sie die globale Kopie, wenn sie nicht mehr benötigt wird; das Archiv macht dies rückgängig.",
       "localizeMoved": "{{name}} nach {{destination}} verschoben; die globale Kopie wurde im lokalen Archiv behalten.",
       "installVerified": "{{skillId}} installiert und gegen die MafiaIA Skill List geprüft{{copiesSuffix}}.",
-      "installed": "{{name}} für {{coverage}} in {{location}} installiert{{copiesSuffix}}.",
       "trusted": "Dieser exakte Inhalts-Hash ist jetzt lokal vertrauenswürdig. Eine geänderte Kopie wird dieses Vertrauen nicht mehr erben.",
       "reputationChecked": "Online-Reputation für {{name}} geprüft. Das Ergebnis gilt nur für den übereinstimmenden lokalen SHA-256.",
       "foldersAlreadyAdded": "Diese Ordner sind bereits Teil dieses Workspaces.",
@@ -118,7 +117,6 @@
     "projectOrFolderRecommended": "Projekt oder Ordner · empfohlen",
     "globalEveryProject": "Global · jedes Projekt",
     "allCompatibleAgentsRecommended": "Alle kompatiblen Agenten · empfohlen",
-    "allCompatibleAgents": "alle kompatiblen Agenten",
     "localCopy": "die lokale Kopie",
     "undo": "Rückgängig",
     "runtime": "Laufzeit",
@@ -261,11 +259,12 @@
     "curatedLibrary": "Kuratierte Bibliothek",
     "title": "Kleine, geprüfte skill-Pakete.",
     "description": "Jeder Eintrag hat eine bekannte Quelle, einen expliziten Zweck und einen begrenzten Kontext-Fußabdruck. Kein Lärm eines offenen Marktplatzes.",
-    "tokens": "Tokens",
     "noMatch": "Keine kuratierten skills gefunden für",
     "tryDifferent": "Versuchen Sie einen anderen Begriff oder leeren Sie die Suche.",
     "trustTitle": "Wie die Bibliothek vertrauenswürdig bleibt",
-    "trustDescription": "Jeder skill wird vor der Anzeige auf Struktur, Umfang, Skripte und dokumentierte Kompatibilität geprüft."
+    "trustDescription": "Jeder skill wird vor der Anzeige auf Struktur, Umfang, Skripte und dokumentierte Kompatibilität geprüft.",
+    "loadingCatalog": "Kuratierte Skill-Liste wird geladen…",
+    "loadError": "Die kuratierte Liste konnte nicht geladen werden"
   },
   "healthPage": {
     "securityCheck": "Sicherheitsprüfung",
@@ -344,7 +343,6 @@
     "verifiedSource": "Verifizierte Quelle",
     "pinnedCommit": "• Aus der MafiaIA Skill List, fixiert auf einen exakten Commit von",
     "verifiedBeforeWrite": "• Inhalt wird heruntergeladen und sein SHA-256 wird vor dem Schreiben verifiziert",
-    "projectScopeDescription": "Projektbereich wird empfohlen: Der skill bleibt für Agenten verfügbar, die in diesem Ordner arbeiten, ohne andere Projekte zu beeinflussen.",
     "copyDescription": "Kopiert den vollständigen skill-Ordner in ein Projekt für denselben Agenten. Die Quelle bleibt unberührt, sodass Sie die lokale Kopie prüfen können, bevor Sie die globale deaktivieren.",
     "moveDescription": "Kopiert den vollständigen skill-Ordner in ein Projekt und entfernt die globale Kopie nach erfolgreicher Prüfung des Ziels.",
     "otherGlobalCopyNote_one": "Dieser skill hat außerdem eine weitere globale Kopie für {{agents}}, die von dieser Verschiebung nicht betroffen ist.",
@@ -358,8 +356,7 @@
     "uninstallChange": "{{path}} in das lokale Archiv von Skill Control verschieben",
     "uninstallWarning_one": "Nur diese exakte Installation wird entfernt. Ein wiederherstellbares Backup wird aufbewahrt.",
     "uninstallWarning_other": "Alle {{count}} Installationen in diesem Bereich werden entfernt. Für jede Kopie wird ein wiederherstellbares Backup aufbewahrt.",
-    "installVerified": "Verifizierten skill installieren",
-    "installSkill": "Skill installieren"
+    "installVerified": "Verifizierten skill installieren"
   },
   "console": {
     "uninstallCommand": "skillctl uninstall {{name}}",
@@ -372,9 +369,7 @@
     "rehashing": "Kopie wird neu gehasht · SHA-256",
     "installCommand": "skillctl install {{skillId}} --verify",
     "resolvingListed": "Auflösung in der MafiaIA Skill List · fixierter Commit",
-    "resolvingCatalog": "Auflösung im kuratierten Katalog",
     "downloadingPinned": "Fixierte Dateien werden heruntergeladen · {{repo}}",
-    "downloadingSkill": "skill-Dateien werden heruntergeladen",
     "verifyingHash": "SHA-256 wird gegen den kuratierten Hash verifiziert"
   },
   "agents": {

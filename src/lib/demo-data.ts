@@ -1,4 +1,4 @@
-import type { CatalogSkill, ScanReport, StackDetection } from './types'
+import type { CatalogEntry, ScanReport, StackDetection } from './types'
 
 export const demoReport: ScanReport = {
   scannedAt: new Date().toISOString(),
@@ -68,8 +68,12 @@ export const demoStackDetection = (): StackDetection => ({
   warnings: []
 })
 
-export const catalog: CatalogSkill[] = [
-  { id: 'repo-hygiene', name: 'repo-hygiene', description: 'Keep repositories small, predictable and easy for agents to navigate.', category: 'Engineering', risk: 'Reviewed', compatibility: ['codex', 'claude'], contextTokens: 780, source: 'Alex Picks' },
-  { id: 'web-performance', name: 'web-performance', description: 'Diagnose rendering, assets and loading bottlenecks before users feel them.', category: 'Engineering', risk: 'Reviewed', compatibility: ['codex', 'claude'], contextTokens: 1340, source: 'Alex Picks' },
-  { id: 'api-contracts', name: 'api-contracts', description: 'Design compatible API changes and document important constraints.', category: 'Architecture', risk: 'Reviewed', compatibility: ['codex', 'claude'], contextTokens: 960, source: 'Alex Picks' }
+// A handful of real entries from the bundled MafiaIA Skill List (src-tauri/skill-list.json),
+// so the browser-only demo shows the same catalog shape and provenance as the desktop build
+// instead of fabricated skills. `listCatalogSkills` fetches the full live list in the real app.
+export const demoCatalog: CatalogEntry[] = [
+  { id: 'next-best-practices', name: 'next-best-practices', description: 'Best practices for building and maintaining Next.js applications.', techs: ['nextjs'], sourceRepo: 'vercel-labs/next-skills' },
+  { id: 'react-best-practices', name: 'react-best-practices', description: 'Patterns for designing maintainable, efficient React components.', techs: ['react'], sourceRepo: 'vercel-labs/skills' },
+  { id: 'mafia-frontend-design', name: 'mafia-frontend-design', description: 'Build polished, accessible interfaces with a coherent visual system.', techs: ['frontend'], sourceRepo: 'anthropics/skills' },
+  { id: 'mafia-prompt-master', name: 'mafia-prompt-master', description: 'Structure and refine prompts for reliable agent behavior.', techs: ['prompting'], sourceRepo: 'midudev/autoskills' }
 ]

@@ -40,7 +40,6 @@
       "localizeCopied": "{{name}} copied to {{destination}}. Verify it, then uninstall the global copy if it is no longer needed; the archive keeps it reversible.",
       "localizeMoved": "{{name}} moved to {{destination}} and the global copy was retained in the local archive.",
       "installVerified": "{{skillId}} installed and verified against the curated list{{copiesSuffix}}.",
-      "installed": "{{name}} installed for {{coverage}} in {{location}}{{copiesSuffix}}.",
       "trusted": "This exact content hash is now trusted locally. A changed copy will no longer inherit that trust.",
       "reputationChecked": "Online reputation checked for {{name}}. The result only covers the matching local SHA-256.",
       "foldersAlreadyAdded": "Those folders are already part of this workspace.",
@@ -118,7 +117,6 @@
     "projectOrFolderRecommended": "Project or folder · recommended",
     "globalEveryProject": "Global · every project",
     "allCompatibleAgentsRecommended": "All compatible agents · recommended",
-    "allCompatibleAgents": "all compatible agents",
     "localCopy": "the local copy",
     "undo": "Undo",
     "runtime": "Runtime",
@@ -261,11 +259,12 @@
     "curatedLibrary": "Curated library",
     "title": "Small, reviewed skill packs.",
     "description": "Every entry has a known source, an explicit purpose, and a limited context footprint. No open marketplace noise.",
-    "tokens": "tokens",
     "noMatch": "No curated skills match",
     "tryDifferent": "Try a different term or clear the search.",
     "trustTitle": "How the library stays trustworthy",
-    "trustDescription": "Each skill is reviewed for structure, scope, scripts and documented compatibility before it appears here."
+    "trustDescription": "Each skill is reviewed for structure, scope, scripts and documented compatibility before it appears here.",
+    "loadingCatalog": "Loading the curated skill list…",
+    "loadError": "Could not load the curated list"
   },
   "healthPage": {
     "securityCheck": "Security check",
@@ -344,7 +343,6 @@
     "verifiedSource": "Verified source",
     "pinnedCommit": "• From the curated list, pinned to an exact commit of",
     "verifiedBeforeWrite": "• Content is downloaded and its SHA-256 verified before anything is written",
-    "projectScopeDescription": "Project scope is recommended: the skill stays available to agents working in this folder without affecting unrelated projects.",
     "copyDescription": "Copy the complete skill folder into a project for the same agent. The source stays untouched so you can verify the local copy before disabling the global one.",
     "moveDescription": "Copy the complete skill folder into a project, then remove the global copy after the destination is verified.",
     "otherGlobalCopyNote_one": "This skill also has another global copy for {{agents}}, which will not be affected by this move.",
@@ -358,8 +356,7 @@
     "uninstallChange": "Move {{path}} to Skill Control's local archive",
     "uninstallWarning_one": "Only this exact installation is removed. A reversible backup is retained.",
     "uninstallWarning_other": "All {{count}} installations in this scope are removed. A reversible backup is retained for each copy.",
-    "installVerified": "Install verified skill",
-    "installSkill": "Install skill"
+    "installVerified": "Install verified skill"
   },
   "console": {
     "uninstallCommand": "skillctl uninstall {{name}}",
@@ -372,9 +369,7 @@
     "rehashing": "Re-hashing the copy · SHA-256",
     "installCommand": "skillctl install {{skillId}} --verify",
     "resolvingListed": "Resolving in the MafiaIA Skill List · pinned commit",
-    "resolvingCatalog": "Resolving in the curated catalog",
     "downloadingPinned": "Downloading pinned files · {{repo}}",
-    "downloadingSkill": "Downloading skill files",
     "verifyingHash": "Verifying SHA-256 against the curated hash"
   },
   "agents": {
