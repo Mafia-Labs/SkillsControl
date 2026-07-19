@@ -36,7 +36,8 @@
     },
     "notices": {
       "quarantined": "Skill を隔離し、ローカルアーカイブに保持しました。",
-      "localizeCopied": "{{name}} を {{destination}} にコピーしました。確認後、不要であればグローバルコピーを隔離してください。",
+      "uninstalled": "Skill をアンインストールし、ローカルアーカイブに保持しました。元に戻せます。",
+      "localizeCopied": "{{name}} を {{destination}} にコピーしました。確認後、不要であればグローバルコピーをアンインストールしてください。ローカルアーカイブから元に戻せます。",
       "localizeMoved": "{{name}} を {{destination}} に移動し、グローバルコピーをローカルアーカイブに保持しました。",
       "installVerified": "{{skillId}} をインストールし、MafiaIA Skill List で検証しました{{copiesSuffix}}。",
       "installed": "{{name}} を {{coverage}} 向けに {{location}} にインストールしました{{copiesSuffix}}。",
@@ -187,9 +188,9 @@
     "globalSkills": "グローバル skills",
     "globallyInstalledSkills": "グローバルにインストールされた skills",
     "globalCaution": "すべてのプロジェクトで読み込まれます",
-    "globalIntro": "これらは ~/.claude/skills または ~/.agents/skills に存在するため、すべてのエージェントがすべてのプロジェクトで読み込みます。真に汎用的な skills のみを保持し、残りは実際に使用するプロジェクトに移動するか、不要なものは隔離してください。",
+    "globalIntro": "これらは ~/.claude/skills または ~/.agents/skills に存在するため、すべてのエージェントがすべてのプロジェクトで読み込みます。真に汎用的な skills のみを保持し、残りは実際に使用するプロジェクトに移動するか、不要なものはアンインストールしてください。ローカルアーカイブから元に戻せます。",
     "approximateContextCost": "おおよそのコンテキストコスト",
-    "moveToProjectTitle": "プロジェクトフォルダにコピーし、グローバルコピーを隔離",
+    "moveToProjectTitle": "プロジェクトフォルダにコピーし、グローバルコピーをアンインストール",
     "quarantineGlobalAria": "{{name}} のグローバルコピーをアンインストール ({{agent}})",
     "quarantineGlobalTitle": "このグローバルコピーをアンインストール",
     "noGlobalSkills": "グローバルにインストールされた skills はありません — すべてがプロジェクトにスコープされています。これが推奨設定です。"
@@ -347,12 +348,13 @@
     "moveDescription": "完全な skill フォルダをプロジェクトにコピーし、移行先を検証した後でグローバルコピーを削除します。",
     "removeGlobalAfterCopy": "コピー成功後にグローバルコピーをアンインストール",
     "moveToProjectAction": "プロジェクトに移動",
-    "quarantineSkill": "Skill を隔離",
+    "quarantineSkill": "Skill をアンインストール",
     "installVerified": "検証済み skill をインストール",
     "installSkill": "Skill をインストール"
   },
   "console": {
-    "quarantineCommand": "skillctl quarantine {{name}}",
+    "quarantineCommand": "skillctl uninstall {{name}}",
+    "uninstallCommand": "skillctl uninstall {{name}}",
     "creatingBackup": "ローカルアーカイブに可逆バックアップを作成中",
     "movingCopy": "エージェントの読み込みパスからコピーを移動中",
     "confirmingClean": "元の場所がクリーンであることを確認中",

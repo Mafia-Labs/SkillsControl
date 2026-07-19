@@ -36,7 +36,8 @@
     },
     "notices": {
       "quarantined": "Skill mis en quarantaine et conservé dans l'archive locale.",
-      "localizeCopied": "{{name}} copié vers {{destination}}. Vérifiez-le, puis mettez la copie globale en quarantaine si elle n'est plus nécessaire.",
+      "uninstalled": "Skill désinstallé et conservé dans l'archive locale. Vous pouvez annuler cette action.",
+      "localizeCopied": "{{name}} copié vers {{destination}}. Vérifiez-le, puis désinstallez la copie globale si elle n'est plus nécessaire ; l'archive permet de revenir en arrière.",
       "localizeMoved": "{{name}} déplacé vers {{destination}} et la copie globale a été conservée dans l'archive locale.",
       "installVerified": "{{skillId}} installé et vérifié par rapport à la liste curée{{copiesSuffix}}.",
       "installed": "{{name}} installé pour {{coverage}} dans {{location}}{{copiesSuffix}}.",
@@ -187,9 +188,9 @@
     "globalSkills": "Skills globaux",
     "globallyInstalledSkills": "Skills installés globalement",
     "globalCaution": "Chargés dans chaque projet",
-    "globalIntro": "Ils se trouvent dans ~/.claude/skills ou ~/.agents/skills ; chaque agent les charge donc dans chaque projet. Ne gardez que les skills véritablement universels : déplacez les autres dans le projet qui les utilise ou mettez en quarantaine ceux dont vous n'avez plus besoin.",
+    "globalIntro": "Ils se trouvent dans ~/.claude/skills ou ~/.agents/skills ; chaque agent les charge donc dans chaque projet. Ne gardez que les skills véritablement universels : déplacez les autres dans le projet qui les utilise ou désinstallez ceux dont vous n'avez plus besoin. L'archive permet de revenir en arrière.",
     "approximateContextCost": "Coût de contexte approximatif",
-    "moveToProjectTitle": "Copier dans un dossier de projet, puis mettre la copie globale en quarantaine",
+    "moveToProjectTitle": "Copier dans un dossier de projet, puis désinstaller la copie globale",
     "quarantineGlobalAria": "Désinstaller la copie globale de {{name}} ({{agent}})",
     "quarantineGlobalTitle": "Désinstaller cette copie globale",
     "noGlobalSkills": "Aucun skill installé globalement — tout est limité à un projet. C'est la configuration recommandée."
@@ -347,12 +348,13 @@
     "moveDescription": "Copiez le dossier complet du skill dans un projet, puis retirez la copie globale après vérification de la destination.",
     "removeGlobalAfterCopy": "Désinstaller la copie globale après une copie réussie",
     "moveToProjectAction": "Déplacer vers le projet",
-    "quarantineSkill": "Mettre le skill en quarantaine",
+    "quarantineSkill": "Désinstaller le skill",
     "installVerified": "Installer le skill vérifié",
     "installSkill": "Installer le skill"
   },
   "console": {
-    "quarantineCommand": "skillctl quarantine {{name}}",
+    "quarantineCommand": "skillctl uninstall {{name}}",
+    "uninstallCommand": "skillctl uninstall {{name}}",
     "creatingBackup": "Création d'une sauvegarde réversible dans l'archive locale",
     "movingCopy": "Déplacement de la copie hors du chemin de chargement de l'agent",
     "confirmingClean": "Confirmation de la propreté de l'emplacement d'origine",

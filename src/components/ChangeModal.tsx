@@ -14,7 +14,7 @@ const applyScript = (modal: ModalState, paths: string[]): ConsoleLine[] => {
   if (modal.kind === 'disable') {
     const name = modal.installation.path.replace(/\\/g, '/').split('/').filter(Boolean).slice(-1)[0] ?? 'skill'
     return [
-      { id: 'cmd', text: i18n.t('console.quarantineCommand', { name }), tone: 'cmd', delay: 120 },
+      { id: 'cmd', text: i18n.t('console.uninstallCommand', { name }), tone: 'cmd', delay: 120 },
       { id: 'backup', text: i18n.t('console.creatingBackup'), tone: 'step', delay: 620 },
       { id: 'move', text: i18n.t('console.movingCopy'), tone: 'step', delay: 560 },
       { id: 'verify', text: i18n.t('console.confirmingClean'), tone: 'step', delay: 540 }
@@ -126,7 +126,7 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
         <div className="change-list"><strong>{t('common.changes')}</strong>{modal.preview.changes.map((change) => <span key={change}>• {change}</span>)}</div>
         <div className="warning-box"><strong>{t('common.headsUp')}</strong>{modal.preview.warnings.map((warning) => <span key={warning}>{warning}</span>)}</div>
       </> : null}
-      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>{t('common.cancel')}</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath, removeGlobal)}>{modal.kind === 'disable' ? t('change.quarantineSkill') : localize ? t(removeGlobal ? 'change.moveToProjectAction' : 'common.copyToProject') : listed ? t('change.installVerified') : t('change.installSkill')}</button></div>
+      <div className="modal-actions"><button className="secondary-button" onClick={onCancel}>{t('common.cancel')}</button><button className={modal.kind === 'disable' ? 'danger-button' : 'primary-button'} disabled={projectRequired} onClick={() => onApply(effectiveScope, effectiveTarget, projectPath, removeGlobal)}>{modal.kind === 'disable' ? t('common.uninstall') : localize ? t(removeGlobal ? 'change.moveToProjectAction' : 'common.copyToProject') : listed ? t('change.installVerified') : t('change.installSkill')}</button></div>
     </section>
   </div>
 }

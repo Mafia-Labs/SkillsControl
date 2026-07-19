@@ -1876,9 +1876,9 @@ fn preview_disable(installation: Installation) -> ChangePreview {
         .and_then(|name| name.to_str())
         .unwrap_or("skill");
     ChangePreview {
-        title: format!("Disable {skill_name}"),
+        title: format!("Uninstall {skill_name}"),
         changes: vec![format!(
-            "Move {} to Skill Control's disabled archive",
+            "Move {} to Skill Control's local archive",
             installation.path
         )],
         warnings: vec![

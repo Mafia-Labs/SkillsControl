@@ -36,7 +36,8 @@
     },
     "notices": {
       "quarantined": "Skill unter Quarantäne gestellt und im lokalen Archiv aufbewahrt.",
-      "localizeCopied": "{{name}} nach {{destination}} kopiert. Überprüfen Sie die Kopie und stellen Sie die globale Kopie unter Quarantäne, wenn sie nicht mehr benötigt wird.",
+      "uninstalled": "Skill deinstalliert und im lokalen Archiv aufbewahrt. Du kannst dies rückgängig machen.",
+      "localizeCopied": "{{name}} nach {{destination}} kopiert. Prüfen Sie die Kopie und deinstallieren Sie die globale Kopie, wenn sie nicht mehr benötigt wird; das Archiv macht dies rückgängig.",
       "localizeMoved": "{{name}} nach {{destination}} verschoben; die globale Kopie wurde im lokalen Archiv behalten.",
       "installVerified": "{{skillId}} installiert und gegen die MafiaIA Skill List geprüft{{copiesSuffix}}.",
       "installed": "{{name}} für {{coverage}} in {{location}} installiert{{copiesSuffix}}.",
@@ -187,9 +188,9 @@
     "globalSkills": "Globale skills",
     "globallyInstalledSkills": "Global installierte skills",
     "globalCaution": "In jedem Projekt geladen",
-    "globalIntro": "Diese befinden sich in ~/.claude/skills oder ~/.agents/skills, sodass jeder Agent sie in jedem Projekt lädt. Behalten Sie nur skills, die wirklich universell sind — verschieben Sie den Rest in das Projekt, das sie tatsächlich verwendet, oder stellen Sie sie unter Quarantäne, wenn sie nicht mehr benötigt werden.",
+    "globalIntro": "Diese befinden sich in ~/.claude/skills oder ~/.agents/skills, sodass jeder Agent sie in jedem Projekt lädt. Behalten Sie nur skills, die wirklich universell sind — verschieben Sie den Rest in das Projekt, das sie tatsächlich verwendet, oder deinstallieren Sie nicht mehr benötigte skills. Das lokale Archiv ermöglicht die Wiederherstellung.",
     "approximateContextCost": "Ungefähre Kontextkosten",
-    "moveToProjectTitle": "In einen Projektordner kopieren, dann die globale Kopie unter Quarantäne stellen",
+    "moveToProjectTitle": "In einen Projektordner kopieren, dann die globale Kopie deinstallieren",
     "quarantineGlobalAria": "Globale Kopie von {{name}} deinstallieren ({{agent}})",
     "quarantineGlobalTitle": "Diese globale Kopie deinstallieren",
     "noGlobalSkills": "Keine global installierten skills — alles ist auf ein Projekt beschränkt. Dies ist die empfohlene Einrichtung."
@@ -347,12 +348,13 @@
     "moveDescription": "Kopiert den vollständigen skill-Ordner in ein Projekt und entfernt die globale Kopie nach erfolgreicher Prüfung des Ziels.",
     "removeGlobalAfterCopy": "Globale Kopie nach erfolgreichem Kopieren deinstallieren",
     "moveToProjectAction": "In Projekt verschieben",
-    "quarantineSkill": "Skill unter Quarantäne stellen",
+    "quarantineSkill": "Skill deinstallieren",
     "installVerified": "Verifizierten skill installieren",
     "installSkill": "Skill installieren"
   },
   "console": {
-    "quarantineCommand": "skillctl quarantine {{name}}",
+    "quarantineCommand": "skillctl uninstall {{name}}",
+    "uninstallCommand": "skillctl uninstall {{name}}",
     "creatingBackup": "Reversibles Backup im lokalen Archiv wird erstellt",
     "movingCopy": "Kopie wird aus dem Agenten-Ladepfad verschoben",
     "confirmingClean": "Es wird bestätigt, dass der ursprüngliche Ort sauber ist",

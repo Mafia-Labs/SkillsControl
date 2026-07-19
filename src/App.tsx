@@ -12,7 +12,7 @@ import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { appendConsoleLines, ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, detectStack, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, moveSkillToProject, openSkillFile, previewDisable, quarantineSkill, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, detectStack, disableSkill, getWorkspaceRoots, installCatalogSkill, installListedSkill, isDemoMode, listArchives, moveSkillToProject, openSkillFile, previewDisable, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
 import type { Agent, ArchiveEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
 
@@ -233,10 +233,10 @@ export default function App() {
     const minWait = wait(3000)
     try {
       if (modal.kind === 'disable') {
-        const archive = await quarantineSkill(modal.installation)
+        const archive = await disableSkill(modal.installation)
         await minWait
         setRecentArchive(archive)
-        setNotice(t('app.notices.quarantined'))
+        setNotice(t('app.notices.uninstalled'))
       } else if (modal.kind === 'localize') {
         const result = await moveSkillToProject(modal.source, projectPath ?? '', removeGlobal)
         await minWait

@@ -36,7 +36,8 @@
     },
     "notices": {
       "quarantined": "Skill quarantined and retained in the local archive.",
-      "localizeCopied": "{{name}} copied to {{destination}}. Verify it, then quarantine the global copy if it is no longer needed.",
+      "uninstalled": "Skill uninstalled and retained in the local archive. You can undo this action.",
+      "localizeCopied": "{{name}} copied to {{destination}}. Verify it, then uninstall the global copy if it is no longer needed; the archive keeps it reversible.",
       "localizeMoved": "{{name}} moved to {{destination}} and the global copy was retained in the local archive.",
       "installVerified": "{{skillId}} installed and verified against the curated list{{copiesSuffix}}.",
       "installed": "{{name}} installed for {{coverage}} in {{location}}{{copiesSuffix}}.",
@@ -187,9 +188,9 @@
     "globalSkills": "Global skills",
     "globallyInstalledSkills": "Globally installed skills",
     "globalCaution": "Loaded in every project",
-    "globalIntro": "These live in ~/.claude/skills or ~/.agents/skills, so every agent loads them in every project. Keep only skills that are genuinely universal — move the rest into the project that actually uses them, or quarantine what you no longer need.",
+    "globalIntro": "These live in ~/.claude/skills or ~/.agents/skills, so every agent loads them in every project. Keep only skills that are genuinely universal — move the rest into the project that actually uses them, or uninstall what you no longer need. Uninstalling keeps a reversible archive.",
     "approximateContextCost": "Approximate context cost",
-    "moveToProjectTitle": "Copy into a project folder, then quarantine the global copy",
+    "moveToProjectTitle": "Copy into a project folder, then uninstall the global copy",
     "quarantineGlobalAria": "Uninstall the global copy of {{name}} ({{agent}})",
     "quarantineGlobalTitle": "Uninstall this global copy",
     "noGlobalSkills": "No skills installed globally — everything is scoped to a project. That is the recommended setup."
@@ -347,12 +348,13 @@
     "moveDescription": "Copy the complete skill folder into a project, then remove the global copy after the destination is verified.",
     "removeGlobalAfterCopy": "Uninstall the global copy after copying successfully",
     "moveToProjectAction": "Move to project",
-    "quarantineSkill": "Quarantine skill",
+    "quarantineSkill": "Uninstall skill",
     "installVerified": "Install verified skill",
     "installSkill": "Install skill"
   },
   "console": {
-    "quarantineCommand": "skillctl quarantine {{name}}",
+    "quarantineCommand": "skillctl uninstall {{name}}",
+    "uninstallCommand": "skillctl uninstall {{name}}",
     "creatingBackup": "Creating reversible backup in the local archive",
     "movingCopy": "Moving the copy out of the agent load path",
     "confirmingClean": "Confirming the original location is clean",

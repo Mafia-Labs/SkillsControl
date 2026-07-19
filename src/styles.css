@@ -71,6 +71,22 @@ h1, h2, h3, p { margin-top: 0; } h1 { margin-bottom: 0; font-size: 19px; letter-
 
 .archive-section { margin-top: 24px; overflow: hidden; border: 1px solid #292d35; border-radius: 9px; background: #121419; }.archive-heading { display: flex; align-items: flex-end; justify-content: space-between; padding: 17px; border-bottom: 1px solid #272b33; }.archive-heading h3 { margin: 0; font-size: 14px; }.archive-heading > span { color: #818895; font-size: 11px; }.archive-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 17px; border-bottom: 1px solid #272b33; }.archive-row:last-child { border-bottom: none; }.archive-row > div { display: grid; min-width: 0; gap: 4px; }.archive-row strong { font-size: 13px; }.archive-row code { overflow: hidden; max-width: 500px; color: #828a96; font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
 
+.modal-backdrop { position: fixed; z-index: 10; inset: 0; display: grid; place-items: center; padding: 24px; background: rgb(3 4 6 / 70%); backdrop-filter: blur(3px); }
+.change-modal { width: min(440px, 100%); padding: 25px; border: 1px solid #363b47; border-radius: 10px; background: #17191e; box-shadow: 0 24px 60px rgb(0 0 0 / 45%); }
+.modal-icon { display: grid; width: 33px; height: 33px; place-items: center; margin-bottom: 18px; border: 1px solid #554e93; border-radius: 8px; color: #beb8ff; background: #24213f; }
+.change-modal h2 { margin-bottom: 10px; font-size: 23px; }
+.change-modal > p:not(.eyebrow) { color: #9da4af; font-size: 13px; line-height: 1.55; }
+.select-label { display: grid; gap: 7px; margin: 20px 0; color: #babfc8; font-size: 12px; }
+.select-label select { height: 36px; padding: 0 9px; border: 1px solid #383d47; border-radius: 6px; outline: none; color: #edf0f4; background: #101216; }
+.change-list, .warning-box { display: grid; gap: 7px; margin-top: 17px; padding: 13px; border-radius: 7px; color: #aeb4bf; background: #111318; font-size: 12px; line-height: 1.5; }
+.change-list strong, .warning-box strong { color: #e4e7eb; }
+.warning-box { color: #e9cc94; background: #2c251a; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 9px; margin-top: 23px; }
+.empty { display: grid; justify-items: center; gap: 8px; min-height: 200px; place-content: center; color: #a1a8b4; text-align: center; }
+.empty > span { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 50%; color: #9dd6b7; background: #183628; font-weight: 700; }
+.empty strong { margin-top: 5px; color: #dfe3e8; font-size: 13px; }
+.empty p { max-width: 280px; margin: 0; color: #7d8591; font-size: 12px; line-height: 1.5; }
+
 .checkbox-row { display: flex; align-items: flex-start; gap: 9px; margin-top: 17px; padding: 11px 12px; border: 1px solid #39364f; border-radius: 7px; color: #d8d5f8; background: #1b1a2a; font-size: 12px; line-height: 1.45; }
 .checkbox-row input { flex: 0 0 auto; width: 16px; height: 16px; margin: 1px 0 0; accent-color: #786be8; }
 

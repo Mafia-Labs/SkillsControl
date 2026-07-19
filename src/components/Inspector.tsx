@@ -45,7 +45,7 @@ export function Inspector({ skill, findings, canLocalize, onLocalize, onDisable,
       <div className="security-actions">
         <button className="secondary-button compact" onClick={() => setShowFiles((current) => !current)}>{showFiles ? t('inspector.hideFiles') : t('inspector.reviewFiles')}</button>
         {hashes.length > 1 && <button className="secondary-button compact" onClick={() => setShowChanges((current) => !current)}>{showChanges ? t('inspector.hideChanges') : t('inspector.viewChanges')}</button>}
-        {preferredSource && <button className="danger-button compact" onClick={() => onDisable(preferredSource)}>{t('common.quarantine')}</button>}
+        {preferredSource && <button className="danger-button compact" onClick={() => onDisable(preferredSource)}>{t('common.uninstall')}</button>}
         {preferredSource && <button className="secondary-button compact" disabled={!canTrust} title={skill.securityStatus === 'Blocked' ? t('inspector.blockedCannotTrust') : undefined} onClick={() => onTrust(preferredSource)}>{t('inspector.trustVersion')}</button>}
       </div>
       {showChanges && <div className="change-hash-list"><strong>{t('inspector.hashDivergence')}</strong>{skill.installations.map((installation) => <span key={installation.id}><code>{installation.contentHashSha256}</code> · {installation.path}</span>)}</div>}
