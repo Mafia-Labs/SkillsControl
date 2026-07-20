@@ -1,10 +1,12 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Permisos de la ventana principal: núcleo de Tauri y diálogo nativo para seleccionar carpetas de proyecto.",
+  "description": "Permisos de la ventana principal: núcleo de Tauri, diálogo nativo y updater firmado.",
   "windows": ["main"],
   "permissions": [
     "core:default",
-    "dialog:default"
+    "dialog:default",
+    "process:default",
+    "updater:default"
   ]
 }

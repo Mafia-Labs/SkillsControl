@@ -22,6 +22,7 @@ Una skill global aparece en trabajos donde quizá no aporta nada. Una skill loca
 | Descubrir proyectos automáticamente | Al añadir una o varias carpetas de trabajo, encuentra repositorios, paquetes y carpetas con skills locales hasta 32 niveles de profundidad. |
 | Instalar para todo el proyecto | Crea la skill en `.agents/skills`, `.claude/skills` o en ambas ubicaciones en una sola operación. |
 | Convertir una skill global en local | Copia la carpeta completa al proyecto para el mismo agente; después puedes verificarla y archivar la global. |
+| Saber qué necesita un proyecto | **Auto Skills** detecta tecnologías y muestra recomendaciones con la evidencia que las activó; instalar desde ahí usa la lista curada y verificación SHA-256. |
 | Evitar contexto innecesario | Selecciona proyecto por defecto; el alcance global requiere una decisión explícita. |
 | Ver copias distintas | Compara hashes de todos los archivos de cada instalación y avisa cuando dos copias con el mismo nombre han divergido. |
 | Desinstalar con seguridad | Archiva únicamente la instalación seleccionada y permite restaurarla en su ruta original. |
@@ -172,13 +173,13 @@ src-tauri/
 1. Abre la aplicación para inspeccionar las ubicaciones globales.
 2. Pulsa **Add folder** y selecciona explícitamente un repositorio o una carpeta que contenga varios proyectos. Una app abierta desde el Dock o el explorador no tiene un directorio de proyecto fiable.
 3. Revisa los ámbitos detectados en **Skill Map**.
-4. Usa **Install in project** para localizar una skill ya instalada, o **Discover** para instalar una skill curada.
+4. Usa **Install in project** para localizar una skill ya instalada, **Auto Skills** dentro del detalle del proyecto para obtener recomendaciones, o **Discover** para explorar el catálogo curado real.
 5. En **Discover**, conserva **Project or folder** y **All compatible agents** salvo que exista un motivo claro para ampliar o reducir el alcance.
 6. Desactiva una copia concreta desde el inspector y restáurala desde **Disabled skills**.
 
 ## Estado
 
-Skill Control está en fase inicial (`0.1.0`). La biblioteca curada es pequeña y el diagnóstico sigue siendo estructural. Revisa siempre las instrucciones y scripts de una skill de terceros antes de confiar en ella.
+Skill Control está en fase inicial (`0.1.0`). Discover carga la lista curada publicada y usa la copia incluida como fallback; el diagnóstico sigue siendo estructural. La distribución pública, firma/notarización de macOS y el endpoint firmado del updater requieren configurar los secretos de release descritos en `docs/implementacion-catalogo-i18n-release-2026-07-19.md`. Revisa siempre las instrucciones y scripts de una skill de terceros antes de confiar en ella.
 
 ---
 
