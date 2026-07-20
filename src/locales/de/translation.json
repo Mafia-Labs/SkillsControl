@@ -166,7 +166,85 @@
     "urgentIssue_one": "{{count}} dringendes Problem",
     "urgentIssue_other": "{{count}} dringende Probleme",
     "reviewSuggestedCount": "{{count}} Überprüfung empfohlen",
-    "healthyFootprint": "potenzielle Aktivierungstokens"
+    "healthyFootprint": "potenzielle Aktivierungstokens",
+    "findings": {
+      "incompleteFrontmatter": {
+        "title": "Unvollständiges Frontmatter",
+        "detail": "SKILL.md muss mit --- beginnen und enden, um sein YAML-Frontmatter zu markieren"
+      },
+      "missingDescription": {
+        "title": "Beschreibung fehlt",
+        "detail": "Füge eine konkrete Beschreibung hinzu, damit Agenten diesen skill zuverlässig auswählen können."
+      },
+      "nameMismatch": {
+        "title": "Ordner- und Skillname unterscheiden sich",
+        "detail": "Der Ordner ist {{folderName}}; der Frontmatter-Name ist {{skillName}}."
+      },
+      "largeFootprint": {
+        "title": "Großer Aktivierungsumfang",
+        "detail": "Verschiebe ausführliches Referenzmaterial aus SKILL.md, damit es schrittweise geladen werden kann."
+      },
+      "executableScripts": {
+        "title": "Ausführbare Skripte erkannt",
+        "detail": "Vor der Nutzung prüfen: {{paths}}."
+      },
+      "divergentCopies": {
+        "title": "Kopien sind abgewichen",
+        "detail": "Installationen mit demselben Skillnamen enthalten unterschiedlichen SKILL.md-Inhalt. Vor Synchronisierung oder Entfernung prüfen."
+      },
+      "globalProjectCopies": {
+        "title": "Globale und Projektkopien",
+        "detail": "{{agent}} kann sowohl globale als auch projektbezogene Kopien sehen. Projektbereich bevorzugen, sofern der skill nicht überall gebraucht wird."
+      },
+      "destructive": {
+        "title": "Destruktiver Befehl erkannt",
+        "detail": "Der skill enthält Befehle, die Daten löschen, Speicher löschen oder Dateien massenhaft entfernen können. Installation und Verteilung sind blockiert."
+      },
+      "destructiveScript": {
+        "title": "Destruktiver Befehl in aufgerufenem Skript",
+        "detail": "Ein ausdrücklich aufgerufenes Skript kann Dateien massenhaft entfernen. Prüfe das genaue Ziel, bevor du diesem skill vertraust."
+      },
+      "privilege": {
+        "title": "Änderungen an Berechtigungen oder Privilegien erkannt",
+        "detail": "Der skill kann eine Erhöhung anfordern oder Berechtigungen ändern. Ziel und Umfang vor der Nutzung prüfen."
+      },
+      "pipeExec": {
+        "title": "Download-und-Ausführung-Pipeline erkannt",
+        "detail": "Der skill leitet entfernte Inhalte direkt an eine Shell weiter. Bis zur unabhängigen Prüfung von Inhalt und Quelle blockiert."
+      },
+      "exfiltration": {
+        "title": "Mögliche Anmeldedaten-Exfiltration",
+        "detail": "Anmeldedatenähnliche Pfade oder Werte erscheinen zusammen mit ausgehenden Anfragen. Der skill bleibt blockiert, bis der Datenfluss verstanden ist."
+      },
+      "instructionManipulation": {
+        "title": "Manipulation der Instruktionshierarchie erkannt",
+        "detail": "Der skill enthält Sprache, die Benutzerfreigabe, Systemrichtlinien oder normale Berechtigungsgrenzen umgehen will."
+      },
+      "obfuscation": {
+        "title": "Dynamische oder kodierte Ausführung erkannt",
+        "detail": "Der skill erstellt Code dynamisch oder dekodiert Payloads. Jeden erzeugten Befehl vor dem Vertrauen prüfen."
+      },
+      "binary": {
+        "title": "Binärinhalt enthalten",
+        "detail": "Binärdateien sind vorhanden: {{paths}}. Vor der Verbreitung des skills prüfen."
+      },
+      "symlink": {
+        "title": "Symbolischer Link erkannt",
+        "detail": "Symbolische Links können dazu führen, dass ein skill Dateien außerhalb seines scheinbaren Ordners liest oder kopiert. Manuell prüfen; die Verbreitung lehnt sie ab."
+      },
+      "activation": {
+        "title": "Hook- oder MCP-Konfiguration erkannt",
+        "detail": "Automatische Aktivierung, Serverbefehle und Vertrauensgrenzen vor der Aktivierung dieses skills prüfen."
+      },
+      "outsideWrite": {
+        "title": "Möglicher Schreibzugriff außerhalb des Projekts",
+        "detail": "Der skill verweist auf Benutzer-, System- oder übergeordnete Pfade. Ziele vor der Ausführung prüfen."
+      },
+      "invokedScript": {
+        "title": "Skript aus SKILL.md aufgerufen",
+        "detail": "Die Anweisungen verweisen auf ausführbaren Inhalt: {{paths}}. Das Skript auch ohne Ausführungsbit prüfen."
+      }
+    }
   },
   "projects": {
     "yourFolders": "Ihre Ordner",
@@ -189,7 +267,6 @@
     "globalSkills": "Globale skills",
     "globallyInstalledSkills": "Global installierte skills",
     "globalCaution": "In jedem Projekt geladen",
-    "globalIntro": "Diese befinden sich in ~/.claude/skills oder ~/.agents/skills, sodass jeder Agent sie in jedem Projekt lädt. Behalten Sie nur skills, die wirklich universell sind — verschieben Sie den Rest in das Projekt, das sie tatsächlich verwendet, oder deinstallieren Sie nicht mehr benötigte skills. Das lokale Archiv ermöglicht die Wiederherstellung.",
     "approximateContextCost": "Ungefähre Kontextkosten",
     "moveToProjectTitle": "Die {{agent}}-Installation in einen Projektordner kopieren und anschließend diese globale Kopie deinstallieren",
     "quarantineGlobalAria": "Globale Kopie von {{name}} deinstallieren ({{agent}})",
@@ -233,7 +310,18 @@
     "noKnownTechnology": "In diesem Projekt wurde keine bekannte Technologie erkannt.",
     "recommendedForProject": "Für dieses Projekt empfohlen",
     "installVerifiedTitle": "Aus der MafiaIA Skill List mit Hash-Prüfung installieren",
-    "alreadyInstalledInspect": "Bereits installiert · prüfen"
+    "alreadyInstalledInspect": "Bereits installiert · prüfen",
+    "recommendationDescription": "Kuratierte Anleitung für {{skillId}}.",
+    "reasons": {
+      "packageDependency": "In den Projektabhängigkeiten gefunden: {{name}}.",
+      "configFilePresent": "Die Datei {{path}} ist vorhanden.",
+      "fileExtensionFound": "Es gibt {{extension}}-Dateien, z. B. {{examplePath}}.",
+      "contentMatch": "Die Datei {{file}} enthält „{{pattern}}“. ",
+      "combination": "Kombination erkannt: {{technologies}}.",
+      "profileCategory": "Das Projekt verwendet eine Technologie der Kategorie {{categories}}.",
+      "profileExtension": "Es gibt {{extension}}-Dateien, z. B. {{examplePath}}.",
+      "profileMatch": "Der Projektinhalt passt zu diesem Profil."
+    }
   },
   "map": {
     "scopeMatrix": "Bereichsmatrix",
@@ -264,7 +352,14 @@
     "trustTitle": "Wie die Bibliothek vertrauenswürdig bleibt",
     "trustDescription": "Jeder skill wird vor der Anzeige auf Struktur, Umfang, Skripte und dokumentierte Kompatibilität geprüft.",
     "loadingCatalog": "Kuratierte Skill-Liste wird geladen…",
-    "loadError": "Die kuratierte Liste konnte nicht geladen werden"
+    "loadError": "Die kuratierte Liste konnte nicht geladen werden",
+    "catalogDescription": "{{description}}",
+    "filterTechnology": "Nach Technologie filtern",
+    "allTechnologies": "Alle Technologien",
+    "resultsCount": "{{visible}} von {{total}} werden angezeigt",
+    "showMore_one": "{{count}} weitere anzeigen",
+    "showMore_other": "{{count}} weitere anzeigen",
+    "retry": "Erneut versuchen"
   },
   "healthPage": {
     "securityCheck": "Sicherheitsprüfung",
@@ -399,5 +494,10 @@
     "auditPass": "bestanden",
     "auditWarn": "warnung",
     "auditFail": "fehlgeschlagen"
+  },
+  "overview": {
+    "scannedFolders": "Gescannte Ordner",
+    "showDetails": "Details zu {{name}} anzeigen",
+    "hideDetails": "Details zu {{name}} ausblenden"
   }
 }

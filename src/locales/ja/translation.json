@@ -166,7 +166,85 @@
     "urgentIssue_one": "{{count}} 件の緊急の問題",
     "urgentIssue_other": "{{count}} 件の緊急の問題",
     "reviewSuggestedCount": "{{count}} 件のレビュー推奨",
-    "healthyFootprint": "潜在アクティベーショントークン"
+    "healthyFootprint": "潜在アクティベーショントークン",
+    "findings": {
+      "incompleteFrontmatter": {
+        "title": "frontmatter が不完全",
+        "detail": "SKILL.md の YAML frontmatter は --- で開始・終了する必要があります"
+      },
+      "missingDescription": {
+        "title": "説明がありません",
+        "detail": "エージェントがこの skill を確実に選べるよう、具体的な説明を追加してください。"
+      },
+      "nameMismatch": {
+        "title": "フォルダー名と skill 名が異なります",
+        "detail": "フォルダーは {{folderName}}、frontmatter の名前は {{skillName}} です。"
+      },
+      "largeFootprint": {
+        "title": "アクティベーション負荷が大きい",
+        "detail": "詳細な参考資料を SKILL.md の外に移し、段階的に読み込めるようにしてください。"
+      },
+      "executableScripts": {
+        "title": "実行可能なスクリプトを検出",
+        "detail": "使用前に確認してください：{{paths}}。"
+      },
+      "divergentCopies": {
+        "title": "コピーの内容が分岐しています",
+        "detail": "同じ名前の skill のインストールに異なる SKILL.md の内容があります。同期またはコピーの削除前に確認してください。"
+      },
+      "globalProjectCopies": {
+        "title": "グローバルとプロジェクトのコピー",
+        "detail": "{{agent}} はグローバルコピーとプロジェクト限定コピーの両方を認識できます。どこでも必要でない限り、プロジェクト範囲を優先してください。"
+      },
+      "destructive": {
+        "title": "破壊的なコマンドを検出",
+        "detail": "この skill にはデータ削除、ストレージ消去、ファイルの一括削除が可能なコマンドが含まれます。インストールと配布をブロックしました。"
+      },
+      "destructiveScript": {
+        "title": "呼び出されたスクリプトに破壊的なコマンド",
+        "detail": "明示的に呼び出されたスクリプトがファイルを一括削除できます。この skill を信頼する前に対象を確認してください。"
+      },
+      "privilege": {
+        "title": "権限または特権の変更を検出",
+        "detail": "この skill は昇格を要求したり権限を変更したりできます。使用前に対象と範囲を確認してください。"
+      },
+      "pipeExec": {
+        "title": "ダウンロードと実行のパイプを検出",
+        "detail": "この skill はリモートコンテンツを直接 shell に渡します。内容とソースを独立して確認するまでブロックします。"
+      },
+      "exfiltration": {
+        "title": "認証情報の外部流出の可能性",
+        "detail": "認証情報らしいパスや値が外向きのリクエストと共に現れています。データフローを理解するまでブロックします。"
+      },
+      "instructionManipulation": {
+        "title": "指示階層の操作を検出",
+        "detail": "この skill にはユーザーの承認、システムポリシー、通常の権限境界を回避しようとする文言があります。"
+      },
+      "obfuscation": {
+        "title": "動的またはエンコードされた実行を検出",
+        "detail": "この skill はコードを動的に構築するかペイロードをデコードします。生成された各コマンドを確認してから信頼してください。"
+      },
+      "binary": {
+        "title": "バイナリコンテンツを含む",
+        "detail": "バイナリファイルがあります：{{paths}}。skill の配布を許可する前に確認してください。"
+      },
+      "symlink": {
+        "title": "シンボリックリンクを検出",
+        "detail": "シンボリックリンクにより、skill が見かけ上のフォルダー外のファイルを読み書きできる場合があります。手動で確認してください。配布時は拒否されます。"
+      },
+      "activation": {
+        "title": "Hook または MCP 設定を検出",
+        "detail": "この skill を有効にする前に、自動アクティベーション、サーバーコマンド、信頼境界を確認してください。"
+      },
+      "outsideWrite": {
+        "title": "プロジェクト外への書き込みの可能性",
+        "detail": "この skill はユーザー、システム、親ディレクトリのパスを参照します。実行を許可する前に保存先を確認してください。"
+      },
+      "invokedScript": {
+        "title": "SKILL.md からスクリプトを呼び出し",
+        "detail": "指示が実行可能な内容を参照しています：{{paths}}。実行ビットがなくてもスクリプトを確認してください。"
+      }
+    }
   },
   "projects": {
     "yourFolders": "あなたのフォルダ",
@@ -189,7 +267,6 @@
     "globalSkills": "グローバル skills",
     "globallyInstalledSkills": "グローバルにインストールされた skills",
     "globalCaution": "すべてのプロジェクトで読み込まれます",
-    "globalIntro": "これらは ~/.claude/skills または ~/.agents/skills に存在するため、すべてのエージェントがすべてのプロジェクトで読み込みます。真に汎用的な skills のみを保持し、残りは実際に使用するプロジェクトに移動するか、不要なものはアンインストールしてください。ローカルアーカイブから元に戻せます。",
     "approximateContextCost": "おおよそのコンテキストコスト",
     "moveToProjectTitle": "{{agent}} のインストールをプロジェクトフォルダにコピーし、そのグローバルコピーをアンインストール",
     "quarantineGlobalAria": "{{name}} のグローバルコピーをアンインストール ({{agent}})",
@@ -233,7 +310,18 @@
     "noKnownTechnology": "このプロジェクトに既知のテクノロジーは検出されませんでした。",
     "recommendedForProject": "このプロジェクトに推奨",
     "installVerifiedTitle": "MafiaIA Skill List からハッシュ検証付きでインストール",
-    "alreadyInstalledInspect": "インストール済み · 詳細"
+    "alreadyInstalledInspect": "インストール済み · 詳細",
+    "recommendationDescription": "{{skillId}} のキュレーション済みガイド。",
+    "reasons": {
+      "packageDependency": "プロジェクトの依存関係に見つかりました：{{name}}。",
+      "configFilePresent": "ファイル {{path}} が存在します。",
+      "fileExtensionFound": "{{extension}} ファイルがあります（例：{{examplePath}}）。",
+      "contentMatch": "ファイル {{file}} に「{{pattern}}」が含まれています。",
+      "combination": "次の組み合わせを検出しました：{{technologies}}。",
+      "profileCategory": "プロジェクトは {{categories}} カテゴリの技術を使用しています。",
+      "profileExtension": "{{extension}} ファイルがあります（例：{{examplePath}}）。",
+      "profileMatch": "プロジェクトの内容がこのプロファイルに一致します。"
+    }
   },
   "map": {
     "scopeMatrix": "スコープマトリックス",
@@ -264,7 +352,14 @@
     "trustTitle": "ライブラリの信頼性の維持方法",
     "trustDescription": "各 skill は構造、スコープ、スクリプト、文書化された互換性についてレビューされてからここに表示されます。",
     "loadingCatalog": "厳選されたスキルリストを読み込み中…",
-    "loadError": "厳選リストを読み込めませんでした"
+    "loadError": "厳選リストを読み込めませんでした",
+    "catalogDescription": "{{description}}",
+    "filterTechnology": "技術で絞り込む",
+    "allTechnologies": "すべての技術",
+    "resultsCount": "{{total}} 件中 {{visible}} 件を表示",
+    "showMore_one": "あと {{count}} 件表示",
+    "showMore_other": "あと {{count}} 件表示",
+    "retry": "再試行"
   },
   "healthPage": {
     "securityCheck": "セキュリティチェック",
@@ -399,5 +494,10 @@
     "auditPass": "合格",
     "auditWarn": "警告",
     "auditFail": "不合格"
+  },
+  "overview": {
+    "scannedFolders": "スキャン済みフォルダー",
+    "showDetails": "{{name}} の詳細を表示",
+    "hideDetails": "{{name}} の詳細を非表示"
   }
 }

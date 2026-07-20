@@ -1,9 +1,7 @@
-import { formatTokenCount, healthClass, healthLabelKey } from '../lib/skill-utils'
-import type { Finding, Installation, ProjectInventory, Skill } from '../lib/types'
+import { abbreviatePath as abbreviate, healthLabelKey } from '../lib/skill-utils'
+import type { Finding, ProjectInventory } from '../lib/types'
 import { Empty } from './shared'
 import { useTranslation } from 'react-i18next'
-
-const abbreviate = (path: string) => path.replace(/^\/Users\/[^/]+/, '~').replace(/^\/home\/[^/]+/, '~')
 
 type ProjectHealth = { key: string, tone: 'error' | 'warning' | 'info' }
 
@@ -14,18 +12,14 @@ const aggregateHealth = (inventory: ProjectInventory, findings: Finding[]): Proj
   return { key: 'health.healthy', tone: 'info' }
 }
 
-export function Projects({ inventories, findings, globalSkills, workspaceRoots, isDemo, onAddFolder, onRemoveFolder, onOpen, onInspect, onLocalize, onUninstall }: {
+export function Projects({ inventories, findings, workspaceRoots, isDemo, onAddFolder, onRemoveFolder, onOpen }: {
   inventories: ProjectInventory[]
   findings: Finding[]
-  globalSkills: Skill[]
   workspaceRoots: string[]
   isDemo: boolean
   onAddFolder: () => void
   onRemoveFolder: (root: string) => void
   onOpen: (path: string) => void
-  onInspect: (skillId: string) => void
-  onLocalize: (skill: Skill, installation: Installation, alternateSources?: Installation[]) => void
-  onUninstall: (installations: Installation[]) => void
 }) {
   const { t } = useTranslation()
   const rootInventories = inventories.filter((inventory) => !inventory.parentPath || !inventories.some((candidate) => candidate.path === inventory.parentPath))
@@ -74,32 +68,5 @@ export function Projects({ inventories, findings, globalSkills, workspaceRoots, 
         </article>
       })}
     </div> : <Empty icon="◇" title={t('projects.noProjects')} detail={t('projects.noProjectsDetail')} />}
-
-    <div className="panel global-panel" aria-label={t('projects.globallyInstalledSkills')}>
-      <div className="panel-heading-row">
-        <div className="panel-heading"><h3>{t('projects.globalSkills')}</h3><span className="count-chip">{globalSkills.length}</span></div>
-        {globalSkills.length > 0 && <span className="global-caution">⚠ {t('projects.globalCaution')}</span>}
-      </div>
-      <p className="muted-copy global-intro">{t('projects.globalIntro')}</p>
-      {globalSkills.length ? <div className="global-list">{globalSkills.map((skill) => {
-        const userInstallations = skill.installations.filter((installation) => installation.scope === 'user')
-        const source = userInstallations[0] ?? skill.installations[0]
-        return <div className="global-row" key={skill.id}>
-          <span className="global-main">
-            <button className="skill-name-button" onClick={() => onInspect(skill.id)}><strong>{skill.name}</strong></button>
-            <small>{skill.description || t('common.noDescription')}</small>
-            {userInstallations.map((installation) => <code className="global-path" key={installation.id} title={installation.path}>{abbreviate(installation.path)}</code>)}
-          </span>
-          <span className="agent-cell">{[...new Set(userInstallations.map((installation) => installation.agent))].map((agent) => <span className="agent-badge sm" key={agent}>{t(`agents.${agent}`)}</span>)}</span>
-          <span className="global-tokens" title={t('projects.approximateContextCost')}>{formatTokenCount(skill.contextTokens)} {t('common.tokens')}</span>
-          <span className={`health-pill ${healthClass(skill, findings)}`}>{t(healthLabelKey(skill, findings))}</span>
-          <div className="row-actions">
-            <button className="secondary-button compact" onClick={() => onInspect(skill.id)}>{t('common.inspect')}</button>
-            {source && <button className="secondary-button compact" title={t('projects.moveToProjectTitle', { agent: t(`agents.${source.agent}`) })} onClick={() => onLocalize(skill, source, userInstallations.filter((installation) => installation.id !== source.id))}>{t('common.moveToProject')}</button>}
-            {userInstallations.length > 0 && <button className="danger-button compact" aria-label={t('common.uninstallGlobal', { count: userInstallations.length })} title={t('common.uninstallGlobal', { count: userInstallations.length })} onClick={() => onUninstall(userInstallations)}>{t('common.uninstallGlobal', { count: userInstallations.length })}</button>}
-          </div>
-        </div>
-      })}</div> : <p className="global-empty-copy">{t('projects.noGlobalSkills')}</p>}
-    </div>
   </section>
 }

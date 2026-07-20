@@ -159,8 +159,8 @@ function AnalysisPanel({ result, at, projectPath, onInspect, onInstall }: {
       <div className="recommend-list">{pending.map((recommendation) => <div className="recommend-row" key={recommendation.skillId}>
         <div className="recommend-main">
           <strong>{recommendation.skillId}</strong>
-          <small>{recommendation.description}</small>
-          <div className="recommend-reasons">{recommendation.reasons.map((reason) => <span className="recommend-reason" key={reason.techName}>{reason.evidenceText}</span>)}</div>
+          <small>{t(recommendation.description.key, recommendation.description.params)}</small>
+          <div className="recommend-reasons">{recommendation.reasons.map((reason) => <span className="recommend-reason" key={reason.techName}>{t(reason.evidenceText.key, reason.evidenceText.params)}</span>)}</div>
           <code className="recommend-source">{recommendation.sourceRepo}</code>
         </div>
         <button className="primary-button compact" title={t('projectDetail.installVerifiedTitle')} onClick={() => onInstall(recommendation)}>{t('common.install')}</button>

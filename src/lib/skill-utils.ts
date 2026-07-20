@@ -30,6 +30,8 @@ export const healthClass = (skill: Skill, findings: Finding[]) =>
 
 export const countUniqueProjects = (report: ScanReport) => report.projects.length
 
+export const abbreviatePath = (path: string) => path.replace(/^\/Users\/[^/]+/, '~').replace(/^\/home\/[^/]+/, '~')
+
 export const projectName = (path?: string) => {
   if (!path) return 'Project'
   const normalized = path.replace(/\\/g, '/').replace(/\/$/, '')

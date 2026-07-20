@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import i18n from './i18n'
 import { ChangeModal, type ModalState } from './components/ChangeModal'
@@ -12,7 +12,7 @@ import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { appendConsoleLines, ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, detectStack, disableSkill, getWorkspaceRoots, installListedSkill, isDemoMode, listArchives, moveSkillToProject, openSkillFile, previewDisable, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, detectStack, disableSkill, getWorkspaceRoots, installListedSkill, isDemoMode, listArchives, listCatalogSkills, moveSkillToProject, openSkillFile, previewDisable, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
 import type { Agent, ArchiveEntry, CatalogEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
 
@@ -72,7 +72,7 @@ const scanResultLines = (report: ScanReport): ConsoleLine[] => {
 
 export default function App() {
   const { t } = useTranslation()
-  const [view, setView] = useState<View>('projects')
+  const [view, setView] = useState<View>('overview')
   const [report, setReport] = useState<ScanReport | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedProjectPath, setSelectedProjectPath] = useState<string | null>(null)
@@ -88,6 +88,10 @@ export default function App() {
   const [analyzingPath, setAnalyzingPath] = useState<string | null>(null)
   const [scanConsole, setScanConsole] = useState<{ lines: ConsoleLine[], done: boolean } | null>(null)
   const [applying, setApplying] = useState(false)
+  const [catalog, setCatalog] = useState<CatalogEntry[] | null>(null)
+  const [catalogLoading, setCatalogLoading] = useState(false)
+  const [catalogError, setCatalogError] = useState<string | null>(null)
+  const [catalogRequested, setCatalogRequested] = useState(false)
 
   const applyReport = (next: ScanReport) => {
     setReport(next)
@@ -132,6 +136,24 @@ export default function App() {
     })()
   }, [])
   useEffect(() => { localStorage.setItem('skill-control-projects', JSON.stringify(workspaceRoots)) }, [workspaceRoots])
+
+  const loadCatalog = useCallback(async () => {
+    setCatalogLoading(true)
+    setCatalogError(null)
+    try {
+      setCatalog(await listCatalogSkills())
+    } catch (reason) {
+      setCatalogError(reason instanceof Error ? reason.message : String(reason))
+    } finally {
+      setCatalogLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (view !== 'discover' || catalogRequested || catalog) return
+    setCatalogRequested(true)
+    void loadCatalog()
+  }, [catalog, catalogRequested, loadCatalog, view])
 
   const persistRoots = async (nextRoots: string[]) => {
     setWorkspaceRoots(nextRoots)
@@ -184,7 +206,7 @@ export default function App() {
   const requestInstallFromCatalog = (entry: CatalogEntry) => {
     setModal({
       kind: 'install-listed',
-      recommendation: { skillId: entry.id, sourceRepo: entry.sourceRepo, description: entry.description, reasons: [], installed: false },
+      recommendation: { skillId: entry.id, sourceRepo: entry.sourceRepo, description: { key: 'discover.catalogDescription', params: { description: entry.description } }, reasons: [], installed: false },
       projectPath: projects[0]?.path ?? ''
     })
   }
@@ -369,10 +391,10 @@ export default function App() {
       {isScanning && !report ? <Loading /> : <div className="page-content">
         {view === 'projects' && (selectedInventory
           ? <ProjectDetail inventory={selectedInventory} childScopes={selectedChildScopes} findings={report?.findings ?? []} analysis={analyses[selectedInventory.path] ?? null} analyzing={analyzingPath === selectedInventory.path} onAnalyze={() => void analyzeProject(selectedInventory)} onBack={() => setSelectedProjectPath(null)} onOpenScope={setSelectedProjectPath} onInspect={(id, projectPath) => inspectSkill(id, projectPath ?? selectedInventory.path)} onUninstall={(installations) => void requestDisable(installations)} onLocalize={requestLocalize} onInstallRecommendation={(recommendation) => setModal({ kind: 'install-listed', recommendation, projectPath: selectedInventory.path })} />
-          : <Projects inventories={filteredInventories} findings={report?.findings ?? []} globalSkills={filteredGlobalSkills} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} onInspect={inspectSkill} onLocalize={requestLocalize} onUninstall={(installations) => void requestDisable(installations)} />)}
-        {view === 'overview' && report && <Overview report={report} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} />}
+          : <Projects inventories={filteredInventories} findings={report?.findings ?? []} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} />)}
+        {view === 'overview' && report && <Overview report={report} inventories={filteredInventories} globalSkills={filteredGlobalSkills} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} onOpenProject={(path) => { setSelectedProjectPath(path); setView('projects') }} onInspect={inspectSkill} onUninstall={(installations) => void requestDisable(installations)} />}
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} projects={projects} selectedId={selectedId} onSelect={setSelectedId} />}
-        {view === 'discover' && <Discover query={search} onInstall={requestInstallFromCatalog} />}
+        {view === 'discover' && <Discover query={search} catalog={catalog} loading={catalogLoading} error={catalogError} onRetry={() => void loadCatalog()} onInstall={requestInstallFromCatalog} />}
         {view === 'health' && report && <Health query={search} report={report} archives={archives} onRestore={(archive) => void restoreArchive(archive)} onSelect={(id) => { setSelectedId(id); setView('map') }} />}
         {!report && <Empty icon="!" title={t('app.errors.noReport')} detail={t('app.errors.runScan')} />}
       </div>}

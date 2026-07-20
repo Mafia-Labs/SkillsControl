@@ -1,5 +1,7 @@
 import type { CatalogEntry, ScanReport, StackDetection } from './types'
 
+const localized = (key: string, params: Record<string, string> = {}) => ({ key, params })
+
 export const demoReport: ScanReport = {
   scannedAt: new Date().toISOString(),
   scannedPaths: ['~/.agents/skills', '~/.claude/skills', '/workspace/demo/.agents/skills', '/workspace/demo/.claude/skills'],
@@ -41,9 +43,9 @@ export const demoReport: ScanReport = {
     }
   ],
   findings: [
-    { id: 'f1', skillId: 'frontend-design', severity: 'warning', title: 'Copies have diverged', detail: 'The global and project copies contain different skill contents.' },
-    { id: 'f2', skillId: 'frontend-design', severity: 'info', title: 'Global and project copies', detail: 'Prefer project scope unless this skill is useful everywhere.' },
-    { id: 'f3', skillId: 'security-review', severity: 'warning', title: 'Executable script', detail: 'Review scripts/check.sh before running it with an agent.' }
+    { id: 'f1', skillId: 'frontend-design', severity: 'warning', title: localized('health.findings.divergentCopies.title'), detail: localized('health.findings.divergentCopies.detail') },
+    { id: 'f2', skillId: 'frontend-design', severity: 'info', title: localized('health.findings.globalProjectCopies.title'), detail: localized('health.findings.globalProjectCopies.detail', { agent: 'Claude Code' }) },
+    { id: 'f3', skillId: 'security-review', severity: 'warning', title: localized('health.findings.invokedScript.title'), detail: localized('health.findings.invokedScript.detail', { paths: 'scripts/check.sh' }) }
   ]
 }
 
@@ -56,10 +58,10 @@ export const demoStackDetection = (): StackDetection => ({
     { techId: 'supabase', techName: 'Supabase', category: 'backend-data', evidence: [{ kind: 'packageDependency', name: '@supabase/supabase-js' }], hasSkills: true }
   ],
   recommendations: [
-    { skillId: 'next-best-practices', sourceRepo: 'vercel-labs/next-skills', description: 'Best practices for building and maintaining Next.js applications.', reasons: [{ techName: 'Next.js', evidenceText: 'Found in the project dependencies: next.' }], installed: false },
-    { skillId: 'react-best-practices', sourceRepo: 'vercel-labs/skills', description: 'Patterns for designing maintainable, efficient React components.', reasons: [{ techName: 'React', evidenceText: 'Found in the project dependencies: react.' }], installed: false },
-    { skillId: 'nextjs-supabase-patterns', sourceRepo: 'vercel-labs/skills', description: 'Patterns for integrating a Next.js application with Supabase.', reasons: [{ techName: 'Next.js + Supabase', evidenceText: 'Detected the combination of Next.js + Supabase.' }], installed: false },
-    { skillId: 'frontend-design', sourceRepo: 'anthropics/skills', description: 'Cross-cutting criteria for building clear, consistent frontend interfaces.', reasons: [{ techName: 'Frontend', evidenceText: 'The project uses a technology in the framework-frontend category.' }], installed: true }
+    { skillId: 'next-best-practices', sourceRepo: 'vercel-labs/next-skills', description: localized('projectDetail.recommendationDescription', { skillId: 'next-best-practices' }), reasons: [{ techName: 'Next.js', evidenceText: localized('projectDetail.reasons.packageDependency', { name: 'next' }) }], installed: false },
+    { skillId: 'react-best-practices', sourceRepo: 'vercel-labs/skills', description: localized('projectDetail.recommendationDescription', { skillId: 'react-best-practices' }), reasons: [{ techName: 'React', evidenceText: localized('projectDetail.reasons.packageDependency', { name: 'react' }) }], installed: false },
+    { skillId: 'nextjs-supabase-patterns', sourceRepo: 'vercel-labs/skills', description: localized('projectDetail.recommendationDescription', { skillId: 'nextjs-supabase-patterns' }), reasons: [{ techName: 'Next.js + Supabase', evidenceText: localized('projectDetail.reasons.combination', { technologies: 'Next.js + Supabase' }) }], installed: false },
+    { skillId: 'frontend-design', sourceRepo: 'anthropics/skills', description: localized('projectDetail.recommendationDescription', { skillId: 'frontend-design' }), reasons: [{ techName: 'Frontend', evidenceText: localized('projectDetail.reasons.profileCategory', { categories: 'framework-frontend' }) }], installed: true }
   ],
   groups: [
     { label: 'Next.js', kind: 'technology', skillIds: ['next-best-practices'] },

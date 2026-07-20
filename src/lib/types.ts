@@ -6,6 +6,11 @@ export type Severity = 'info' | 'warning' | 'error' | 'critical'
 export type SecurityStatus = 'Reviewed' | 'Low risk' | 'Review required' | 'Blocked' | 'Unknown' | 'Stale'
 export type Capability = 'Read project files' | 'Execute shell commands' | 'Access network' | 'Access credentials' | 'Write outside project' | 'Hooks or MCP' | 'Binary content' | 'External content'
 
+export type LocalizedText = {
+  key: string
+  params: Record<string, string>
+}
+
 export type SkillProvenance = {
   sourceUrl?: string
   sourceOwner?: string
@@ -35,8 +40,8 @@ export type Finding = {
   id: string
   skillId: string
   severity: Severity
-  title: string
-  detail: string
+  title: LocalizedText
+  detail: LocalizedText
 }
 
 export type ExternalAudit = {
@@ -149,13 +154,13 @@ export type DetectedTechnology = {
 
 export type RecommendationReason = {
   techName: string
-  evidenceText: string
+  evidenceText: LocalizedText
 }
 
 export type SkillRecommendation = {
   skillId: string
   sourceRepo: string
-  description: string
+  description: LocalizedText
   reasons: RecommendationReason[]
   installed: boolean
 }

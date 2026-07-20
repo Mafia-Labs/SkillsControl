@@ -76,7 +76,7 @@ export function ChangeModal({ modal, projects, applying, onCancel, onApply }: {
       <p className="eyebrow">{t('change.review')}</p>
       <h2 id="change-title">{title}</h2>
       {listed && <>
-        <p>{modal.recommendation.description || t('change.curatedDescription')}</p>
+        <p>{t(modal.recommendation.description.key, modal.recommendation.description.params) || t('change.curatedDescription')}</p>
         <div className="change-list">
           <strong>{t('change.verifiedSource')}</strong>
           <span>{t('change.pinnedCommit')} <code>{modal.recommendation.sourceRepo}</code></span>

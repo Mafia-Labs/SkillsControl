@@ -1,3 +1,4 @@
+use super::LocalizedText;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::{
@@ -332,7 +333,7 @@ pub(crate) struct DetectedTechnology {
 #[serde(rename_all = "camelCase")]
 pub(crate) struct RecommendationReason {
     pub(crate) tech_name: String,
-    pub(crate) evidence_text: String,
+    pub(crate) evidence_text: LocalizedText,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -340,7 +341,7 @@ pub(crate) struct RecommendationReason {
 pub(crate) struct SkillRecommendation {
     pub(crate) skill_id: String,
     pub(crate) source_repo: String,
-    pub(crate) description: String,
+    pub(crate) description: LocalizedText,
     pub(crate) reasons: Vec<RecommendationReason>,
     pub(crate) installed: bool,
 }
@@ -800,7 +801,10 @@ pub(crate) fn detect_project(
             .collect::<Vec<_>>();
         let reason = RecommendationReason {
             tech_name: combo.name.clone(),
-            evidence_text: format!("Detected the combination of {}.", names.join(" + ")),
+            evidence_text: LocalizedText::with_params(
+                "projectDetail.reasons.combination",
+                [("technologies", names.join(" + "))],
+            ),
         };
         let skill_ids = combo
             .skills
@@ -835,14 +839,17 @@ pub(crate) fn detect_project(
             continue;
         }
         let evidence = if category_match {
-            format!(
-                "The project uses a technology in the {} category.",
-                profile.categories.join(", ")
+            LocalizedText::with_params(
+                "projectDetail.reasons.profileCategory",
+                [("categories", profile.categories.join(", "))],
             )
         } else if let Some((extension, example_path)) = extension_match {
-            format!("There are {extension} files, e.g. {example_path}.")
+            LocalizedText::with_params(
+                "projectDetail.reasons.profileExtension",
+                [("extension", extension), ("examplePath", example_path)],
+            )
         } else {
-            "The project content matches this profile.".into()
+            LocalizedText::new("projectDetail.reasons.profileMatch")
         };
         let reason = RecommendationReason {
             tech_name: profile.name.clone(),
@@ -971,20 +978,27 @@ fn package_matches_pattern(package: &str, pattern: &str) -> bool {
     package.starts_with(&pattern[..star]) && package.ends_with(&pattern[star + 1..])
 }
 
-fn evidence_text(evidence: &DetectionEvidence) -> String {
+fn evidence_text(evidence: &DetectionEvidence) -> LocalizedText {
     match evidence {
-        DetectionEvidence::PackageDependency { name } => {
-            format!("Found in the project dependencies: {name}.")
-        }
-        DetectionEvidence::ConfigFilePresent { path } => {
-            format!("The file {path} exists.")
-        }
-        DetectionEvidence::FileExtensionFound { ext, example_path } => {
-            format!("There are {ext} files, e.g. {example_path}.")
-        }
-        DetectionEvidence::ContentMatch { file, pattern } => {
-            format!("The file {file} contains \"{pattern}\".")
-        }
+        DetectionEvidence::PackageDependency { name } => LocalizedText::with_params(
+            "projectDetail.reasons.packageDependency",
+            [("name", name.clone())],
+        ),
+        DetectionEvidence::ConfigFilePresent { path } => LocalizedText::with_params(
+            "projectDetail.reasons.configFilePresent",
+            [("path", path.clone())],
+        ),
+        DetectionEvidence::FileExtensionFound { ext, example_path } => LocalizedText::with_params(
+            "projectDetail.reasons.fileExtensionFound",
+            [
+                ("extension", ext.clone()),
+                ("examplePath", example_path.clone()),
+            ],
+        ),
+        DetectionEvidence::ContentMatch { file, pattern } => LocalizedText::with_params(
+            "projectDetail.reasons.contentMatch",
+            [("file", file.clone()), ("pattern", pattern.clone())],
+        ),
     }
 }
 
@@ -1000,7 +1014,10 @@ fn append_recommendation(
             .or_insert_with(|| SkillRecommendation {
                 skill_id: skill.id.clone(),
                 source_repo: skill.source_repo.clone(),
-                description: skill.description.clone(),
+                description: LocalizedText::with_params(
+                    "projectDetail.recommendationDescription",
+                    [("skillId", skill.id.clone())],
+                ),
                 reasons: Vec::new(),
                 installed: installed_skills.contains(&skill.id),
             });
@@ -1295,9 +1312,14 @@ mod tests {
             .expect("Next.js recommendation should exist");
 
         assert!(recommendation.installed);
-        assert!(recommendation.reasons[0]
-            .evidence_text
-            .contains("dependencies"));
+        assert_eq!(
+            recommendation.reasons[0].evidence_text.key,
+            "projectDetail.reasons.packageDependency"
+        );
+        assert_eq!(
+            recommendation.reasons[0].evidence_text.params.get("name"),
+            Some(&"next".to_string())
+        );
     }
 
     #[test]

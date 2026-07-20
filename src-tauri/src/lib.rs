@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
     process::Command,
@@ -12,6 +12,37 @@ use std::{
 
 mod detection;
 mod skill_list;
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct LocalizedText {
+    pub(crate) key: String,
+    pub(crate) params: BTreeMap<String, String>,
+}
+
+impl LocalizedText {
+    pub(crate) fn new(key: &str) -> Self {
+        Self {
+            key: key.into(),
+            params: BTreeMap::new(),
+        }
+    }
+
+    pub(crate) fn with_params<I, K, V>(key: &str, params: I) -> Self
+    where
+        I: IntoIterator<Item = (K, V)>,
+        K: Into<String>,
+        V: Into<String>,
+    {
+        Self {
+            key: key.into(),
+            params: params
+                .into_iter()
+                .map(|(name, value)| (name.into(), value.into()))
+                .collect(),
+        }
+    }
+}
 
 const MAX_PROJECT_SCAN_DEPTH: usize = 32;
 const AGENT_SKILL_PATHS: [(&str, &str); 2] =
@@ -128,8 +159,8 @@ struct Finding {
     id: String,
     skill_id: String,
     severity: String,
-    title: String,
-    detail: String,
+    title: LocalizedText,
+    detail: LocalizedText,
 }
 
 #[derive(Clone, Serialize)]
@@ -677,15 +708,15 @@ fn add_security_finding(
     suffix: &str,
     severity: &str,
     code: &str,
-    title: &str,
-    detail: impl Into<String>,
+    title_key: &str,
+    detail: LocalizedText,
 ) {
     findings.push(Finding {
         id: format!("{skill_id}-{code}-{suffix}"),
         skill_id: skill_id.into(),
         severity: severity.into(),
-        title: title.into(),
-        detail: detail.into(),
+        title: LocalizedText::new(title_key),
+        detail,
     });
 }
 
@@ -851,8 +882,8 @@ fn analyze_skill(
             suffix,
             "critical",
             "destructive",
-            "Destructive command detected",
-            "The skill contains commands that can delete data, wipe storage or remove files in bulk. Installation and propagation are blocked.",
+            "health.findings.destructive.title",
+            LocalizedText::new("health.findings.destructive.detail"),
         );
     }
 
@@ -874,8 +905,8 @@ fn analyze_skill(
             suffix,
             "warning",
             "destructive-script",
-            "Destructive command in an invoked script",
-            "An explicitly invoked script can remove files in bulk. Review its exact target before trusting this skill.",
+            "health.findings.destructiveScript.title",
+            LocalizedText::new("health.findings.destructiveScript.detail"),
         );
     }
 
@@ -889,8 +920,8 @@ fn analyze_skill(
             suffix,
             "error",
             "privilege",
-            "Privilege or permission changes detected",
-            "The skill can request elevation or alter permissions. Review the exact target and scope before use.",
+            "health.findings.privilege.title",
+            LocalizedText::new("health.findings.privilege.detail"),
         );
     }
 
@@ -903,8 +934,8 @@ fn analyze_skill(
             suffix,
             "critical",
             "pipe-exec",
-            "Download-and-execute pipeline detected",
-            "The skill pipes remote content directly into a shell. This is blocked until the content and source are independently reviewed.",
+            "health.findings.pipeExec.title",
+            LocalizedText::new("health.findings.pipeExec.detail"),
         );
     }
 
@@ -930,8 +961,8 @@ fn analyze_skill(
             suffix,
             "critical",
             "exfiltration",
-            "Potential credential exfiltration",
-            "Credential-like paths or values appear alongside outbound requests. The skill is blocked until the data flow is understood.",
+            "health.findings.exfiltration.title",
+            LocalizedText::new("health.findings.exfiltration.detail"),
         );
     }
 
@@ -954,8 +985,8 @@ fn analyze_skill(
             suffix,
             "error",
             "instruction-manipulation",
-            "Instruction hierarchy manipulation detected",
-            "The skill contains language that attempts to bypass user approval, system policy or normal permission boundaries.",
+            "health.findings.instructionManipulation.title",
+            LocalizedText::new("health.findings.instructionManipulation.detail"),
         );
     }
 
@@ -982,8 +1013,8 @@ fn analyze_skill(
             suffix,
             "error",
             "obfuscation",
-            "Dynamic or encoded execution detected",
-            "The skill constructs code dynamically or decodes payloads. Review every generated command before trusting it.",
+            "health.findings.obfuscation.title",
+            LocalizedText::new("health.findings.obfuscation.detail"),
         );
     }
 
@@ -994,10 +1025,10 @@ fn analyze_skill(
             suffix,
             "warning",
             "binary",
-            "Binary content included",
-            format!(
-                "Binary files are present: {}. Review them before allowing the skill to propagate.",
-                inventory.binary_files.join(", ")
+            "health.findings.binary.title",
+            LocalizedText::with_params(
+                "health.findings.binary.detail",
+                [("paths", inventory.binary_files.join(", "))],
             ),
         );
         capabilities.push("Binary content".into());
@@ -1010,8 +1041,8 @@ fn analyze_skill(
             suffix,
             "warning",
             "symlink",
-            "Symbolic link detected",
-            "Symlinks can make a skill read or copy files outside its apparent folder. Review manually; propagation rejects them.",
+            "health.findings.symlink.title",
+            LocalizedText::new("health.findings.symlink.detail"),
         );
     }
 
@@ -1030,8 +1061,8 @@ fn analyze_skill(
             suffix,
             "warning",
             "activation",
-            "Hook or MCP configuration detected",
-            "Review automatic activation, server commands and trust boundaries before enabling this skill.",
+            "health.findings.activation.title",
+            LocalizedText::new("health.findings.activation.detail"),
         );
     }
 
@@ -1069,8 +1100,8 @@ fn analyze_skill(
             suffix,
             "error",
             "outside-write",
-            "Potential write outside project",
-            "The skill references home, system or parent paths. Review file destinations before allowing it to act.",
+            "health.findings.outsideWrite.title",
+            LocalizedText::new("health.findings.outsideWrite.detail"),
         );
     }
 
@@ -1081,8 +1112,11 @@ fn analyze_skill(
             suffix,
             "warning",
             "invoked-script",
-            "Script invoked from SKILL.md",
-            format!("The instructions reference executable content: {}. Review the script even when its permission bit is not executable.", invoked_scripts.join(", ")),
+            "health.findings.invokedScript.title",
+            LocalizedText::with_params(
+                "health.findings.invokedScript.detail",
+                [("paths", invoked_scripts.join(", "))],
+            ),
         );
     }
 
@@ -1173,8 +1207,8 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                 return None;
             };
             let skill_path = entry.path();
-            let is_skill_directory = file_type.is_dir()
-                || (file_type.is_symlink() && skill_path.is_dir());
+            let is_skill_directory =
+                file_type.is_dir() || (file_type.is_symlink() && skill_path.is_dir());
             if !is_skill_directory {
                 return None;
             }
@@ -1205,8 +1239,8 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                     id: format!("{id}-metadata-{finding_suffix}"),
                     skill_id: id.clone(),
                     severity: "warning".into(),
-                    title: "Incomplete frontmatter".into(),
-                    detail: "SKILL.md should begin and end its YAML frontmatter with ---".into(),
+                    title: LocalizedText::new("health.findings.incompleteFrontmatter.title"),
+                    detail: LocalizedText::new("health.findings.incompleteFrontmatter.detail"),
                 });
             }
             if metadata
@@ -1218,9 +1252,8 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                     id: format!("{id}-description-{finding_suffix}"),
                     skill_id: id.clone(),
                     severity: "error".into(),
-                    title: "Missing description".into(),
-                    detail: "Add a specific description so agents can select this skill reliably."
-                        .into(),
+                    title: LocalizedText::new("health.findings.missingDescription.title"),
+                    detail: LocalizedText::new("health.findings.missingDescription.detail"),
                 });
             }
             if name != folder_name {
@@ -1228,8 +1261,14 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                     id: format!("{id}-name-{finding_suffix}"),
                     skill_id: id.clone(),
                     severity: "warning".into(),
-                    title: "Folder and skill name differ".into(),
-                    detail: format!("Folder is {folder_name}; frontmatter name is {name}."),
+                    title: LocalizedText::new("health.findings.nameMismatch.title"),
+                    detail: LocalizedText::with_params(
+                        "health.findings.nameMismatch.detail",
+                        [
+                            ("folderName", folder_name.clone()),
+                            ("skillName", name.clone()),
+                        ],
+                    ),
                 });
             }
             if content.len() > 20_000 {
@@ -1237,9 +1276,8 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                     id: format!("{id}-length-{finding_suffix}"),
                     skill_id: id.clone(),
                     severity: "warning".into(),
-                    title: "Large activation footprint".into(),
-                    detail: "Move detailed reference material out of SKILL.md so it can load progressively."
-                        .into(),
+                    title: LocalizedText::new("health.findings.largeFootprint.title"),
+                    detail: LocalizedText::new("health.findings.largeFootprint.detail"),
                 });
             }
             if !executable_scripts.is_empty() {
@@ -1247,8 +1285,11 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                     id: format!("{id}-scripts-{finding_suffix}"),
                     skill_id: id.clone(),
                     severity: "warning".into(),
-                    title: "Executable scripts detected".into(),
-                    detail: format!("Review before use: {}.", executable_scripts.join(", ")),
+                    title: LocalizedText::new("health.findings.executableScripts.title"),
+                    detail: LocalizedText::with_params(
+                        "health.findings.executableScripts.detail",
+                        [("paths", executable_scripts.join(", "))],
+                    ),
                 });
             }
             let local_scan = analyze_skill(
@@ -1260,11 +1301,8 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                 skill_root_is_symlink,
             );
             findings.extend(local_scan.findings);
-            let lock_metadata = read_lock_metadata(
-                &id,
-                &candidate.scope,
-                candidate.project_path.as_deref(),
-            );
+            let lock_metadata =
+                read_lock_metadata(&id, &candidate.scope, candidate.project_path.as_deref());
             let source = metadata
                 .get("source")
                 .cloned()
@@ -1303,10 +1341,7 @@ fn scan_candidate(candidate: &CandidatePath) -> Vec<(Skill, Vec<Finding>)> {
                 .cloned()
                 .or(lock_metadata.license.clone());
             let external_reputation = source_repository.as_deref().and_then(|repository| {
-                cached_external_reputation(
-                    &format!("{repository}/{id}"),
-                    &source_hash,
-                )
+                cached_external_reputation(&format!("{repository}/{id}"), &source_hash)
             });
             let installation = Installation {
                 id: installation_id,
@@ -1779,9 +1814,8 @@ fn scan_skills(projects: Vec<String>) -> ScanReport {
                 id: format!("{}-divergent", skill.id),
                 skill_id: skill.id.clone(),
                 severity: "warning".into(),
-                title: "Copies have diverged".into(),
-                detail: "Installations with the same skill name contain different SKILL.md content. Review them before synchronizing or removing a copy."
-                    .into(),
+                title: LocalizedText::new("health.findings.divergentCopies.title"),
+                detail: LocalizedText::new("health.findings.divergentCopies.detail"),
             });
         }
 
@@ -1799,9 +1833,10 @@ fn scan_skills(projects: Vec<String>) -> ScanReport {
                     id: format!("{}-{agent}-override", skill.id),
                     skill_id: skill.id.clone(),
                     severity: "info".into(),
-                    title: "Global and project copies".into(),
-                    detail: format!(
-                        "{agent} can see both global and project-scoped copies. Prefer project scope unless the skill is useful everywhere."
+                    title: LocalizedText::new("health.findings.globalProjectCopies.title"),
+                    detail: LocalizedText::with_params(
+                        "health.findings.globalProjectCopies.detail",
+                        [("agent", agent.to_string())],
                     ),
                 });
             }
@@ -2098,8 +2133,11 @@ struct CatalogEntry {
 #[tauri::command]
 async fn list_catalog_skills() -> Result<Vec<CatalogEntry>, String> {
     let list = skill_list::load_skill_list().await?;
-    Ok(list
-        .skills
+    Ok(catalog_entries(list))
+}
+
+fn catalog_entries(list: skill_list::SkillList) -> Vec<CatalogEntry> {
+    list.skills
         .into_iter()
         .map(|skill| CatalogEntry {
             id: skill.id,
@@ -2108,7 +2146,7 @@ async fn list_catalog_skills() -> Result<Vec<CatalogEntry>, String> {
             techs: skill.techs,
             source_repo: skill.source.repo,
         })
-        .collect())
+        .collect()
 }
 
 /// Records provenance for an installed skill in the lockfile the scanner
@@ -2475,6 +2513,8 @@ pub fn run() {
     }
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             scan_skills,
             preview_disable,
@@ -2499,9 +2539,9 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::{
-        agent_paths, build_external_reputation, dedupe_roots, existing_roots, external_verdict,
-        frontmatter, github_source, open_archive_database, skill_root, target_agents,
-        validate_skill_id, ExternalAudit,
+        agent_paths, build_external_reputation, catalog_entries, dedupe_roots, existing_roots,
+        external_verdict, frontmatter, github_source, open_archive_database, skill_root,
+        target_agents, validate_skill_id, ExternalAudit,
     };
     use std::{env, fs, path::Path};
 
@@ -2517,6 +2557,22 @@ mod tests {
     fn deduplicates_workspace_roots_preserving_order() {
         let roots = dedupe_roots(vec!["/work/a".into(), "/work/b".into(), "/work/a".into()]);
         assert_eq!(roots, vec!["/work/a".to_string(), "/work/b".to_string()]);
+    }
+
+    #[test]
+    fn projects_bundled_catalog_entries_without_exposing_source_pins() {
+        let list = super::skill_list::bundled_skill_list().expect("bundled list should be valid");
+        let entries = catalog_entries(list);
+        let entry = entries
+            .iter()
+            .find(|entry| entry.id == "next-best-practices")
+            .expect("catalog entry should be projected");
+
+        assert!(entries.len() > 200);
+        assert_eq!(entry.source_repo, "midudev/autoskills");
+        assert!(!serde_json::to_string(entry)
+            .expect("catalog entry should serialize")
+            .contains("sha256"));
     }
 
     #[test]
@@ -2893,7 +2949,7 @@ mod tests {
         assert!(scan
             .findings
             .iter()
-            .any(|finding| finding.title == "Script invoked from SKILL.md"));
+            .any(|finding| finding.title.key == "health.findings.invokedScript.title"));
 
         fs::remove_dir_all(skill).expect("skill folder should clean up");
     }

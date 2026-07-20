@@ -5,8 +5,8 @@ import i18n, { supportedLanguages, type SupportedLanguage } from '../i18n'
 export type View = 'projects' | 'overview' | 'map' | 'discover' | 'health'
 
 const navigation: Array<{ id: View, labelKey: string, icon: string }> = [
-  { id: 'projects', labelKey: 'navigation.projects', icon: '◇' },
   { id: 'overview', labelKey: 'navigation.overview', icon: '◉' },
+  { id: 'projects', labelKey: 'navigation.projects', icon: '◇' },
   { id: 'map', labelKey: 'navigation.map', icon: '⊞' },
   { id: 'discover', labelKey: 'navigation.discover', icon: '⌕' },
   { id: 'health', labelKey: 'navigation.health', icon: '✦' }

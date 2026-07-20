@@ -59,8 +59,9 @@ describe('skill inventory utilities', () => {
 
   it('derives the highest-priority health label for a skill', () => {
     expect(healthLabel(sampleSkill, [])).toBe('Healthy')
-    expect(healthLabel(sampleSkill, [{ id: '1', skillId: 'a', severity: 'warning', title: '', detail: '' }])).toBe('Review suggested')
-    expect(healthLabel(sampleSkill, [{ id: '2', skillId: 'a', severity: 'error', title: '', detail: '' }])).toBe('Needs attention')
+    const finding = (id: string, severity: 'warning' | 'error') => ({ id, skillId: 'a', severity, title: { key: 'health.findings.test.title', params: {} }, detail: { key: 'health.findings.test.detail', params: {} } })
+    expect(healthLabel(sampleSkill, [finding('1', 'warning')])).toBe('Review suggested')
+    expect(healthLabel(sampleSkill, [finding('2', 'error')])).toBe('Needs attention')
   })
 
   it('orders health findings from the most urgent to the least urgent', () => {

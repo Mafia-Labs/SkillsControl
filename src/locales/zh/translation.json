@@ -166,7 +166,85 @@
     "urgentIssue_one": "{{count}} 个紧急问题",
     "urgentIssue_other": "{{count}} 个紧急问题",
     "reviewSuggestedCount": "{{count}} 个建议审核",
-    "healthyFootprint": "潜在激活 tokens"
+    "healthyFootprint": "潜在激活 tokens",
+    "findings": {
+      "incompleteFrontmatter": {
+        "title": "frontmatter 不完整",
+        "detail": "SKILL.md 的 YAML frontmatter 应以 --- 开始和结束"
+      },
+      "missingDescription": {
+        "title": "缺少描述",
+        "detail": "添加具体描述，让 agent 能可靠地选择此 skill。"
+      },
+      "nameMismatch": {
+        "title": "文件夹名称与 skill 名称不同",
+        "detail": "文件夹为 {{folderName}}；frontmatter 名称为 {{skillName}}。"
+      },
+      "largeFootprint": {
+        "title": "激活负载过大",
+        "detail": "将详细参考资料移出 SKILL.md，使其可以渐进式加载。"
+      },
+      "executableScripts": {
+        "title": "检测到可执行脚本",
+        "detail": "使用前请检查：{{paths}}。"
+      },
+      "divergentCopies": {
+        "title": "副本内容已分歧",
+        "detail": "同名 skill 的安装包含不同的 SKILL.md 内容。在同步或移除副本前请检查。"
+      },
+      "globalProjectCopies": {
+        "title": "全局副本和项目副本",
+        "detail": "{{agent}} 同时可以看到全局副本和项目范围副本。除非该 skill 到处都有用，否则优先使用项目范围。"
+      },
+      "destructive": {
+        "title": "检测到破坏性命令",
+        "detail": "此 skill 包含可能删除数据、清除存储或批量移除文件的命令。安装和传播已被阻止。"
+      },
+      "destructiveScript": {
+        "title": "调用的脚本中包含破坏性命令",
+        "detail": "明确调用的脚本可以批量删除文件。在信任此 skill 前请检查其确切目标。"
+      },
+      "privilege": {
+        "title": "检测到权限或特权变更",
+        "detail": "此 skill 可以请求提权或修改权限。使用前请检查确切目标和范围。"
+      },
+      "pipeExec": {
+        "title": "检测到下载并执行管道",
+        "detail": "此 skill 将远程内容直接传入 shell。在独立检查内容和来源前已阻止该操作。"
+      },
+      "exfiltration": {
+        "title": "可能存在凭据外泄",
+        "detail": "类似凭据的路径或值与出站请求同时出现。在理解数据流前已阻止此 skill。"
+      },
+      "instructionManipulation": {
+        "title": "检测到指令层级操纵",
+        "detail": "此 skill 包含试图绕过用户批准、系统策略或正常权限边界的语言。"
+      },
+      "obfuscation": {
+        "title": "检测到动态或编码执行",
+        "detail": "此 skill 动态构造代码或解码载荷。信任前请检查每条生成的命令。"
+      },
+      "binary": {
+        "title": "包含二进制内容",
+        "detail": "存在二进制文件：{{paths}}。允许此 skill 传播前请检查。"
+      },
+      "symlink": {
+        "title": "检测到符号链接",
+        "detail": "符号链接可能使 skill 读取或复制其表面文件夹之外的文件。请手动检查；传播会拒绝符号链接。"
+      },
+      "activation": {
+        "title": "检测到 Hook 或 MCP 配置",
+        "detail": "启用此 skill 前请检查自动激活、服务器命令和信任边界。"
+      },
+      "outsideWrite": {
+        "title": "可能写入项目之外",
+        "detail": "此 skill 引用了用户目录、系统目录或父级路径。允许其运行前请检查写入目标。"
+      },
+      "invokedScript": {
+        "title": "SKILL.md 调用了脚本",
+        "detail": "指令引用了可执行内容：{{paths}}。即使没有执行权限位，也请检查脚本。"
+      }
+    }
   },
   "projects": {
     "yourFolders": "你的文件夹",
@@ -189,7 +267,6 @@
     "globalSkills": "全局 skills",
     "globallyInstalledSkills": "全局安装的 skills",
     "globalCaution": "在每个项目中加载",
-    "globalIntro": "这些内容位于 ~/.claude/skills 或 ~/.agents/skills，因此每个 agent 都会在每个项目中加载它们。只保留真正通用的 skills：将其余内容移动到实际使用它的项目，或卸载不再需要的内容。本地归档支持撤销。",
     "approximateContextCost": "大致上下文成本",
     "moveToProjectTitle": "将 {{agent}} 的安装复制到项目文件夹，然后卸载该全局副本",
     "quarantineGlobalAria": "卸载 {{name}} 的全局副本（{{agent}}）",
@@ -233,7 +310,18 @@
     "noKnownTechnology": "此项目中未检测到已知技术。",
     "recommendedForProject": "推荐给此项目",
     "installVerifiedTitle": "从精选列表安装并验证哈希",
-    "alreadyInstalledInspect": "已安装 · 检查"
+    "alreadyInstalledInspect": "已安装 · 检查",
+    "recommendationDescription": "为 {{skillId}} 提供的精选指南。",
+    "reasons": {
+      "packageDependency": "在项目依赖中找到：{{name}}。",
+      "configFilePresent": "文件 {{path}} 存在。",
+      "fileExtensionFound": "存在 {{extension}} 文件，例如 {{examplePath}}。",
+      "contentMatch": "文件 {{file}} 包含“{{pattern}}”。",
+      "combination": "检测到技术组合：{{technologies}}。",
+      "profileCategory": "项目使用了 {{categories}} 类别中的技术。",
+      "profileExtension": "存在 {{extension}} 文件，例如 {{examplePath}}。",
+      "profileMatch": "项目内容符合此配置。"
+    }
   },
   "map": {
     "scopeMatrix": "作用域矩阵",
@@ -264,7 +352,14 @@
     "trustTitle": "精选库如何保持可信",
     "trustDescription": "每个 skill 都会在出现之前经过结构、作用域、scripts 和文档化兼容性审核。",
     "loadingCatalog": "正在加载精选技能列表…",
-    "loadError": "无法加载精选列表"
+    "loadError": "无法加载精选列表",
+    "catalogDescription": "{{description}}",
+    "filterTechnology": "按技术筛选",
+    "allTechnologies": "所有技术",
+    "resultsCount": "显示 {{total}} 项中的 {{visible}} 项",
+    "showMore_one": "再显示 {{count}} 项",
+    "showMore_other": "再显示 {{count}} 项",
+    "retry": "重试"
   },
   "healthPage": {
     "securityCheck": "安全检查",
@@ -399,5 +494,10 @@
     "auditPass": "pass",
     "auditWarn": "warn",
     "auditFail": "fail"
+  },
+  "overview": {
+    "scannedFolders": "已扫描的文件夹",
+    "showDetails": "显示 {{name}} 的详细信息",
+    "hideDetails": "隐藏 {{name}} 的详细信息"
   }
 }

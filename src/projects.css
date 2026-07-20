@@ -79,8 +79,8 @@
 .detail-head-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .scope-panel { min-height: 0; border-color: #2b2a45 !important; }
 
-/* Global skills panel (Projects view) */
-.projects .global-panel { min-height: 0; margin-top: 26px; padding: 18px; border: 1px solid #21252c; border-radius: 11px; background: #101216; }
+/* Global skills + scanned folders panels (Overview) */
+.global-panel { min-height: 0; margin-top: 26px; padding: 18px; border: 1px solid #21252c; border-radius: 11px; background: #101216; }
 .panel-heading-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .global-panel .panel-heading { display: flex; align-items: center; gap: 10px; }
 .global-panel .panel-heading h3 { margin-bottom: 0; }
@@ -93,6 +93,25 @@
 .global-tokens { color: #8b919c; font-family: var(--mono); font-size: 11px; white-space: nowrap; }
 .global-row .health-pill { flex: 0 0 auto; }
 .global-empty-copy { margin: 0; color: #82cda8; font-size: 12px; }
+
+/* Collapsed global rows: title + health only, details on expand */
+.global-row.expandable { flex-direction: column; align-items: stretch; gap: 0; padding: 0; }
+.global-row-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 12px; color: inherit; background: transparent; text-align: left; }
+.global-row-head:hover strong { color: #c8c2ff; }
+.global-row-head:focus-visible { border-radius: 8px; outline: 2px solid #8d7dff; outline-offset: -2px; }
+.global-row-head .chevron { color: #777e8b; font-size: 11px; }
+.global-row-head strong { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.global-row-details { display: grid; gap: 7px; padding: 0 12px 12px 30px; }
+.global-row-meta { display: flex; align-items: center; gap: 12px; }
+
+/* Scanned folder rows (Overview) */
+.folder-row { display: flex; align-items: center; gap: 14px; width: 100%; padding: 11px 12px; border: 1px solid #21252c; border-radius: 8px; color: inherit; background: #13151a; text-align: left; }
+.folder-row:hover { border-color: #33384a; background: #12151b; }
+.folder-row:focus-visible { outline: 2px solid #8d7dff; outline-offset: 2px; }
+.folder-main { display: grid; flex: 1; min-width: 0; gap: 3px; }
+.folder-main strong { color: #eef0f4; font-size: 13px; }
+.folder-count { color: #8b919c; font-size: 11px; white-space: nowrap; }
+.folder-row b { color: #777e8b; }
 
 /* Auto Skills analysis panel */
 .analysis-panel { border-color: #2b2a45; background: linear-gradient(180deg, #14131f, #101216); animation: panel-reveal .32s ease; }

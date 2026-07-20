@@ -166,7 +166,85 @@
     "urgentIssue_one": "{{count}} problème urgent",
     "urgentIssue_other": "{{count}} problèmes urgents",
     "reviewSuggestedCount": "{{count}} révision recommandée",
-    "healthyFootprint": "tokens d'activation potentiels"
+    "healthyFootprint": "tokens d'activation potentiels",
+    "findings": {
+      "incompleteFrontmatter": {
+        "title": "Frontmatter incomplet",
+        "detail": "SKILL.md doit commencer et terminer son frontmatter YAML par ---"
+      },
+      "missingDescription": {
+        "title": "Description manquante",
+        "detail": "Ajoutez une description précise pour que les agents puissent sélectionner ce skill de manière fiable."
+      },
+      "nameMismatch": {
+        "title": "Le dossier et le nom du skill diffèrent",
+        "detail": "Le dossier est {{folderName}} ; le nom du frontmatter est {{skillName}}."
+      },
+      "largeFootprint": {
+        "title": "Empreinte d'activation importante",
+        "detail": "Déplacez les références détaillées hors de SKILL.md afin de les charger progressivement."
+      },
+      "executableScripts": {
+        "title": "Scripts exécutables détectés",
+        "detail": "À vérifier avant utilisation : {{paths}}."
+      },
+      "divergentCopies": {
+        "title": "Les copies ont divergé",
+        "detail": "Les installations portant le même nom de skill contiennent des SKILL.md différents. Vérifiez-les avant de synchroniser ou supprimer une copie."
+      },
+      "globalProjectCopies": {
+        "title": "Copies globales et de projet",
+        "detail": "{{agent}} voit à la fois des copies globales et limitées au projet. Préférez la portée projet sauf si le skill est utile partout."
+      },
+      "destructive": {
+        "title": "Commande destructive détectée",
+        "detail": "Le skill contient des commandes pouvant supprimer des données, effacer un stockage ou supprimer des fichiers en masse. L'installation et la propagation sont bloquées."
+      },
+      "destructiveScript": {
+        "title": "Commande destructive dans un script invoqué",
+        "detail": "Un script explicitement invoqué peut supprimer des fichiers en masse. Vérifiez sa cible exacte avant de faire confiance à ce skill."
+      },
+      "privilege": {
+        "title": "Changements de privilèges ou permissions détectés",
+        "detail": "Le skill peut demander une élévation ou modifier des permissions. Vérifiez la cible et la portée exactes avant utilisation."
+      },
+      "pipeExec": {
+        "title": "Chaîne téléchargement-exécution détectée",
+        "detail": "Le skill envoie directement du contenu distant vers un shell. Elle est bloquée jusqu'à vérification indépendante du contenu et de la source."
+      },
+      "exfiltration": {
+        "title": "Exfiltration potentielle d'identifiants",
+        "detail": "Des chemins ou valeurs ressemblant à des identifiants apparaissent avec des requêtes sortantes. Le skill est bloqué jusqu'à compréhension du flux de données."
+      },
+      "instructionManipulation": {
+        "title": "Manipulation de la hiérarchie des instructions détectée",
+        "detail": "Le skill tente de contourner l'approbation de l'utilisateur, la politique système ou les limites normales de permission."
+      },
+      "obfuscation": {
+        "title": "Exécution dynamique ou encodée détectée",
+        "detail": "Le skill construit du code dynamiquement ou décode des charges. Vérifiez chaque commande générée avant de lui faire confiance."
+      },
+      "binary": {
+        "title": "Contenu binaire inclus",
+        "detail": "Des fichiers binaires sont présents : {{paths}}. Vérifiez-les avant d'autoriser la propagation du skill."
+      },
+      "symlink": {
+        "title": "Lien symbolique détecté",
+        "detail": "Les liens symboliques peuvent faire lire ou copier des fichiers hors du dossier apparent du skill. Vérifiez manuellement ; la propagation les refuse."
+      },
+      "activation": {
+        "title": "Configuration Hook ou MCP détectée",
+        "detail": "Vérifiez l'activation automatique, les commandes serveur et les limites de confiance avant d'activer ce skill."
+      },
+      "outsideWrite": {
+        "title": "Écriture potentielle hors du projet",
+        "detail": "Le skill référence des chemins utilisateur, système ou parents. Vérifiez les destinations avant de l'autoriser à agir."
+      },
+      "invokedScript": {
+        "title": "Script invoqué depuis SKILL.md",
+        "detail": "Les instructions référencent du contenu exécutable : {{paths}}. Vérifiez le script même sans bit d'exécution."
+      }
+    }
   },
   "projects": {
     "yourFolders": "Vos dossiers",
@@ -189,7 +267,6 @@
     "globalSkills": "Skills globaux",
     "globallyInstalledSkills": "Skills installés globalement",
     "globalCaution": "Chargés dans chaque projet",
-    "globalIntro": "Ils se trouvent dans ~/.claude/skills ou ~/.agents/skills ; chaque agent les charge donc dans chaque projet. Ne gardez que les skills véritablement universels : déplacez les autres dans le projet qui les utilise ou désinstallez ceux dont vous n'avez plus besoin. L'archive permet de revenir en arrière.",
     "approximateContextCost": "Coût de contexte approximatif",
     "moveToProjectTitle": "Copier l'installation {{agent}} dans un dossier de projet, puis désinstaller cette copie globale",
     "quarantineGlobalAria": "Désinstaller la copie globale de {{name}} ({{agent}})",
@@ -233,7 +310,18 @@
     "noKnownTechnology": "Aucune technologie connue n'a été détectée dans ce projet.",
     "recommendedForProject": "Recommandés pour ce projet",
     "installVerifiedTitle": "Installer depuis la liste curée avec vérification du hash",
-    "alreadyInstalledInspect": "Déjà installé · inspecter"
+    "alreadyInstalledInspect": "Déjà installé · inspecter",
+    "recommendationDescription": "Conseil organisé pour {{skillId}}.",
+    "reasons": {
+      "packageDependency": "Trouvé dans les dépendances du projet : {{name}}.",
+      "configFilePresent": "Le fichier {{path}} existe.",
+      "fileExtensionFound": "Il y a des fichiers {{extension}}, par exemple {{examplePath}}.",
+      "contentMatch": "Le fichier {{file}} contient « {{pattern}} ». ",
+      "combination": "Combinaison détectée : {{technologies}}.",
+      "profileCategory": "Le projet utilise une technologie de la catégorie {{categories}}.",
+      "profileExtension": "Il y a des fichiers {{extension}}, par exemple {{examplePath}}.",
+      "profileMatch": "Le contenu du projet correspond à ce profil."
+    }
   },
   "map": {
     "scopeMatrix": "Matrice des portées",
@@ -264,7 +352,14 @@
     "trustTitle": "Comment la bibliothèque reste fiable",
     "trustDescription": "Chaque skill est révisé pour sa structure, sa portée, ses scripts et sa compatibilité documentée avant d'apparaître ici.",
     "loadingCatalog": "Chargement de la liste de skills organisée…",
-    "loadError": "Impossible de charger la liste organisée"
+    "loadError": "Impossible de charger la liste organisée",
+    "catalogDescription": "{{description}}",
+    "filterTechnology": "Filtrer par technologie",
+    "allTechnologies": "Toutes les technologies",
+    "resultsCount": "Affichage de {{visible}} sur {{total}}",
+    "showMore_one": "Afficher {{count}} de plus",
+    "showMore_other": "Afficher {{count}} de plus",
+    "retry": "Réessayer"
   },
   "healthPage": {
     "securityCheck": "Contrôle de sécurité",
@@ -399,5 +494,10 @@
     "auditPass": "pass",
     "auditWarn": "warn",
     "auditFail": "fail"
+  },
+  "overview": {
+    "scannedFolders": "Dossiers analysés",
+    "showDetails": "Afficher les détails de {{name}}",
+    "hideDetails": "Masquer les détails de {{name}}"
   }
 }
