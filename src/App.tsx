@@ -12,9 +12,9 @@ import { ProjectDetail } from './components/ProjectDetail'
 import { Empty, Banner, Loading } from './components/shared'
 import { appendConsoleLines, ProcessConsole, type ConsoleLine } from './components/ProcessConsole'
 import { SkillMap } from './components/SkillMap'
-import { checkOnlineReputation, chooseProjects, detectStack, disableSkill, getWorkspaceRoots, installListedSkill, isDemoMode, listArchives, listCatalogSkills, moveSkillToProject, openSkillFile, previewDisable, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
+import { checkOnlineReputation, chooseProjects, detectStack, disableSkill, getWorkspaceRoots, installListedSkill, isDemoMode, listArchives, listCatalogSkills, listSkillPacks, moveSkillToProject, openSkillFile, previewDisable, revealSkillFolder, restoreSkill, saveWorkspaceRoots, scanSkills, trustSkillVersion } from './lib/desktop'
 import { getSkillHealth, groupInstallationsByProject } from './lib/skill-utils'
-import type { Agent, ArchiveEntry, CatalogEntry, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
+import type { Agent, ArchiveEntry, CatalogEntry, CatalogPack, Installation, InstallTarget, ProjectInventory, ProjectSummary, ScanReport, Scope, SecurityStatus, Skill, StackDetection } from './lib/types'
 
 const loadWorkspaceRoots = (): string[] => {
   try {
@@ -92,6 +92,10 @@ export default function App() {
   const [catalogLoading, setCatalogLoading] = useState(false)
   const [catalogError, setCatalogError] = useState<string | null>(null)
   const [catalogRequested, setCatalogRequested] = useState(false)
+  const [packs, setPacks] = useState<CatalogPack[] | null>(null)
+  const [packsLoading, setPacksLoading] = useState(false)
+  const [packsError, setPacksError] = useState<string | null>(null)
+  const [packsRequested, setPacksRequested] = useState(false)
 
   const applyReport = (next: ScanReport) => {
     setReport(next)
@@ -155,6 +159,24 @@ export default function App() {
     void loadCatalog()
   }, [catalog, catalogRequested, loadCatalog, view])
 
+  const loadPacks = useCallback(async () => {
+    setPacksLoading(true)
+    setPacksError(null)
+    try {
+      setPacks(await listSkillPacks())
+    } catch (reason) {
+      setPacksError(reason instanceof Error ? reason.message : String(reason))
+    } finally {
+      setPacksLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (view !== 'discover' || packsRequested || packs) return
+    setPacksRequested(true)
+    void loadPacks()
+  }, [packs, packsRequested, loadPacks, view])
+
   const persistRoots = async (nextRoots: string[]) => {
     setWorkspaceRoots(nextRoots)
     await saveWorkspaceRoots(nextRoots)
@@ -209,6 +231,10 @@ export default function App() {
       recommendation: { skillId: entry.id, sourceRepo: entry.sourceRepo, description: { key: 'discover.catalogDescription', params: { description: entry.description } }, reasons: [], installed: false },
       projectPath: projects[0]?.path ?? ''
     })
+  }
+
+  const requestInstallFromPack = (pack: CatalogPack, skillIds: string[]) => {
+    setModal({ kind: 'install-pack', pack, skillIds, projectPath: projects[0]?.path ?? '' })
   }
 
   const editSkill = async (installation: Installation) => {
@@ -297,6 +323,15 @@ export default function App() {
             }
           }
         })
+        return
+      } else if (modal.kind === 'install-pack') {
+        const results = await Promise.allSettled(modal.skillIds.map((skillId) => installListedSkill(skillId, scope, target, projectPath)))
+        await minWait
+        const succeeded = results.filter((result) => result.status === 'fulfilled').length
+        const failed = results.length - succeeded
+        setNotice(t('app.notices.packInstalled', { pack: modal.pack.name, succeeded, total: results.length, failedSuffix: failed > 0 ? t('common.packInstallFailures', { count: failed }) : '' }))
+        setModal(null)
+        await refresh()
         return
       }
       setModal(null)
@@ -394,7 +429,7 @@ export default function App() {
           : <Projects inventories={filteredInventories} findings={report?.findings ?? []} workspaceRoots={workspaceRoots} isDemo={isDemo} onAddFolder={() => void addWorkspaceRoots()} onRemoveFolder={(root) => void removeWorkspaceRoot(root)} onOpen={setSelectedProjectPath} />)}
         {view === 'overview' && report && <Overview report={report} inventories={filteredInventories} globalSkills={filteredGlobalSkills} onViewHealth={() => setView('health')} onViewMap={() => setView('map')} onOpenProject={(path) => { setSelectedProjectPath(path); setView('projects') }} onInspect={inspectSkill} onUninstall={(installations) => void requestDisable(installations)} />}
         {view === 'map' && report && <SkillMap skills={filteredSkills} report={report} projects={projects} selectedId={selectedId} onSelect={setSelectedId} />}
-        {view === 'discover' && <Discover query={search} catalog={catalog} loading={catalogLoading} error={catalogError} onRetry={() => void loadCatalog()} onInstall={requestInstallFromCatalog} />}
+        {view === 'discover' && <Discover query={search} catalog={catalog} loading={catalogLoading} error={catalogError} onRetry={() => void loadCatalog()} onInstall={requestInstallFromCatalog} packs={packs} packsLoading={packsLoading} packsError={packsError} onRetryPacks={() => void loadPacks()} onInstallPack={requestInstallFromPack} />}
         {view === 'health' && report && <Health query={search} report={report} archives={archives} onRestore={(archive) => void restoreArchive(archive)} onSelect={(id) => { setSelectedId(id); setView('map') }} />}
         {!report && <Empty icon="!" title={t('app.errors.noReport')} detail={t('app.errors.runScan')} />}
       </div>}

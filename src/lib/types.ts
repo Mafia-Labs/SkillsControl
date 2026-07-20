@@ -185,3 +185,11 @@ export type CatalogEntry = {
   techs: string[]
   sourceRepo: string
 }
+
+export type CatalogPack = {
+  id: string
+  name: string
+  description: string
+  category: string
+  entries: CatalogEntry[]
+}

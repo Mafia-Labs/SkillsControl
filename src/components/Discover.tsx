@@ -1,17 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { CatalogEntry } from '../lib/types'
+import type { CatalogEntry, CatalogPack } from '../lib/types'
 import { Empty, Loading } from './shared'
 
 const INITIAL_VISIBLE = 30
 
-export function Discover({ query, catalog, loading, error, onRetry, onInstall }: {
+export function Discover({ query, catalog, loading, error, onRetry, onInstall, packs, packsLoading, packsError, onRetryPacks, onInstallPack }: {
   query: string
   catalog: CatalogEntry[] | null
   loading: boolean
   error: string | null
   onRetry: () => void
   onInstall: (entry: CatalogEntry) => void
+  packs: CatalogPack[] | null
+  packsLoading: boolean
+  packsError: string | null
+  onRetryPacks: () => void
+  onInstallPack: (pack: CatalogPack, skillIds: string[]) => void
 }) {
   const { t } = useTranslation()
   const [technology, setTechnology] = useState('')
@@ -33,6 +38,8 @@ export function Discover({ query, catalog, loading, error, onRetry, onInstall }:
 
   return <section className="discover">
     <div className="discover-heading"><p className="eyebrow">{t('discover.curatedLibrary')}</p><h2>{t('discover.title')}</h2><p>{t('discover.description')}</p></div>
+    <PacksSection packs={packs} loading={packsLoading} error={packsError} onRetry={onRetryPacks} onInstallPack={onInstallPack} />
+    <h3 className="discover-section-title">{t('discover.individualSkills')}</h3>
     {error ? <>
       <Empty icon="!" title={t('discover.loadError')} detail={error} />
       <button className="secondary-button" onClick={onRetry}>{t('discover.retry')}</button>
@@ -57,4 +64,78 @@ export function Discover({ query, catalog, loading, error, onRetry, onInstall }:
       </>}
     <aside className="curation-note"><span>✦</span><div><strong>{t('discover.trustTitle')}</strong><p>{t('discover.trustDescription')}</p></div></aside>
   </section>
+}
+
+function PacksSection({ packs, loading, error, onRetry, onInstallPack }: {
+  packs: CatalogPack[] | null
+  loading: boolean
+  error: string | null
+  onRetry: () => void
+  onInstallPack: (pack: CatalogPack, skillIds: string[]) => void
+}) {
+  const { t } = useTranslation()
+  const [expandedPackId, setExpandedPackId] = useState<string | null>(null)
+  const [selection, setSelection] = useState<Record<string, string[]>>({})
+
+  const selectionFor = (pack: CatalogPack) => selection[pack.id] ?? pack.entries.map((entry) => entry.id)
+
+  const toggleExpand = (pack: CatalogPack) => {
+    setExpandedPackId((current) => current === pack.id ? null : pack.id)
+    setSelection((current) => current[pack.id] ? current : { ...current, [pack.id]: pack.entries.map((entry) => entry.id) })
+  }
+
+  const toggleSkill = (pack: CatalogPack, skillId: string) => {
+    setSelection((current) => {
+      const active = current[pack.id] ?? pack.entries.map((entry) => entry.id)
+      const next = active.includes(skillId) ? active.filter((id) => id !== skillId) : [...active, skillId]
+      return { ...current, [pack.id]: next }
+    })
+  }
+
+  if (error) return <>
+    <h3 className="discover-section-title">{t('discover.packs.title')}</h3>
+    <Empty icon="!" title={t('discover.packs.loadError')} detail={error} />
+    <button className="secondary-button" onClick={onRetry}>{t('discover.retry')}</button>
+  </>
+
+  if (loading || !packs) return <>
+    <h3 className="discover-section-title">{t('discover.packs.title')}</h3>
+    <Loading label={t('discover.packs.loading')} />
+  </>
+
+  if (!packs.length) return null
+
+  return <>
+    <div className="discover-section-head">
+      <h3 className="discover-section-title">{t('discover.packs.title')}</h3>
+      <p className="muted-copy">{t('discover.packs.description')}</p>
+    </div>
+    <div className="packs-grid">{packs.map((pack) => {
+      const expanded = expandedPackId === pack.id
+      const selected = selectionFor(pack)
+      return <article className="pack-card" key={pack.id}>
+        <div className="stack-chips"><span className="stack-chip">{t(`discover.packs.category.${pack.category}`, pack.category)}</span></div>
+        <h3>{pack.name}</h3>
+        <p>{pack.description}</p>
+        <div className="catalog-footer">
+          <span className="muted-copy">{t('discover.packs.skillCount', { count: pack.entries.length })}</span>
+          <div className="pack-card-actions">
+            <button className="secondary-button compact" onClick={() => toggleExpand(pack)}>{expanded ? t('discover.packs.hideSkills') : t('discover.packs.viewSkills')}</button>
+            <button className="primary-button compact" onClick={() => onInstallPack(pack, pack.entries.map((entry) => entry.id))}>{t('discover.packs.installPack')} <span>→</span></button>
+          </div>
+        </div>
+        {expanded && <div className="pack-skill-list">
+          <div className="pack-skill-list-head">
+            <button className="secondary-button compact" onClick={() => setSelection((current) => ({ ...current, [pack.id]: pack.entries.map((entry) => entry.id) }))}>{t('discover.packs.selectAll')}</button>
+            <button className="secondary-button compact" onClick={() => setSelection((current) => ({ ...current, [pack.id]: [] }))}>{t('discover.packs.selectNone')}</button>
+          </div>
+          {pack.entries.map((entry) => <label className="checkbox-row" key={entry.id} htmlFor={`pack-skill-${entry.id}`}>
+            <input id={`pack-skill-${entry.id}`} type="checkbox" checked={selected.includes(entry.id)} onChange={() => toggleSkill(pack, entry.id)} />
+            <span><strong>{entry.name}</strong> — {entry.description}</span>
+          </label>)}
+          <button className="primary-button compact" disabled={!selected.length} onClick={() => onInstallPack(pack, selected)}>{t('discover.packs.installSelected', { count: selected.length })}</button>
+        </div>}
+      </article>
+    })}</div>
+  </>
 }

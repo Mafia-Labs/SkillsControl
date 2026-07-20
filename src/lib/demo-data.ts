@@ -1,4 +1,4 @@
-import type { CatalogEntry, ScanReport, StackDetection } from './types'
+import type { CatalogEntry, CatalogPack, ScanReport, StackDetection } from './types'
 
 const localized = (key: string, params: Record<string, string> = {}) => ({ key, params })
 
@@ -78,4 +78,28 @@ export const demoCatalog: CatalogEntry[] = [
   { id: 'react-best-practices', name: 'react-best-practices', description: 'Patterns for designing maintainable, efficient React components.', techs: ['react'], sourceRepo: 'vercel-labs/skills' },
   { id: 'mafia-frontend-design', name: 'mafia-frontend-design', description: 'Build polished, accessible interfaces with a coherent visual system.', techs: ['frontend'], sourceRepo: 'anthropics/skills' },
   { id: 'mafia-prompt-master', name: 'mafia-prompt-master', description: 'Structure and refine prompts for reliable agent behavior.', techs: ['prompting'], sourceRepo: 'midudev/autoskills' }
+]
+
+// A subset of the real, pinned entries bundled in src-tauri/pack-list.json, so the
+// browser-only demo shows the same pack shape and provenance as the desktop build.
+// `listSkillPacks` fetches the full live pack list in the real app.
+export const demoPacks: CatalogPack[] = [
+  {
+    id: 'marketing', name: 'Marketing online', category: 'marketing',
+    description: 'Copywriting, SEO, conversion, pricing and launch strategy for growing a product online.',
+    entries: [
+      { id: 'marketing-copywriting', name: 'copywriting', description: 'Writes and rewrites marketing copy for homepages, landing pages, pricing and feature pages.', techs: ['marketing'], sourceRepo: 'coreyhaines31/marketingskills' },
+      { id: 'marketing-seo-audit', name: 'seo-audit', description: 'Audits and diagnoses technical, on-page and content SEO issues on a site.', techs: ['marketing', 'seo'], sourceRepo: 'coreyhaines31/marketingskills' },
+      { id: 'marketing-cro', name: 'cro', description: 'Optimizes conversion rate on marketing pages and lead-capture forms.', techs: ['marketing'], sourceRepo: 'coreyhaines31/marketingskills' }
+    ]
+  },
+  {
+    id: 'superpowers', name: 'Superpowers', category: 'engineering',
+    description: 'The well-known Superpowers methodology bundle: brainstorming, planning, TDD, code review and worktree discipline for coding agents.',
+    entries: [
+      { id: 'superpowers-brainstorming', name: 'brainstorming', description: 'Refines a rough idea through questions, explores alternatives and saves a design document before code is written.', techs: ['superpowers'], sourceRepo: 'obra/superpowers' },
+      { id: 'superpowers-writing-plans', name: 'writing-plans', description: 'Breaks approved design into bite-sized tasks with exact file paths and verification steps.', techs: ['superpowers'], sourceRepo: 'obra/superpowers' },
+      { id: 'superpowers-systematic-debugging', name: 'systematic-debugging', description: 'A disciplined loop for isolating and fixing bugs instead of guessing at fixes.', techs: ['superpowers'], sourceRepo: 'obra/superpowers' }
+    ]
+  }
 ]
