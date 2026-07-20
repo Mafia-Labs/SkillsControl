@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "name": "MafiaIA Skill Packs",
+  "updatedAt": "2026-07-20T00:00:00.000Z",
+  "hashAlgorithm": "sha256 over \"<relpath>\\0<sha256(file)>\\n\" lines, files sorted by relative path",
+  "packs": [
+    {
+      "id": "marketing",
+      "name": "Marketing online",
+      "description": "Copywriting, SEO, conversion, pricing and launch strategy for growing a product online.",
+      "category": "marketing",
+      "skills": [
+        {
+          "id": "marketing-product-marketing",
+          "name": "product-marketing",
+          "description": "Builds the shared product-marketing context document (positioning, audience, competitors) every other marketing skill reads from.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/product-marketing", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "7cdb212f6d5b18cb323bbbd80ff6f71624491ad0481c1ba39841f2c9b7206ff5" },
+          "techs": ["marketing"],
+          "note": "Pack: Marketing online. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "marketing-copywriting",
+          "name": "copywriting",
+          "description": "Writes and rewrites marketing copy for homepages, landing pages, pricing and feature pages.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/copywriting", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "d522c0c8d99f68ae874332bfa9fd96c1dc5e4e7c7e3e70cdb6fc1363961d9c5b" },
+          "techs": ["marketing"],
+          "note": "Pack: Marketing online. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "marketing-seo-audit",
+          "name": "seo-audit",
+          "description": "Audits and diagnoses technical, on-page and content SEO issues on a site.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/seo-audit", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "39c507c7075d6d21799e39ce3d6c6dd017f5dcb73a287625c06d2c36ca21f136" },
+          "techs": ["marketing", "seo"],
+          "note": "Pack: Marketing online. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "marketing-cro",
+          "name": "cro",
+          "description": "Optimizes conversion rate on marketing pages and lead-capture forms.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/cro", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "c2d257cecc12b661f2b059292161b7679ef4317dc148154bb6663635e2345e88" },
+          "techs": ["marketing"],
+          "note": "Pack: Marketing online. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "marketing-analytics",
+          "name": "analytics",
+          "description": "Sets up and audits analytics tracking and conversion measurement (GA4, events, UTMs).",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/analytics", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "7ac1879a1d71c36820ccd63277e31aa24e40e9609775895be3f6738d42a45cba" },
+          "techs": ["marketing", "analytics"],
+          "note": "Pack: Marketing online. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "marketing-emails",
+          "name": "emails",
+          "description": "Builds email sequences, drip campaigns and lifecycle automation flows.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/emails", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "5d37ab33b6d4150d2048ec5ba9fc44c745de3ec35d6b82e6d3e070b79514811a" },
+          "techs": ["marketing"],
+          "note": "Pack: Marketing online. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "marketing-pricing",
+          "name": "pricing",
+          "description": "Works through pricing, packaging and monetization decisions.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/pricing", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "aafb0a670f527ed7f5f5658786f2c2e6e4b4b1408062ba54fad3ca516c0e815c" },
+          "techs": ["marketing"],
+          "note": "Pack: Marketing online. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "marketing-launch",
+          "name": "launch",
+          "description": "Plans product launches, feature announcements and go-to-market strategy.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/launch", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "41518ec59cf5f7640ca8b8b54219106892bbe97b977fa9d05e1180b664c7c5a8" },
+          "techs": ["marketing"],
+          "note": "Pack: Marketing online. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        }
+      ]
+    },
+    {
+      "id": "ads",
+      "name": "Ads & publicidad",
+      "description": "Paid-advertising strategy and creative for Google, Meta, LinkedIn, TikTok and other ad platforms.",
+      "category": "ads",
+      "skills": [
+        {
+          "id": "ads-ads",
+          "name": "ads",
+          "description": "Plans, targets, bids and optimizes paid ad campaigns across Google, Meta, LinkedIn, TikTok and X.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/ads", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "9af5093fcdc1882809cf6bb02c4b0085d077fa08eda9e7ccd6dde4c1738812e7" },
+          "techs": ["ads"],
+          "note": "Pack: Ads & publicidad. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "ads-ad-creative",
+          "name": "ad-creative",
+          "description": "Generates and iterates ad creative — headlines, copy variations and full ad sets — for any paid platform.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/ad-creative", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "5aaa0a911108688b2fbd9ba9e60f579d6310337ab98fb1ee1856a2de0d634f8a" },
+          "techs": ["ads"],
+          "note": "Pack: Ads & publicidad. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "name": "Redes sociales",
+      "description": "Social content creation, scheduling, community management and the visuals/video behind it.",
+      "category": "social",
+      "skills": [
+        {
+          "id": "social-social",
+          "name": "social",
+          "description": "Creates, schedules and optimizes social content for LinkedIn, X, Instagram, TikTok and Facebook, plus listening and engagement.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/social", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "59abdcb0c2045239c67104acb359a3cd25c875e3b37a224eec1b3567860a7f1e" },
+          "techs": ["social"],
+          "note": "Pack: Redes sociales. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "social-image",
+          "name": "image",
+          "description": "Creates and edits images for social graphics, blog heroes, product mockups and brand assets.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/image", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "a78db6db43cdd281026c893902eea6fd9df8e34acd72660b5dd92bb63c48f8be" },
+          "techs": ["social"],
+          "note": "Pack: Redes sociales. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "social-video",
+          "name": "video",
+          "description": "Produces short-form and social video content with AI tools and programmatic frameworks.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/video", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "f09064348998dcb3d8613bdb120e387f059620e94c106cbc27d4387e9a790dbe" },
+          "techs": ["social"],
+          "note": "Pack: Redes sociales. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        },
+        {
+          "id": "social-community-marketing",
+          "name": "community-marketing",
+          "description": "Builds and grows online communities (Discord, Slack, forums) to drive engagement and loyalty.",
+          "source": { "repo": "coreyhaines31/marketingskills", "path": "skills/community-marketing", "commit": "67264763cb107d61749f418d081c56e5bcbc0209", "sha256": "20b0a7669c66942610a021ca39e016f4397b6f0839461f7ff3e5291c27b01e18" },
+          "techs": ["social"],
+          "note": "Pack: Redes sociales. Fuente: coreyhaines31/marketingskills (MIT, 40.9k★, activo)."
+        }
+      ]
+    },
+    {
+      "id": "superpowers",
+      "name": "Superpowers",
+      "description": "The well-known Superpowers methodology bundle: brainstorming, planning, TDD, code review and worktree discipline for coding agents.",
+      "category": "engineering",
+      "skills": [
+        {
+          "id": "superpowers-using-superpowers",
+          "name": "using-superpowers",
+          "description": "Entry point that teaches an agent when and how to reach for the rest of the Superpowers bundle.",
+          "source": { "repo": "obra/superpowers", "path": "skills/using-superpowers", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "69c8076e0c513705d45f6f5a08b6139edef106d341bcd27b390fa30326857ad3" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-brainstorming",
+          "name": "brainstorming",
+          "description": "Refines a rough idea through questions, explores alternatives and saves a design document before code is written.",
+          "source": { "repo": "obra/superpowers", "path": "skills/brainstorming", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "86ef70d364a2f2857c2cb0afbfdef22688c45f64d9790985886f094a6ebba766" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-writing-plans",
+          "name": "writing-plans",
+          "description": "Breaks approved design into bite-sized tasks with exact file paths and verification steps.",
+          "source": { "repo": "obra/superpowers", "path": "skills/writing-plans", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "63c7ddf50723f1e55f2145b581efd013b9c7922b11ff55578b3370b96f626cfa" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-executing-plans",
+          "name": "executing-plans",
+          "description": "Works through a written plan task by task, verifying each step before moving on.",
+          "source": { "repo": "obra/superpowers", "path": "skills/executing-plans", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "677b49e1bc674e9324846db601a6d3bfd264cc300f2dcc4243d7ff8ef1bdf72a" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-systematic-debugging",
+          "name": "systematic-debugging",
+          "description": "A disciplined loop for isolating and fixing bugs instead of guessing at fixes.",
+          "source": { "repo": "obra/superpowers", "path": "skills/systematic-debugging", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "678445588396f3dfc083965ae38d113819df62100e7bf40f9b4385b59c5b4f33" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-test-driven-development",
+          "name": "test-driven-development",
+          "description": "Enforces a strict red-green-refactor loop for new code.",
+          "source": { "repo": "obra/superpowers", "path": "skills/test-driven-development", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "c23cb93afd666ccf534500af78e8cbb71b5bc3945745682471b901be66cb2c05" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-using-git-worktrees",
+          "name": "using-git-worktrees",
+          "description": "Creates an isolated git worktree workspace for a task and verifies a clean baseline before work starts.",
+          "source": { "repo": "obra/superpowers", "path": "skills/using-git-worktrees", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "0b580e4c9277cfe5c0cc720e7568642e433921321e7f2d5232e0575e1bc28c16" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-requesting-code-review",
+          "name": "requesting-code-review",
+          "description": "Prepares a change and requests a focused code review from another agent.",
+          "source": { "repo": "obra/superpowers", "path": "skills/requesting-code-review", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "3533f131f5edc459b2fbaa76ba159c7863ef4dcb4114f38d98fcf1319f0417b2" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-receiving-code-review",
+          "name": "receiving-code-review",
+          "description": "Processes incoming code-review feedback and decides what to act on.",
+          "source": { "repo": "obra/superpowers", "path": "skills/receiving-code-review", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "9d4989af155130caf99f7eafa32bb5ca952251f4fcfe8c45397fd6d7df79f04a" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-finishing-a-development-branch",
+          "name": "finishing-a-development-branch",
+          "description": "Wraps up a development branch cleanly — merges, cleans worktrees and closes the loop.",
+          "source": { "repo": "obra/superpowers", "path": "skills/finishing-a-development-branch", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "eeecee52fb809ba5e88519ec1b966a7d8090460db5fcf7186c4758de5910f89a" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-verification-before-completion",
+          "name": "verification-before-completion",
+          "description": "Forces an explicit verification pass before declaring a task done.",
+          "source": { "repo": "obra/superpowers", "path": "skills/verification-before-completion", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "58f4dbaa27e45d3ab963a96458f1269c04b43d6ba8789be7c614a18d2c5175f0" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-subagent-driven-development",
+          "name": "subagent-driven-development",
+          "description": "Coordinates multiple subagents against a shared plan, each owning a scoped piece of work.",
+          "source": { "repo": "obra/superpowers", "path": "skills/subagent-driven-development", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "6bb3397f5e69ce2fcf33316b8c8815d620600f3cb16d43f00661e07bf76a1ceb" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-dispatching-parallel-agents",
+          "name": "dispatching-parallel-agents",
+          "description": "Dispatches independent pieces of work to parallel agents and reconciles their results.",
+          "source": { "repo": "obra/superpowers", "path": "skills/dispatching-parallel-agents", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "12b271c9ae6a1e9379c767ef5b7d9041822797e6f3e10f38d5ecb4a92325495d" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        },
+        {
+          "id": "superpowers-writing-skills",
+          "name": "writing-skills",
+          "description": "Guides how to author a new, well-scoped SKILL.md — the meta-skill behind the rest of the bundle.",
+          "source": { "repo": "obra/superpowers", "path": "skills/writing-skills", "commit": "d884ae04edebef577e82ff7c4e143debd0bbec99", "sha256": "e31485b3ac195b0f3fa1d2328f629aba480cc3754841274b1e6a0bca8e8c8b87" },
+          "techs": ["superpowers"],
+          "note": "Pack: Superpowers. Fuente: obra/superpowers (MIT, 258k★, activo)."
+        }
+      ]
+    }
+  ]
+}

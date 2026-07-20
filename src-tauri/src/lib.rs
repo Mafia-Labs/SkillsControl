@@ -11,6 +11,7 @@ use std::{
 };
 
 mod detection;
+mod pack_list;
 mod skill_list;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -2149,6 +2150,44 @@ fn catalog_entries(list: skill_list::SkillList) -> Vec<CatalogEntry> {
         .collect()
 }
 
+/// Lightweight projection of a curated skill pack for the Discover screen —
+/// same idea as `CatalogEntry`, one level up.
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CatalogPack {
+    id: String,
+    name: String,
+    description: String,
+    category: String,
+    entries: Vec<CatalogEntry>,
+}
+
+#[tauri::command]
+async fn list_skill_packs() -> Result<Vec<CatalogPack>, String> {
+    let list = pack_list::load_pack_list().await?;
+    Ok(list
+        .packs
+        .into_iter()
+        .map(|pack| CatalogPack {
+            id: pack.id,
+            name: pack.name,
+            description: pack.description,
+            category: pack.category,
+            entries: pack
+                .skills
+                .into_iter()
+                .map(|skill| CatalogEntry {
+                    id: skill.id,
+                    name: skill.name,
+                    description: skill.description,
+                    techs: skill.techs,
+                    source_repo: skill.source.repo,
+                })
+                .collect(),
+        })
+        .collect())
+}
+
 /// Records provenance for an installed skill in the lockfile the scanner
 /// already reads: `<project>/skills-lock.json` for project scope and
 /// `~/.agents/.skill-lock.json` for user scope. Best effort by design — a
@@ -2206,12 +2245,14 @@ async fn install_listed_skill(
     project_path: Option<String>,
 ) -> Result<Vec<String>, String> {
     let list = skill_list::load_skill_list().await?;
-    let skill = list
-        .skills
-        .iter()
-        .find(|candidate| candidate.id == skill_id)
-        .ok_or("This skill is not in the curated list.")?
-        .clone();
+    let skill = match list.skills.iter().find(|candidate| candidate.id == skill_id) {
+        Some(skill) => skill.clone(),
+        None => {
+            let packs = pack_list::load_pack_list().await?;
+            pack_list::find_skill(&packs, &skill_id)
+                .ok_or("This skill is not in the curated list.")?
+        }
+    };
 
     let home = dirs::home_dir().ok_or("Could not determine your home folder")?;
     let agents = target_agents(&target)?;
@@ -2526,6 +2567,7 @@ pub fn run() {
             open_skill_file,
             reveal_skill_folder,
             list_catalog_skills,
+            list_skill_packs,
             install_listed_skill,
             check_online_reputation,
             get_workspace_roots,

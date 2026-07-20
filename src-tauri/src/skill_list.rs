@@ -49,35 +49,41 @@ pub(crate) struct ListedUpstream {
     pub(crate) commit: Option<String>,
 }
 
+/// Shared source-pin validation, reused by `pack_list` for pack entries.
+pub(crate) fn validate_source_pin(source: &ListedSource) -> Result<(), String> {
+    let valid_repo = source.repo.split('/').count() == 2
+        && source.repo.chars().all(|character| {
+            character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '.' | '/')
+        });
+    let valid_commit = source.commit.len() == 40
+        && source
+            .commit
+            .chars()
+            .all(|character| character.is_ascii_hexdigit());
+    let valid_hash = source.sha256.len() == 64
+        && source
+            .sha256
+            .chars()
+            .all(|character| character.is_ascii_hexdigit());
+    let valid_path = !source.path.is_empty()
+        && !source.path.starts_with('/')
+        && !source
+            .path
+            .split('/')
+            .any(|segment| segment.is_empty() || segment == "." || segment == "..");
+    if valid_repo && valid_commit && valid_hash && valid_path {
+        Ok(())
+    } else {
+        Err("Invalid source pin".into())
+    }
+}
+
 fn validate_list(list: &SkillList) -> Result<(), String> {
     if list.version != 1 {
         return Err(format!("Unsupported skill list version {}", list.version));
     }
     for skill in &list.skills {
-        let valid_repo = skill.source.repo.split('/').count() == 2
-            && skill.source.repo.chars().all(|character| {
-                character.is_ascii_alphanumeric() || matches!(character, '-' | '_' | '.' | '/')
-            });
-        let valid_commit = skill.source.commit.len() == 40
-            && skill
-                .source
-                .commit
-                .chars()
-                .all(|character| character.is_ascii_hexdigit());
-        let valid_hash = skill.source.sha256.len() == 64
-            && skill
-                .source
-                .sha256
-                .chars()
-                .all(|character| character.is_ascii_hexdigit());
-        let valid_path = !skill.source.path.is_empty()
-            && !skill.source.path.starts_with('/')
-            && !skill
-                .source
-                .path
-                .split('/')
-                .any(|segment| segment.is_empty() || segment == "." || segment == "..");
-        if !(valid_repo && valid_commit && valid_hash && valid_path) {
+        if validate_source_pin(&skill.source).is_err() {
             return Err(format!(
                 "Skill list entry {} has an invalid source pin",
                 skill.id
