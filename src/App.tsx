@@ -72,7 +72,7 @@ const scanResultLines = (report: ScanReport): ConsoleLine[] => {
 
 export default function App() {
   const { t } = useTranslation()
-  const [view, setView] = useState<View>('overview')
+  const [view, setView] = useState<View>('projects')
   const [report, setReport] = useState<ScanReport | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedProjectPath, setSelectedProjectPath] = useState<string | null>(null)
